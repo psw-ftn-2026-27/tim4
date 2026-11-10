@@ -1,0 +1,86 @@
+<div class="card stack">
+  <h1>Preferences</h1>
+
+  @if (preference.isLoading()) {
+    <p>Loading your preferences...</p>
+  } @else if (preference.error()) {
+    <p class="error">Could not load your preferences. Log in and try again.</p>
+  } @else {
+    @if (preference.value(); as saved) {
+      <div class="stack">
+        <p>Difficulty: {{ saved.difficulties.length > 0 ? saved.difficulties.join(', ') : 'any' }}</p>
+        <p>Transport: {{ saved.transport ?? 'no transport' }}</p>
+        <p>Tags: {{ saved.tags.length > 0 ? saved.tags.join(', ') : 'none' }}</p>
+        <p>Search opens: {{ saved.openSearchWithPreferences ? 'with my preferences' : 'all tours' }}</p>
+
+        @if (!editing() && error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <div class="actions">
+          <button class="button" type="button" [disabled]="pending()" (click)="startEdit(saved)">
+            Edit
+          </button>
+          <button class="button" type="button" [disabled]="pending()" (click)="remove()">
+            Delete
+          </button>
+        </div>
+      </div>
+    } @else {
+      <p class="meta">Your preferences are not set.</p>
+    }
+
+    @if (showForm()) {
+      <form class="stack" (submit)="save($event)">
+        <div class="stack">
+          <p class="meta">Difficulty</p>
+          <div class="checkbox">
+            <input id="easy" type="checkbox" [formField]="form.easy" />
+            <label for="easy">Easy</label>
+          </div>
+          <div class="checkbox">
+            <input id="moderate" type="checkbox" [formField]="form.moderate" />
+            <label for="moderate">Moderate</label>
+          </div>
+          <div class="checkbox">
+            <input id="hard" type="checkbox" [formField]="form.hard" />
+            <label for="hard">Hard</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="transport">Transport</label>
+          <select id="transport" [formField]="form.transport">
+            <option value="">No transport</option>
+            <option value="Walking">Walking</option>
+            <option value="Bicycle">Bicycle</option>
+            <option value="Car">Car</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="tags">Tags, separated by commas</label>
+          <input id="tags" type="text" [formField]="form.tags" />
+        </div>
+
+        <div class="stack">
+          <p class="meta">When I open the tour search</p>
+          <div class="checkbox">
+            <input id="search-preferences" type="radio" value="preferences" [formField]="form.searchOpens" />
+            <label for="search-preferences">show tours matching my preferences</label>
+          </div>
+          <div class="checkbox">
+            <input id="search-all" type="radio" value="all" [formField]="form.searchOpens" />
+            <label for="search-all">show all tours</label>
+          </div>
+        </div>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <button class="button button--primary" type="submit" [disabled]="pending()">Save</button>
+      </form>
+    }
+  }
+</div>
