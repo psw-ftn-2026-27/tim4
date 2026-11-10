@@ -1,0 +1,190 @@
+<div class="stack">
+  <h1>Pregled teme i UI elemenata</h1>
+  <p class="meta">
+    Skice sa izmišljenim podacima. Ništa se ne čuva i ne šalje; preuzmite globalne klase iz
+    <code>_components.scss</code> i imena boja iz <code>_tokens.scss</code>.
+  </p>
+
+  <section class="stack">
+    <h2>Paleta</h2>
+    <p>
+      Paleta se oslanja na zemljane tonove i boje starih mapa kako bi podstakla osećaj fizičke
+      avanture i istraživanja prirode. Svetla pergament pozadina asocira na mapu koja čeka da bude
+      iscrtana, dok zeleni akcenti služe kao sigurni putokazi kroz aplikaciju. Jarka ljubičasta za
+      XP i zlatna za EC vizuelno odvajaju elemente gejmifikacije od turističkog, realnog iskustva.
+    </p>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Boja</th>
+          <th scope="col">Uloga</th>
+          <th scope="col">Ime u temi</th>
+          <th scope="col">Vrednost</th>
+          <th scope="col">Primer upotrebe</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (color of palette; track color.token) {
+          <tr>
+            <td><span class="swatch" [style.background]="'var(' + color.token + ')'"></span></td>
+            <td>{{ color.role }}</td>
+            <td><code>{{ color.token }}</code></td>
+            <td><code>{{ color.value }}</code></td>
+            <td>{{ color.example }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section class="stack">
+    <h2>UI elementi</h2>
+
+    <h3>Dugmad</h3>
+    <div class="row">
+      <button class="button button--primary" type="button">Sačuvaj</button>
+      <button class="button" type="button">Otkaži</button>
+      <button class="button button--danger" type="button">Obriši</button>
+    </div>
+    <p class="meta">
+      <code>.button--primary</code> za glavnu radnju, <code>.button</code> za sporednu,
+      <code>.button--danger</code> samo za radnju koja se ne može poništiti.
+    </p>
+
+    <h3>Polja forme</h3>
+    <div class="form-sample">
+      <div class="field">
+        <label for="sample-name">Naziv ture</label>
+        <input id="sample-name" type="text" value="Petrovaradinska tvrđava" />
+      </div>
+      <div class="field">
+        <label for="sample-price">Cena (EC)</label>
+        <input id="sample-price" type="number" value="-5" aria-invalid="true" />
+        <p class="error">⚠ Cena ne može biti negativna.</p>
+      </div>
+    </div>
+
+    <h3>Poruke</h3>
+    <p class="notice notice--success">✓ Tura je sačuvana.</p>
+    <p class="notice notice--muted">↶ Uplata je stornirana.</p>
+    <p class="error">⚠ Uplata nije uspela. Pokušajte ponovo.</p>
+
+    <h3>Tabela</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Korisnik</th>
+          <th scope="col">Stanje</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ana.petrovic</td>
+          <td><span class="badge badge--ec">◎ 120 EC</span></td>
+        </tr>
+        <tr class="row--muted">
+          <td>Uplata 40 EC</td>
+          <td><span class="badge badge--muted">↶ Stornirano</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Kartice</h3>
+    <div class="grid">
+      <div class="card">
+        <h3>Obična kartica</h3>
+        <p class="meta"><code>.card</code> za bilo koji uokviren sadržaj.</p>
+      </div>
+      <article class="card tour-card">
+        <h3>Fruškogorske staze</h3>
+        <p>Šumska tura kroz Frušku goru sa pogledom na Dunav...</p>
+        <p class="meta">12,4 km</p>
+        <div class="tour-card__tags">
+          <span class="tag">priroda</span>
+          <span class="tag">planinarenje</span>
+        </div>
+        <p><span class="badge badge--ec">◎ 30 EC</span></p>
+      </article>
+    </div>
+
+    <h3>Oznake stanja ture</h3>
+    <div class="row">
+      <span class="badge badge--draft">✎ U pripremi</span>
+      <span class="badge badge--published">● Objavljena</span>
+      <span class="badge badge--archived">▣ Arhivirana</span>
+    </div>
+
+    <h3>Oznake stanja izazova</h3>
+    <div class="row">
+      <span class="badge badge--draft">✎ Nacrt (draft)</span>
+      <span class="badge badge--published">● Objavljen (published)</span>
+      <span class="badge badge--retired">⊘ Povučen (retired)</span>
+      <span class="badge badge--archived">▣ Arhiviran (archived)</span>
+    </div>
+
+    <h3>Oznake težine</h3>
+    <div class="row">
+      <span class="badge badge--easy">●○○ Lako</span>
+      <span class="badge badge--moderate">●●○ Srednje</span>
+      <span class="badge badge--hard">●●● Teško</span>
+    </div>
+
+    <h3>EC i XP</h3>
+    <div class="row">
+      <span class="badge badge--ec">◎ 50 EC</span>
+      <span class="badge badge--xp">★ 120 XP</span>
+      <span class="badge badge--success">✓ Tačan odgovor</span>
+    </div>
+
+    <h3>Polje za upload slike</h3>
+    <p class="meta">Ograničenja su ilustrativna: JPG ili PNG, najviše 5 MB.</p>
+    <div class="upload-states">
+      <div class="stack">
+        <p class="meta">Prazno</p>
+        <label class="upload" for="upload-empty">
+          <span>⇪ Prevucite sliku ovde ili kliknite da izaberete</span>
+          <span class="meta">JPG ili PNG, najviše 5 MB</span>
+          <input id="upload-empty" type="file" accept="image/jpeg,image/png" />
+        </label>
+      </div>
+      <div class="stack">
+        <p class="meta">Prevlačenje</p>
+        <label class="upload upload--dragover" for="upload-dragover">
+          <span>⇩ Pustite sliku da je dodate</span>
+          <span class="meta">JPG ili PNG, najviše 5 MB</span>
+          <input id="upload-dragover" type="file" accept="image/jpeg,image/png" />
+        </label>
+      </div>
+      <div class="stack">
+        <p class="meta">Pregled slike</p>
+        <label class="upload upload--preview" for="upload-preview">
+          <svg viewBox="0 0 160 90" width="160" height="90" role="img" aria-label="Pregled slike">
+            <rect class="preview-sky" width="160" height="90" />
+            <polygon class="preview-hill" points="0,90 50,40 90,70 120,45 160,90" />
+            <circle class="preview-sun" cx="125" cy="22" r="10" />
+          </svg>
+          <span>✓ tvrdjava.jpg (1,2 MB)</span>
+          <span class="meta">Kliknite da zamenite sliku</span>
+          <input id="upload-preview" type="file" accept="image/jpeg,image/png" />
+        </label>
+      </div>
+      <div class="stack">
+        <p class="meta">Greška validacije</p>
+        <label class="upload upload--error" for="upload-error">
+          <span>⇪ Prevucite sliku ovde ili kliknite da izaberete</span>
+          <span class="error">⚠ mapa.gif nije podržan format. Dozvoljeni su JPG i PNG.</span>
+          <input id="upload-error" type="file" accept="image/jpeg,image/png" aria-invalid="true" />
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="stack">
+    <h2>Skice ekrana</h2>
+    <ul>
+      @for (sketch of sketches; track sketch.path) {
+        <li><a [routerLink]="sketch.path">{{ sketch.title }}</a></li>
+      }
+    </ul>
+  </section>
+</div>

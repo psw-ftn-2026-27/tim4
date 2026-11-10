@@ -1,0 +1,64 @@
+<div class="stack">
+  <p><a routerLink="/design-preview">← Nazad na pregled</a></p>
+  <h1>Preference tura</h1>
+
+  <div class="layout">
+    <section class="card stack">
+      <h2>Sačuvane preference</h2>
+      <dl class="summary">
+        <dt>Težina</dt>
+        <dd>{{ saved.difficulties.join(', ') }}</dd>
+        <dt>Omiljeni transport</dt>
+        <dd>{{ saved.transport }}</dd>
+        <dt>Tagovi</dt>
+        <dd>
+          @for (tag of saved.tags; track tag) {
+            <span class="tag">{{ tag }}</span>
+          }
+        </dd>
+        <dt>Pretraga</dt>
+        <dd>{{ saved.applyToSearch ? '✓ Postavljena na moje preference' : 'Bez preferenci' }}</dd>
+      </dl>
+      <div class="actions">
+        <button class="button" type="button">Izmeni</button>
+        <button class="button button--danger" type="button">Obriši</button>
+      </div>
+    </section>
+
+    <form class="card stack">
+      <h2>Izmena preferenci</h2>
+      <fieldset class="group">
+        <legend>Težina (jedna ili više)</legend>
+        <label class="choice" for="pref-easy">
+          <input id="pref-easy" type="checkbox" checked />
+          Lako
+        </label>
+        <label class="choice" for="pref-moderate">
+          <input id="pref-moderate" type="checkbox" checked />
+          Srednje
+        </label>
+        <label class="choice" for="pref-hard">
+          <input id="pref-hard" type="checkbox" />
+          Teško
+        </label>
+      </fieldset>
+      <div class="field">
+        <label for="pref-transport">Omiljeni tip transporta</label>
+        <select id="pref-transport">
+          <option>Peške</option>
+          <option selected>Bicikl</option>
+          <option>Automobil</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="pref-tags">Tagovi</label>
+        <input id="pref-tags" type="text" value="priroda, istorija" />
+      </div>
+      <label class="choice" for="pref-apply">
+        <input id="pref-apply" type="checkbox" checked />
+        Postavi pretragu na moje preference
+      </label>
+      <button class="button button--primary" type="button">Sačuvaj</button>
+    </form>
+  </div>
+</div>

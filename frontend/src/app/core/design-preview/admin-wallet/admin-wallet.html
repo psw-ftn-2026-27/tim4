@@ -1,0 +1,80 @@
+<div class="stack">
+  <p><a routerLink="/design-preview">← Nazad na pregled</a></p>
+  <h1>Novčanici korisnika</h1>
+
+  <div class="layout">
+    <section class="stack">
+      <h2>Korisnici</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Korisnik</th>
+            <th scope="col">Stanje</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user.username) {
+            <tr>
+              <td>{{ user.username }}</td>
+              <td><span class="badge badge--ec">◎ {{ user.balance }} EC</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <form class="card stack">
+      <h2>Uplata</h2>
+      <div class="field">
+        <label for="top-up-user">Korisnik</label>
+        <select id="top-up-user">
+          @for (user of users; track user.username) {
+            <option>{{ user.username }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="top-up-amount">Iznos (EC)</label>
+        <input id="top-up-amount" type="number" min="1" value="50" />
+      </div>
+      <button class="button button--primary" type="button">Uplati</button>
+    </form>
+  </div>
+
+  <section class="stack">
+    <h2>Transakcije</h2>
+    <p class="meta">
+      Storno je ponuđen samo za uplatu mlađu od 24h čiji storno ne bi doveo do negativnog stanja.
+    </p>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Korisnik</th>
+          <th scope="col">Vrsta</th>
+          <th scope="col">Iznos</th>
+          <th scope="col">Pre</th>
+          <th scope="col">Storno</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (transaction of transactions; track transaction.id) {
+          <tr [class.row--muted]="transaction.reversed">
+            <td>{{ transaction.username }}</td>
+            <td>{{ transaction.kind }}</td>
+            <td>{{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount }} EC</td>
+            <td>{{ transaction.hoursAgo }} h</td>
+            <td>
+              @if (transaction.reversed) {
+                <span class="badge badge--muted">↶ Stornirano</span>
+              } @else if (stornoBlockedReason(transaction)) {
+                <span class="meta">Nije dostupno: {{ stornoBlockedReason(transaction) }}</span>
+              } @else {
+                <button class="button" type="button">↶ Storniraj</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</div>

@@ -1,0 +1,9 @@
+.filters {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+}
+
+.filters__submit {
+  align-self: end;
+}

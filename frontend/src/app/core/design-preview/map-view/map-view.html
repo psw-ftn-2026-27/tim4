@@ -1,0 +1,72 @@
+<div class="stack">
+  <p><a routerLink="/design-preview">← Nazad na pregled</a></p>
+  <h1>Mapa</h1>
+  <p class="meta">Statičan prikaz; biblioteku i ponašanje mape bira zahtev za mapu.</p>
+
+  <section class="stack">
+    <h2>Izazovi u gradu</h2>
+    <p class="meta">Pinovi bez putanje: izazovi nemaju redosled.</p>
+    <svg class="map" viewBox="0 0 400 240" role="img" aria-label="Mapa sa izazovima u gradu">
+      <rect class="map__land" width="400" height="240" />
+      <path class="map__street" d="M0 100 H400 M120 0 V240 M260 0 V240 M0 200 L400 40" />
+      @for (pin of challengePins; track pin.id) {
+        <circle class="map__pin map__pin--challenge" [attr.cx]="pin.x" [attr.cy]="pin.y" r="11" />
+        <text class="map__label" [attr.x]="pin.x" [attr.y]="pin.y + 4">★</text>
+      }
+    </svg>
+    <ul>
+      @for (pin of challengePins; track pin.id) {
+        <li><span class="badge badge--xp">★ Izazov</span> {{ pin.name }}</li>
+      }
+    </ul>
+  </section>
+
+  <section class="stack">
+    <h2>Ključne tačke ture</h2>
+    <p class="meta">Pinovi povezani putanjom po redosledu ture.</p>
+    <svg class="map" viewBox="0 0 400 240" role="img" aria-label="Mapa sa putanjom ture">
+      <rect class="map__land" width="400" height="240" />
+      <path class="map__street" d="M0 100 H400 M120 0 V240 M260 0 V240 M0 200 L400 40" />
+      <polyline class="map__path" [attr.points]="tourPath" />
+      @for (point of tourPoints; track point.id) {
+        <circle class="map__pin map__pin--tour" [attr.cx]="point.x" [attr.cy]="point.y" r="11" />
+        <text class="map__label" [attr.x]="point.x" [attr.y]="point.y + 4">{{ point.id }}</text>
+      }
+    </svg>
+    <p>Ukupna dužina: <strong>{{ tourLengthKm }} km</strong></p>
+    <ol>
+      @for (point of tourPoints; track point.id) {
+        <li>{{ point.name }}</li>
+      }
+    </ol>
+  </section>
+
+  <form class="card stack picker">
+    <h2>Nova ključna tačka</h2>
+    <div class="field">
+      <label for="point-name">Naziv</label>
+      <input id="point-name" type="text" value="Kej žrtava racije" />
+    </div>
+    <p class="meta">Kliknite na mapu da izaberete lokaciju.</p>
+    <svg class="map" viewBox="0 0 400 240" role="img" aria-label="Mapa za izbor lokacije">
+      <rect class="map__land" width="400" height="240" />
+      <path class="map__street" d="M0 100 H400 M120 0 V240 M260 0 V240 M0 200 L400 40" />
+      <circle class="map__pin map__pin--picked" [attr.cx]="picked.x" [attr.cy]="picked.y" r="11" />
+      <text class="map__label" [attr.x]="picked.x" [attr.y]="picked.y + 4">✚</text>
+    </svg>
+    <p class="notice notice--success">
+      ✓ Izabrana lokacija: {{ picked.latitude }}, {{ picked.longitude }}
+    </p>
+    <div class="pair">
+      <div class="field">
+        <label for="point-latitude">Geografska širina</label>
+        <input id="point-latitude" type="text" readonly [value]="picked.latitude" />
+      </div>
+      <div class="field">
+        <label for="point-longitude">Geografska dužina</label>
+        <input id="point-longitude" type="text" readonly [value]="picked.longitude" />
+      </div>
+    </div>
+    <button class="button button--primary" type="button">Dodaj tačku</button>
+  </form>
+</div>

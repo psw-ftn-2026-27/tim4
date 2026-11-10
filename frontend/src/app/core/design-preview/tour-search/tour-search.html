@@ -1,0 +1,93 @@
+<div class="stack">
+  <p><a routerLink="/design-preview">← Nazad na pregled</a></p>
+  <h1>Pretraga tura</h1>
+
+  <form class="card filters">
+    <div class="field">
+      <label for="search-name">Naslov</label>
+      <input id="search-name" type="search" placeholder="npr. Fruška gora" />
+    </div>
+    <div class="field">
+      <label for="search-difficulty">Težina</label>
+      <select id="search-difficulty">
+        <option>Sve</option>
+        <option>Lako</option>
+        <option>Srednje</option>
+        <option>Teško</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="search-tags">Tagovi</label>
+      <input id="search-tags" type="text" value="priroda, planinarenje" />
+    </div>
+    <div class="field">
+      <label for="search-transport">Tip transporta</label>
+      <select id="search-transport">
+        <option>Svi</option>
+        <option>Peške</option>
+        <option>Bicikl</option>
+        <option>Automobil</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="search-price-from">Cena od (EC)</label>
+      <input id="search-price-from" type="number" min="0" value="0" />
+    </div>
+    <div class="field">
+      <label for="search-price-to">Cena do (EC)</label>
+      <input id="search-price-to" type="number" min="0" value="100" />
+    </div>
+    <div class="field">
+      <label for="search-sort">Sortiranje</label>
+      <select id="search-sort">
+        <option>Težina, rastuće</option>
+        <option>Težina, opadajuće</option>
+        <option>Cena, rastuće</option>
+        <option>Cena, opadajuće</option>
+      </select>
+    </div>
+    <div class="filters__submit">
+      <button class="button button--primary" type="button">Pretraži</button>
+    </div>
+  </form>
+
+  <p class="meta">
+    Prikazano {{ tours.length }} od {{ allCount }} tura: pretraga prikazuje samo objavljene ture,
+    ture u pripremi i arhivirane ture se ne prikazuju.
+  </p>
+
+  <div class="grid">
+    @for (tour of tours; track tour.id) {
+      <article class="card tour-card">
+        <h3>{{ tour.name }}</h3>
+        <p>{{ tour.excerpt }}</p>
+        <p>
+          @switch (tour.difficulty) {
+            @case ('Easy') {
+              <span class="badge badge--easy">●○○ Lako</span>
+            }
+            @case ('Moderate') {
+              <span class="badge badge--moderate">●●○ Srednje</span>
+            }
+            @case ('Hard') {
+              <span class="badge badge--hard">●●● Teško</span>
+            }
+          }
+          <span class="meta">· {{ tour.lengthKm }} km</span>
+        </p>
+        <div class="tour-card__tags">
+          @for (tag of tour.tags; track tag) {
+            <span class="tag">{{ tag }}</span>
+          }
+        </div>
+        <p>
+          @if (tour.price === 0) {
+            <span class="badge badge--success">✓ Besplatno</span>
+          } @else {
+            <span class="badge badge--ec">◎ {{ tour.price }} EC</span>
+          }
+        </p>
+      </article>
+    }
+  </div>
+</div>
