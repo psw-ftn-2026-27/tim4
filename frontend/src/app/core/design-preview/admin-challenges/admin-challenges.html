@@ -8,55 +8,59 @@
       Izmena je dozvoljena samo u stanju nacrt (draft), brisanje samo u stanjima nacrt (draft) i
       arhiviran (archived).
     </p>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Naziv</th>
-          <th scope="col">Vrsta</th>
-          <th scope="col">Stanje</th>
-          <th scope="col">Nagrada</th>
-          <th scope="col">Radnje</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (challenge of challenges; track challenge.id) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
           <tr>
-            <td>{{ challenge.name }}</td>
-            <td>{{ challenge.kind }}</td>
-            <td>
-              @switch (challenge.status) {
-                @case ('Draft') {
-                  <span class="badge badge--draft">✎ Nacrt (draft)</span>
-                }
-                @case ('Published') {
-                  <span class="badge badge--published">● Objavljen (published)</span>
-                }
-                @case ('Retired') {
-                  <span class="badge badge--retired">⊘ Povučen (retired)</span>
-                }
-                @case ('Archived') {
-                  <span class="badge badge--archived">▣ Arhiviran (archived)</span>
-                }
-              }
-            </td>
-            <td><span class="badge badge--xp">★ {{ challenge.xp }} XP</span></td>
-            <td>
-              <div class="actions">
-                @if (canEdit(challenge)) {
-                  <button class="button" type="button">Izmeni</button>
-                }
-                @if (canDelete(challenge)) {
-                  <button class="button button--danger" type="button">Obriši</button>
-                }
-                @if (!canEdit(challenge) && !canDelete(challenge)) {
-                  <span class="meta">Nema dozvoljenih radnji u ovom stanju</span>
-                }
-              </div>
-            </td>
+            <th scope="col">Naziv</th>
+            <th scope="col">Vrsta</th>
+            <th scope="col">Stanje</th>
+            <th scope="col">Nagrada</th>
+            <th scope="col">Radnje</th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (challenge of challenges; track challenge.id) {
+            <tr>
+              <td>{{ challenge.name }}</td>
+              <td>{{ challenge.kind }}</td>
+              <td>
+                @switch (challenge.status) {
+                  @case ('Draft') {
+                    <span class="badge badge--draft">✎ Nacrt (draft)</span>
+                  }
+                  @case ('Published') {
+                    <span class="badge badge--published">● Objavljen (published)</span>
+                  }
+                  @case ('Retired') {
+                    <span class="badge badge--retired">⊘ Povučen (retired)</span>
+                  }
+                  @case ('Archived') {
+                    <span class="badge badge--archived">▣ Arhiviran (archived)</span>
+                  }
+                }
+              </td>
+              <td>
+                <span class="badge badge--xp">★ {{ challenge.xp }} XP</span>
+              </td>
+              <td>
+                <div class="actions">
+                  @if (canEdit(challenge)) {
+                    <button class="button" type="button">Izmeni</button>
+                  }
+                  @if (canDelete(challenge)) {
+                    <button class="button button--danger" type="button">Obriši</button>
+                  }
+                  @if (!canEdit(challenge) && !canDelete(challenge)) {
+                    <span class="meta">Nema dozvoljenih radnji u ovom stanju</span>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <div class="forms">
@@ -66,7 +70,7 @@
         <label for="social-name">Naziv</label>
         <input id="social-name" type="text" value="Zalazak na Petrovaradinu" />
       </div>
-      <div class="pair">
+      <div class="field-pair">
         <div class="field">
           <label for="social-time-from">Doba dana od</label>
           <input id="social-time-from" type="time" value="18:00" />
@@ -76,7 +80,7 @@
           <input id="social-time-to" type="time" value="20:30" />
         </div>
       </div>
-      <div class="pair">
+      <div class="field-pair">
         <div class="field">
           <label for="social-people">Broj ljudi</label>
           <input id="social-people" type="number" min="2" value="5" />
@@ -105,7 +109,8 @@
       </div>
       <div class="field">
         <label for="quiz-instructions">Uputstva</label>
-        <textarea id="quiz-instructions" rows="2">Odgovorite na sva pitanja dok ste na tvrđavi.</textarea>
+        <textarea id="quiz-instructions" rows="2">
+Odgovorite na sva pitanja dok ste na tvrđavi.</textarea>
       </div>
       <div class="field">
         <label for="quiz-xp">XP</label>
@@ -113,7 +118,7 @@
       </div>
 
       @for (question of questions; track question.id) {
-        <fieldset class="group">
+        <fieldset class="field-group">
           <legend>Pitanje {{ question.id }}</legend>
           <div class="field">
             <label [for]="'question-' + question.id">Tekst pitanja</label>

@@ -4,9 +4,9 @@
 
   <form class="card stack edit-form">
     <h2>Fruškogorske staze</h2>
-    <fieldset class="group">
+    <fieldset class="field-group">
       <legend>Preporučen broj ljudi</legend>
-      <div class="pair">
+      <div class="field-pair">
         <div class="field">
           <label for="tour-people-from">Od</label>
           <input id="tour-people-from" type="number" min="1" value="2" />
@@ -18,7 +18,7 @@
       </div>
     </fieldset>
 
-    <fieldset class="group">
+    <fieldset class="field-group">
       <legend>Cena</legend>
       <label class="choice" for="tour-free">
         <input id="tour-free" type="radio" name="tour-pricing" />
@@ -40,48 +40,50 @@
   <section class="stack">
     <h2>Stanje ture</h2>
     <p class="meta">Svako stanje nudi samo radnju koja iz njega vodi dalje.</p>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Tura</th>
-          <th scope="col">Stanje</th>
-          <th scope="col">Radnja</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (tour of tours; track tour.id) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
           <tr>
-            <td>{{ tour.name }}</td>
-            <td>
-              @switch (tour.status) {
-                @case ('Draft') {
-                  <span class="badge badge--draft">✎ U pripremi</span>
-                }
-                @case ('Published') {
-                  <span class="badge badge--published">● Objavljena</span>
-                }
-                @case ('Archived') {
-                  <span class="badge badge--archived">▣ Arhivirana</span>
-                  <p class="meta">Arhivirana {{ tour.archivedAt }}</p>
-                }
-              }
-            </td>
-            <td>
-              @switch (tour.status) {
-                @case ('Draft') {
-                  <button class="button button--primary" type="button">Objavi</button>
-                }
-                @case ('Published') {
-                  <button class="button" type="button">Arhiviraj</button>
-                }
-                @case ('Archived') {
-                  <button class="button" type="button">Ponovo aktiviraj</button>
-                }
-              }
-            </td>
+            <th scope="col">Tura</th>
+            <th scope="col">Stanje</th>
+            <th scope="col">Radnja</th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (tour of tours; track tour.id) {
+            <tr>
+              <td>{{ tour.name }}</td>
+              <td>
+                @switch (tour.status) {
+                  @case ('Draft') {
+                    <span class="badge badge--draft">✎ U pripremi</span>
+                  }
+                  @case ('Published') {
+                    <span class="badge badge--published">● Objavljena</span>
+                  }
+                  @case ('Archived') {
+                    <span class="badge badge--archived">▣ Arhivirana</span>
+                    <p class="meta">Arhivirana {{ tour.archivedAt }}</p>
+                  }
+                }
+              </td>
+              <td>
+                @switch (tour.status) {
+                  @case ('Draft') {
+                    <button class="button button--primary" type="button">Objavi</button>
+                  }
+                  @case ('Published') {
+                    <button class="button" type="button">Arhiviraj</button>
+                  }
+                  @case ('Archived') {
+                    <button class="button" type="button">Ponovo aktiviraj</button>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </section>
 </div>

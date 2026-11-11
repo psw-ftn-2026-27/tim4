@@ -33,7 +33,9 @@
         <text class="map__label" [attr.x]="point.x" [attr.y]="point.y + 4">{{ point.id }}</text>
       }
     </svg>
-    <p>Ukupna dužina: <strong>{{ tourLengthKm }} km</strong></p>
+    <p>
+      Ukupna dužina: <strong>{{ tourLengthKm }} km</strong>
+    </p>
     <ol>
       @for (point of tourPoints; track point.id) {
         <li>{{ point.name }}</li>
@@ -57,7 +59,7 @@
     <p class="notice notice--success">
       ✓ Izabrana lokacija: {{ picked.latitude }}, {{ picked.longitude }}
     </p>
-    <div class="pair">
+    <div class="field-pair">
       <div class="field">
         <label for="point-latitude">Geografska širina</label>
         <input id="point-latitude" type="text" readonly [value]="picked.latitude" />

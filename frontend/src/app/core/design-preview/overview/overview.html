@@ -13,28 +13,34 @@
       iscrtana, dok zeleni akcenti služe kao sigurni putokazi kroz aplikaciju. Jarka ljubičasta za
       XP i zlatna za EC vizuelno odvajaju elemente gejmifikacije od turističkog, realnog iskustva.
     </p>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Boja</th>
-          <th scope="col">Uloga</th>
-          <th scope="col">Ime u temi</th>
-          <th scope="col">Vrednost</th>
-          <th scope="col">Primer upotrebe</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (color of palette; track color.token) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
           <tr>
-            <td><span class="swatch" [style.background]="'var(' + color.token + ')'"></span></td>
-            <td>{{ color.role }}</td>
-            <td><code>{{ color.token }}</code></td>
-            <td><code>{{ color.value }}</code></td>
-            <td>{{ color.example }}</td>
+            <th scope="col">Boja</th>
+            <th scope="col">Uloga</th>
+            <th scope="col">Ime u temi</th>
+            <th scope="col">Vrednost</th>
+            <th scope="col">Primer upotrebe</th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (color of palette; track color.token) {
+            <tr>
+              <td><span class="swatch" [style.background]="'var(' + color.token + ')'"></span></td>
+              <td>{{ color.role }}</td>
+              <td>
+                <code>{{ color.token }}</code>
+              </td>
+              <td>
+                <code>{{ color.value }}</code>
+              </td>
+              <td>{{ color.example }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <section class="stack">
@@ -70,24 +76,26 @@
     <p class="error">⚠ Uplata nije uspela. Pokušajte ponovo.</p>
 
     <h3>Tabela</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Korisnik</th>
-          <th scope="col">Stanje</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>ana.petrovic</td>
-          <td><span class="badge badge--ec">◎ 120 EC</span></td>
-        </tr>
-        <tr class="row--muted">
-          <td>Uplata 40 EC</td>
-          <td><span class="badge badge--muted">↶ Stornirano</span></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Korisnik</th>
+            <th scope="col">Stanje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ana.petrovic</td>
+            <td><span class="badge badge--ec">◎ 120 EC</span></td>
+          </tr>
+          <tr class="row--muted">
+            <td>Uplata 40 EC</td>
+            <td><span class="badge badge--muted">↶ Stornirano</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <h3>Kartice</h3>
     <div class="grid">
@@ -95,16 +103,6 @@
         <h3>Obična kartica</h3>
         <p class="meta"><code>.card</code> za bilo koji uokviren sadržaj.</p>
       </div>
-      <article class="card tour-card">
-        <h3>Fruškogorske staze</h3>
-        <p>Šumska tura kroz Frušku goru sa pogledom na Dunav...</p>
-        <p class="meta">12,4 km</p>
-        <div class="tour-card__tags">
-          <span class="tag">priroda</span>
-          <span class="tag">planinarenje</span>
-        </div>
-        <p><span class="badge badge--ec">◎ 30 EC</span></p>
-      </article>
     </div>
 
     <h3>Oznake stanja ture</h3>
@@ -183,7 +181,9 @@
     <h2>Skice ekrana</h2>
     <ul>
       @for (sketch of sketches; track sketch.path) {
-        <li><a [routerLink]="sketch.path">{{ sketch.title }}</a></li>
+        <li>
+          <a [routerLink]="sketch.path">{{ sketch.title }}</a>
+        </li>
       }
     </ul>
   </section>

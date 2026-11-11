@@ -37,17 +37,11 @@
 
 .map__label {
   fill: var(--color-accent-text);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   text-anchor: middle;
 }
 
 .picker {
   max-width: 40rem;
-}
-
-.pair {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: 1fr 1fr;
 }

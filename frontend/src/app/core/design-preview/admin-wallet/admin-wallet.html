@@ -5,22 +5,26 @@
   <div class="layout">
     <section class="stack">
       <h2>Korisnici</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Korisnik</th>
-            <th scope="col">Stanje</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (user of users; track user.username) {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
             <tr>
-              <td>{{ user.username }}</td>
-              <td><span class="badge badge--ec">◎ {{ user.balance }} EC</span></td>
+              <th scope="col">Korisnik</th>
+              <th scope="col">Stanje</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (user of users; track user.username) {
+              <tr>
+                <td>{{ user.username }}</td>
+                <td>
+                  <span class="badge badge--ec">◎ {{ user.balance }} EC</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <form class="card stack">
@@ -46,35 +50,37 @@
     <p class="meta">
       Storno je ponuđen samo za uplatu mlađu od 24h čiji storno ne bi doveo do negativnog stanja.
     </p>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Korisnik</th>
-          <th scope="col">Vrsta</th>
-          <th scope="col">Iznos</th>
-          <th scope="col">Pre</th>
-          <th scope="col">Storno</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (transaction of transactions; track transaction.id) {
-          <tr [class.row--muted]="transaction.reversed">
-            <td>{{ transaction.username }}</td>
-            <td>{{ transaction.kind }}</td>
-            <td>{{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount }} EC</td>
-            <td>{{ transaction.hoursAgo }} h</td>
-            <td>
-              @if (transaction.reversed) {
-                <span class="badge badge--muted">↶ Stornirano</span>
-              } @else if (stornoBlockedReason(transaction)) {
-                <span class="meta">Nije dostupno: {{ stornoBlockedReason(transaction) }}</span>
-              } @else {
-                <button class="button" type="button">↶ Storniraj</button>
-              }
-            </td>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Korisnik</th>
+            <th scope="col">Vrsta</th>
+            <th scope="col">Iznos</th>
+            <th scope="col">Pre</th>
+            <th scope="col">Storno</th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (transaction of transactions; track transaction.id) {
+            <tr [class.row--muted]="transaction.reversed">
+              <td>{{ transaction.username }}</td>
+              <td>{{ transaction.kind }}</td>
+              <td>{{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount }} EC</td>
+              <td>{{ transaction.hoursAgo }} h</td>
+              <td>
+                @if (transaction.reversed) {
+                  <span class="badge badge--muted">↶ Stornirano</span>
+                } @else if (stornoBlockedReason(transaction)) {
+                  <span class="meta">Nije dostupno: {{ stornoBlockedReason(transaction) }}</span>
+                } @else {
+                  <button class="button" type="button">↶ Storniraj</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </section>
 </div>
