@@ -27,3 +27,20 @@ export interface CreateTourDto {
   difficulty: TourDifficulty;
   tags: string[];
 }
+
+export interface TourPreferenceDto {
+  difficulties: TourDifficulty[];
+  transport: TransportMode | null;
+  tags: string[];
+  openSearchWithPreferences: boolean;
+}
+
+export type DifficultySort = 'Ascending' | 'Descending';
+
+export interface PublishedTourSearchDto {
+  name: string | null;
+  difficulty: TourDifficulty | null;
+  tags: string[] | null;
+  transport: TransportMode | null;
+  sortByDifficulty: DifficultySort | null;
+}

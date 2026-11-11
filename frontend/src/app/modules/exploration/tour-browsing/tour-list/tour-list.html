@@ -5,37 +5,71 @@
     <p class="links">
       <a routerLink="/exploration/mine">My tours</a>
       <a routerLink="/exploration/create">Create tour</a>
+      <a routerLink="/exploration/preferences">Preferences</a>
     </p>
   }
 
-  <div class="filters">
-    <div class="field">
-      <label for="name-filter">Search by name</label>
-      <input id="name-filter" type="search" [formField]="form.name" />
+  <form class="card stack" (submit)="search($event)">
+    <div class="filters">
+      <div class="field">
+        <label for="name-filter">Name contains</label>
+        <input id="name-filter" type="search" [formField]="form.name" />
+      </div>
+
+      <div class="field">
+        <label for="difficulty-filter">Difficulty</label>
+        <select id="difficulty-filter" [formField]="form.difficulty">
+          <option value="">All</option>
+          <option value="Easy">Easy</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="tags-filter">Tags, separated by commas</label>
+        <input id="tags-filter" type="text" [formField]="form.tags" />
+      </div>
+
+      <div class="field">
+        <label for="transport-filter">Transport</label>
+        <select id="transport-filter" [formField]="form.transport">
+          <option value="">All</option>
+          <option value="Walking">Walking</option>
+          <option value="Bicycle">Bicycle</option>
+          <option value="Car">Car</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="sort">Sort</label>
+        <select id="sort" [formField]="form.sortByDifficulty">
+          <option value="">Newest first</option>
+          <option value="Ascending">Difficulty, easiest first</option>
+          <option value="Descending">Difficulty, hardest first</option>
+        </select>
+      </div>
     </div>
 
-    <div class="field">
-      <label for="difficulty-filter">Difficulty</label>
-      <select id="difficulty-filter" [formField]="form.difficulty">
-        <option value="">All</option>
-        <option value="Easy">Easy</option>
-        <option value="Moderate">Moderate</option>
-        <option value="Hard">Hard</option>
-      </select>
+    <div class="actions">
+      <button class="button button--primary" type="submit">Search</button>
+      <button class="button" type="button" (click)="clear()">Clear filters</button>
     </div>
-  </div>
+  </form>
 
   @if (tours.isLoading()) {
     <p>Loading tours...</p>
   } @else if (tours.error()) {
     <p class="error">Could not load tours. Log in and try again.</p>
-  } @else if (visibleTours().length === 0) {
-    <p>No tours match the filter.</p>
-  } @else {
-    <div class="grid">
-      @for (tour of visibleTours(); track tour.id) {
-        <app-tour-card [tour]="tour" />
-      }
-    </div>
+  } @else if (tours.value(); as page) {
+    @if (page.items.length === 0) {
+      <p>No tours match the given criteria.</p>
+    } @else {
+      <div class="grid">
+        @for (tour of page.items; track tour.id) {
+          <app-tour-card [tour]="tour" />
+        }
+      </div>
+    }
   }
 </div>
