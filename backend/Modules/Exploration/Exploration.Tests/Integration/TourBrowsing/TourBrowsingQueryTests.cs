@@ -62,6 +62,16 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Tag_search_ignores_letter_case()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?tags=ISTORIJA", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+    }
+
+    [Fact]
     public async Task Title_search_ignores_letter_case()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");

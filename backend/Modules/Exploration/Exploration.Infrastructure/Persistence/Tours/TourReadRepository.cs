@@ -50,7 +50,8 @@ internal sealed class TourReadRepository : ITourReadRepository
         {
             if (!string.IsNullOrWhiteSpace(tag))
             {
-                tours = tours.Where(tour => tour.Tags.Contains(tag));
+                var lowerTag = tag.ToLower();
+                tours = tours.Where(tour => tour.Tags.Any(tourTag => tourTag.ToLower() == lowerTag));
             }
         }
         if (search.Transport is not null)
