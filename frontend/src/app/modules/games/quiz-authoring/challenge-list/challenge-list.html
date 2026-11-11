@@ -1,0 +1,40 @@
+<div class="stack">
+  <h1>Izazovi</h1>
+
+  <p><a routerLink="/games/quizzes/create">Nov kviz</a></p>
+
+  @if (challenges.isLoading()) {
+    <p>Učitavanje izazova...</p>
+  } @else if (challenges.error()) {
+    <p class="error">Izazovi nisu učitani. Prijavite se kao administrator i pokušajte ponovo.</p>
+  } @else {
+    @for (section of sections(); track section.status) {
+      <section class="stack">
+        <h2>{{ section.status }}</h2>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Naziv</th>
+              <th scope="col">XP nagrada</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (challenge of section.challenges; track challenge.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/games/quizzes', challenge.id]">{{ challenge.name }}</a>
+                </td>
+                <td>{{ challenge.totalXp }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="2" class="meta">Nema izazova u ovom stanju.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+  }
+</div>

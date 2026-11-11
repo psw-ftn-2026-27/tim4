@@ -1,0 +1,56 @@
+<div class="card stack">
+  <p><a routerLink="/games/challenges">Nazad na izazove</a></p>
+
+  @if (quiz.isLoading()) {
+    <p>Učitavanje kviza...</p>
+  } @else if (notFound()) {
+    <p class="error">Kviz nije pronađen.</p>
+  } @else if (quiz.error()) {
+    <p class="error">Kviz nije učitan. Prijavite se kao administrator i pokušajte ponovo.</p>
+  } @else {
+    @if (quiz.value(); as loaded) {
+      @if (editing()) {
+        <h1>Izmena kviza</h1>
+
+        <app-quiz-form [quizForm]="form" [pending]="pending()" [error]="error()" (save)="save()" />
+
+        <button class="button" type="button" [disabled]="pending()" (click)="cancelEdit()">
+          Otkaži
+        </button>
+      } @else {
+        <h1>{{ loaded.name }}</h1>
+
+        <p class="meta">Stanje: {{ loaded.status }}</p>
+
+        <p>{{ loaded.instructions }}</p>
+
+        <h2>Pitanja</h2>
+
+        <ol class="stack">
+          @for (question of loaded.questions; track question.id) {
+            <li>
+              <p>{{ question.text }}</p>
+              <p class="meta">XP nagrada: {{ question.xpReward }}</p>
+              <ul>
+                @for (option of question.options; track $index) {
+                  <li>
+                    {{ option.text }}
+                    @if (option.isCorrect) {
+                      <strong>(tačan)</strong>
+                    }
+                  </li>
+                }
+              </ul>
+            </li>
+          }
+        </ol>
+
+        @if (loaded.status === 'Draft') {
+          <button class="button button--primary" type="button" (click)="startEdit(loaded)">
+            Izmeni
+          </button>
+        }
+      }
+    }
+  }
+</div>
