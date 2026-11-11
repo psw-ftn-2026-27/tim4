@@ -124,7 +124,7 @@ construct means adding a lesson, so treat it as a platform decision.
   writes, immediately awaited. No NgRx, no facades.
 - The one exception to this subset is `shared/map`, which may use `inject(ElementRef)`,
   `afterNextRender`, `effect()` and `DestroyRef` to drive Leaflet; modules use only its
-  inputs and output (see `src/app/shared/map/README.md`).
+  inputs and outputs (see `src/app/shared/map/README.md`).
 
 ## Styling
 

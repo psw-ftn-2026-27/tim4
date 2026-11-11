@@ -3,20 +3,26 @@
 `LocationMap` (`app-location-map`) je prikazna komponenta platforme koja prikazuje listu
 lokacija na mapi. Svaka lokacija je jedan pin, a klik na pin prikazuje njen naziv pored
 pina. Svi pinovi su uvek u vidnom polju. Kada je putanja uključena, pinovi su povezani
-linijom redom kojim su predati, a komponenta šalje dužinu putanje u kilometrima.
+linijom redom kojim su predati, a komponenta šalje dužinu putanje u kilometrima. Kada je
+izbor uključen, korisnik klikom na mapu bira jednu lokaciju, a stranica dobija njene
+koordinate.
 
 Mapa koristi biblioteku Leaflet i podlogu OpenStreetMap, besplatno i bez ključa. Timovi
-modula ne uče Leaflet: koriste samo ulaze i izlaz opisane ispod.
+modula ne uče Leaflet: koriste samo ulaze i izlaze opisane ispod.
 
 Živi primer je probna stranica `/map-demo` u `core/map-demo/`.
 
-## Ulazi i izlaz
+## Ulazi i izlazi
 
-| Ime                | Vrsta                       | Značenje                                                         |
-| ------------------ | --------------------------- | ---------------------------------------------------------------- |
-| `locations`        | ulaz, obavezan              | `MapLocation[]`: `latitude`, `longitude` i `name` svake lokacije |
-| `showPath`         | ulaz, podrazumevano `false` | da li linija spaja lokacije redom kojim su predate               |
-| `pathLengthChange` | izlaz, `number`             | dužina putanje u kilometrima, šalje se pri svakoj promeni ulaza  |
+| Ime                | Vrsta                       | Značenje                                                            |
+| ------------------ | --------------------------- | ------------------------------------------------------------------- |
+| `locations`        | ulaz, obavezan              | `MapLocation[]`: `latitude`, `longitude` i `name` svake lokacije    |
+| `showPath`         | ulaz, podrazumevano `false` | da li linija spaja lokacije redom kojim su predate                  |
+| `pathLengthChange` | izlaz, `number`             | dužina putanje u kilometrima, šalje se pri svakoj promeni ulaza     |
+| `selectable`       | ulaz, podrazumevano `false` | da li klik na mapu bira lokaciju                                    |
+| `selected`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: izabrani pin, ako postoji                 |
+| `selectedChange`   | izlaz, `MapCoordinates`     | koordinate mesta na koje je korisnik kliknuo, dok je izbor uključen |
+| `locationClick`    | izlaz, `number`             | pozicija u `locations` pina na koji je korisnik kliknuo             |
 
 Dužina putanje je zbir pravolinijskih razdaljina između uzastopnih lokacija; poslednja
 lokacija nije spojena sa prvom, a za manje od dve lokacije dužina je 0 km. Komponenta
@@ -68,10 +74,62 @@ export class TourMap {
 <p>Dužina putanje: {{ pathLength().toFixed(2) }} km</p>
 ```
 
+## Upotreba: izbor lokacije u formi
+
+Kada je `selectable` uključen, svaki klik na mapu šalje `selectedChange` sa koordinatama tog
+mesta: `latitude` i `longitude` u decimalnim stepenima (tip `MapCoordinates` izvozi
+`location-map.ts`). Komponenta sama ne pomera pin: izabrani pin je uvek ono što stranica
+preda kroz `selected`. Stranica zato čuva izabranu lokaciju u svojoj formi, upisuje u nju
+vrednost iz `selectedChange` i vraća je mapi kroz `selected`. Na mapi je najviše jedan
+izabrani pin; prikazuje se kao krug i razlikuje se od pinova iz `locations`, koji se ne
+pomeraju. Izabrani pin ne može da se ukloni, samo da se premesti.
+
+Za izmenu postojećeg entiteta stranica u formu upiše sačuvanu lokaciju, pa mapa počinje sa
+njom kao izabranim pinom. Proveru da li je lokacija izabrana radi forma stranice, običnim
+`required` validatorom, a ne komponenta. Kada `selectable` nije uključen, klik na mapu ne
+radi ništa.
+
+```ts
+import { FormField, form, required } from '@angular/forms/signals';
+import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
+
+@Component({ imports: [FormField, LocationMap] /* ... */ })
+export class CreateChallenge {
+  protected readonly otherChallenges = signal<MapLocation[]>([
+    { latitude: 45.2517, longitude: 19.8618, name: 'Skrivena lokacija na tvrđavi' },
+  ]);
+
+  protected readonly form = form(
+    signal({ name: '', location: null as MapCoordinates | null }),
+    (path) => {
+      required(path.name, { message: 'Naziv je obavezan.' });
+      required(path.location, { message: 'Izaberi lokaciju na mapi' });
+    },
+  );
+}
+```
+
+```html
+<app-location-map
+  [locations]="otherChallenges()"
+  [selectable]="true"
+  [selected]="form.location().value()"
+  (selectedChange)="form.location().value.set($event)"
+/>
+@for (message of form.location().errors(); track $index) {
+<p class="error">{{ message.message }}</p>
+}
+```
+
+Pri slanju komande stranica uzima `form.location().value()` i šalje njene `latitude` i
+`longitude` zajedno sa ostalim poljima forme. Sekcija "Izbor lokacije" na `/map-demo`
+pokazuje samu mapu za izbor, sa novom lokacijom i izmenom postojeće; forma iz ovog primera
+je posao stranice modula.
+
 ## Izuzetak od Angular podskupa
 
 Ova komponenta je jedini izuzetak od Angular podskupa iz `frontend/AGENTS.md`: da bi
 upravljala Leaflet mapom, koja živi van stabla komponenti, koristi `inject(ElementRef)`,
 `afterNextRender`, `effect()` i `DestroyRef`. Izuzetak je zatvoren u `shared/map`. Timovi
-modula koriste samo njene ulaze i izlaz i ne pišu ove konstrukcije u svojim modulima.
+modula koriste samo njene ulaze i izlaze i ne pišu ove konstrukcije u svojim modulima.
 Izmena komponente je platformska odluka.

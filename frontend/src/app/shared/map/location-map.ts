@@ -18,10 +18,18 @@ export interface MapLocation {
   name: string;
 }
 
+// A point the user picked on the map: latitude and longitude in decimal degrees.
+export interface MapCoordinates {
+  latitude: number;
+  longitude: number;
+}
+
 // The view shown when there are no locations: the centre of Novi Sad.
 const DEFAULT_CENTER: L.LatLngTuple = [45.2551, 19.8452];
 const DEFAULT_ZOOM = 13;
 const SINGLE_LOCATION_ZOOM = 15;
+const SELECTED_PIN_RADIUS = 14;
+const SELECTED_PANE = 'selected';
 
 // Leaflet's default pin finds its images through its own CSS, which breaks once the app is
 // bundled. angular.json copies the images to "leaflet/", and every pin uses this icon.
@@ -47,8 +55,17 @@ export class LocationMap {
   readonly locations = input.required<MapLocation[]>();
   readonly showPath = input(false);
 
+  // When true, a click on the map sends its coordinates through selectedChange.
+  readonly selectable = input(false);
+  // The selected pin. The page owns it: it sets this input from what selectedChange sends.
+  readonly selected = input<MapCoordinates | null>(null);
+
   // The length of the path through the locations, in kilometres, sent whenever the inputs change.
   readonly pathLengthChange = output<number>();
+  // The coordinates of every click on the map, sent only while the map is selectable.
+  readonly selectedChange = output<MapCoordinates>();
+  // The position in locations of the pin the user clicked.
+  readonly locationClick = output<number>();
 
   private readonly host = inject(ElementRef<HTMLElement>);
 
@@ -57,6 +74,12 @@ export class LocationMap {
 
   // Holds the pins and the line, so one call clears them before they are drawn again.
   private readonly layers = L.layerGroup();
+
+  // Holds the selected pin apart from the other pins, so moving it never refits the view.
+  private readonly selectedLayer = L.layerGroup();
+
+  // The accent colour from _tokens.scss, read once the map's element exists.
+  private selectedColor = '';
 
   constructor() {
     afterNextRender(() => {
@@ -67,6 +90,16 @@ export class LocationMap {
         maxZoom: 19,
       }).addTo(map);
       this.layers.addTo(map);
+      // The selected pin gets its own pane above the other pins, so a pin on the same place
+      // never hides it (Leaflet's pin pane has z-index 600).
+      map.createPane(SELECTED_PANE).style.zIndex = '650';
+      this.selectedLayer.addTo(map);
+      map.on('click', (event: L.LeafletMouseEvent) => {
+        if (this.selectable()) {
+          this.selectedChange.emit({ latitude: event.latlng.lat, longitude: event.latlng.lng });
+        }
+      });
+      this.selectedColor = getComputedStyle(element).getPropertyValue('--color-accent').trim();
       this.map.set(map);
     });
 
@@ -78,6 +111,14 @@ export class LocationMap {
       }
       this.draw(map, this.locations(), this.showPath());
       this.pathLengthChange.emit(pathLengthKm(this.locations()));
+    });
+
+    // The selected pin follows the selected input: a click only emits, and the page sets it.
+    effect(() => {
+      if (this.map() === undefined) {
+        return;
+      }
+      this.drawSelected(this.selected());
     });
 
     inject(DestroyRef).onDestroy(() => this.map()?.remove());
@@ -92,7 +133,10 @@ export class LocationMap {
     ]);
 
     locations.forEach((location, index) => {
-      L.marker(points[index], { icon: PIN_ICON }).bindPopup(location.name).addTo(this.layers);
+      L.marker(points[index], { icon: PIN_ICON })
+        .bindPopup(location.name)
+        .on('click', () => this.locationClick.emit(index))
+        .addTo(this.layers);
     });
 
     if (showPath && points.length > 1) {
@@ -106,5 +150,23 @@ export class LocationMap {
     } else {
       map.fitBounds(L.latLngBounds(points), { padding: [32, 32] });
     }
+  }
+
+  // A circle instead of a pin, so the selected place looks different from the other locations.
+  private drawSelected(selected: MapCoordinates | null): void {
+    this.selectedLayer.clearLayers();
+    if (selected === null) {
+      return;
+    }
+    L.circleMarker([selected.latitude, selected.longitude], {
+      pane: SELECTED_PANE,
+      // A click on the circle goes through to the map, so it still moves the selection.
+      interactive: false,
+      radius: SELECTED_PIN_RADIUS,
+      weight: 4,
+      color: this.selectedColor,
+      fillColor: this.selectedColor,
+      fillOpacity: 0.8,
+    }).addTo(this.selectedLayer);
   }
 }
