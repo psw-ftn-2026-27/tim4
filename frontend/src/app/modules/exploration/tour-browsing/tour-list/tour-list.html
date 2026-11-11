@@ -9,6 +9,19 @@
     </p>
   }
 
+  @if (usingPreferences()) {
+    <p>
+      Search is set to your preferences.
+      <a routerLink="/exploration/preferences">Change preferences</a>
+    </p>
+  } @else if (searchPreference(); as preference) {
+    <p>
+      <button class="button" type="button" (click)="usePreferences(preference)">
+        Use my preferences
+      </button>
+    </p>
+  }
+
   <form class="card stack" (submit)="search($event)">
     <div class="filters">
       <div class="field">
@@ -17,13 +30,24 @@
       </div>
 
       <div class="field">
-        <label for="difficulty-filter">Difficulty</label>
-        <select id="difficulty-filter" [formField]="form.difficulty">
-          <option value="">All</option>
-          <option value="Easy">Easy</option>
-          <option value="Moderate">Moderate</option>
-          <option value="Hard">Hard</option>
-        </select>
+        <span class="label">Difficulty</span>
+        <details class="dropdown">
+          <summary>{{ difficultySummary() }}</summary>
+          <div class="dropdown-options">
+            <div class="checkbox">
+              <input id="easy-filter" type="checkbox" [formField]="form.easy" />
+              <label for="easy-filter">Easy</label>
+            </div>
+            <div class="checkbox">
+              <input id="moderate-filter" type="checkbox" [formField]="form.moderate" />
+              <label for="moderate-filter">Moderate</label>
+            </div>
+            <div class="checkbox">
+              <input id="hard-filter" type="checkbox" [formField]="form.hard" />
+              <label for="hard-filter">Hard</label>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="field">
