@@ -11,6 +11,8 @@ internal static class TourSeed
     public static readonly Tour PublishableRiverside;
     public static readonly Tour PublishedVineyards;
     public static readonly Tour PublishedMonasteries;
+    public static readonly Tour PublishedVineyardsByBicycleEasy;
+    public static readonly Tour PublishedWineAndHeritageWalk;
 
     static TourSeed()
     {
@@ -24,7 +26,15 @@ internal static class TourSeed
         PublishedMonasteries = new(WellKnownUsers.Explorer, "Fruškogorski manastiri", "Tura obilazi tri fruškogorska manastira: Krušedol, Grgeteg i Novo Hopovo, sa pauzom za ručak u podnožju nacionalnog parka.", TourDifficulty.Hard, ["istorija"]);
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
         PublishedMonasteries.Publish();
+
+        PublishedVineyardsByBicycleEasy = new(WellKnownUsers.SecondExplorer, "Laka vožnja kroz vinograde", "Laka vožnja biciklom vodi ravnim putem kroz vinograde podno Fruške gore, uz kratko zadržavanje kod vidikovca i povratak istim putem do polazne tačke.", TourDifficulty.Easy, ["vino", "priroda"]);
+        PublishedVineyardsByBicycleEasy.AddTransportTime(TransportMode.Bicycle, 40);
+        PublishedVineyardsByBicycleEasy.Publish();
+
+        PublishedWineAndHeritageWalk = new(WellKnownUsers.SecondExplorer, "Vino i nasleđe Karlovaca", "Šetnja vodi od Saborne crkve i Patrijaršijskog dvora do Stražilova, uz obilazak starog podruma i priču o istoriji vinarstva u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "istorija"]);
+        PublishedWineAndHeritageWalk.AddTransportTime(TransportMode.Walking, 120);
+        PublishedWineAndHeritageWalk.Publish();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk];
 }
