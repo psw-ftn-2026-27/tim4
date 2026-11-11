@@ -29,7 +29,7 @@ frontend/src/
     _components.scss         global classes: button, card, form field, table
   app/
     core/                    auth (state, interceptor, login, register), home,
-                             app.routes.ts                                    [platform]
+                             design-preview (style guide), app.routes.ts      [platform]
     shared/
       util/
       api/                   shared types (PageResult, ProblemDetails),
@@ -142,6 +142,13 @@ Where a style goes, in order:
 Do not hand-roll a design system, do not add utility-class frameworks, do not introduce
 `shared/ui` wrappers unprompted. Visual consistency across modules is an open problem
 assigned to the platform team, and misalignment is an accepted learning experience.
+
+`/design-preview` (`core/design-preview/`, platform-owned) is the living style guide:
+the palette with its role names, every global class, and static sketches of screens
+with mock data. It is reached only by typing the URL, never linked from the app's
+navigation. Before writing a style, look there for a class that already fits. When a
+global class is added to `_components.scss`, show it on the overview page in the same
+change. The sketches never call the server and are never imported by a module.
 
 ## Conventions
 

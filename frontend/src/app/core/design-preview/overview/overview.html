@@ -68,7 +68,29 @@
         <input id="sample-price" type="number" value="-5" aria-invalid="true" />
         <p class="error">⚠ Cena ne može biti negativna.</p>
       </div>
+      <fieldset class="field-group">
+        <legend>Broj ljudi</legend>
+        <div class="field-pair">
+          <div class="field">
+            <label for="sample-min">Od</label>
+            <input id="sample-min" type="number" value="2" />
+          </div>
+          <div class="field">
+            <label for="sample-max">Do</label>
+            <input id="sample-max" type="number" value="8" />
+          </div>
+        </div>
+        <label class="choice" for="sample-free">
+          <input id="sample-free" type="checkbox" checked />
+          Besplatna tura
+        </label>
+      </fieldset>
     </div>
+    <p class="meta">
+      <code>.field</code> za polje, <code>.field-group</code> za grupu povezanih polja,
+      <code>.field-pair</code> za dva polja u redu, <code>.choice</code> za checkbox ili radio sa
+      tekstom.
+    </p>
 
     <h3>Poruke</h3>
     <p class="notice notice--success">✓ Tura je sačuvana.</p>
@@ -76,6 +98,10 @@
     <p class="error">⚠ Uplata nije uspela. Pokušajte ponovo.</p>
 
     <h3>Tabela</h3>
+    <p class="meta">
+      <code>.table</code> uvek unutar <code>.table-wrap</code>, da široka tabela skroluje na uskom
+      ekranu.
+    </p>
     <div class="table-wrap">
       <table class="table">
         <thead>
