@@ -1,0 +1,9 @@
+.table-scroll {
+  overflow-x: auto;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
