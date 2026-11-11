@@ -3,7 +3,10 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "schematicCollections": ["angular-eslint"]
+    "schematicCollections": [
+      "angular-eslint"
+    ],
+    "analytics": "1780d08b-7354-4d72-9b5c-4b6e9abe18ab"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -22,15 +25,21 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+            "allowedCommonJsDependencies": ["leaflet"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "marker-*.png",
+                "input": "node_modules/leaflet/dist/images",
+                "output": "leaflet"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["node_modules/leaflet/dist/leaflet.css", "src/styles.scss"]
           },
           "configurations": {
             "production": {

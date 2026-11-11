@@ -122,6 +122,9 @@ construct means adding a lesson, so treat it as a platform decision.
   after a command.
 - No RxJS in student code. `Observable` appears only as the return type of `HttpClient`
   writes, immediately awaited. No NgRx, no facades.
+- The one exception to this subset is `shared/map`, which may use `inject(ElementRef)`,
+  `afterNextRender`, `effect()` and `DestroyRef` to drive Leaflet; modules use only its
+  inputs and output (see `src/app/shared/map/README.md`).
 
 ## Styling
 
