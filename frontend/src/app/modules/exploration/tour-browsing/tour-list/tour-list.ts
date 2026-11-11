@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
@@ -9,13 +9,16 @@ import {
   PublishedTourSearchDto,
   TourDifficulty,
   TourDto,
+  TourPreferenceDto,
   TransportMode,
 } from '../../api/exploration-api-types';
 import { TourCard } from '../tour-card/tour-card';
 
 const EMPTY_FORM = {
   name: '',
-  difficulty: '' as TourDifficulty | '',
+  easy: false,
+  moderate: false,
+  hard: false,
   tags: '',
   transport: '' as TransportMode | '',
   sortByDifficulty: '' as DifficultySort | '',
@@ -23,7 +26,7 @@ const EMPTY_FORM = {
 
 const NO_CRITERIA: PublishedTourSearchDto = {
   name: null,
-  difficulty: null,
+  difficulties: null,
   tags: null,
   transport: null,
   sortByDifficulty: null,
@@ -48,19 +51,76 @@ export class TourList {
     () => `/api/exploration/tours/published?${this.toQuery(this.applied())}`,
   );
 
+  // The server answers 204 No Content when the tourist has no preference, so the value is null.
+  private readonly preference = httpResource<TourPreferenceDto | null>(
+    () => '/api/exploration/preferences',
+  );
+
+  // The preference the "Use my preferences" button applies. Without one, when the tourist chose
+  // to open the search with all tours, or when loading it failed (for example 403 for an
+  // administrator), there is no button and no error message.
+  protected readonly searchPreference = computed(() => {
+    if (this.preference.error()) {
+      return null;
+    }
+    const preference = this.preference.value();
+    return preference?.openSearchWithPreferences ? preference : null;
+  });
+
+  // The text of the closed difficulty dropdown. Nothing checked means all difficulties.
+  protected readonly difficultySummary = computed(() => {
+    const checked: TourDifficulty[] = [];
+    if (this.form.easy().value()) {
+      checked.push('Easy');
+    }
+    if (this.form.moderate().value()) {
+      checked.push('Moderate');
+    }
+    if (this.form.hard().value()) {
+      checked.push('Hard');
+    }
+    return checked.length === 0 ? 'All' : checked.join(', ');
+  });
+
+  // True after "Use my preferences" until "Clear filters".
+  protected readonly usingPreferences = signal(false);
+
   protected search(event: Event): void {
     event.preventDefault();
     this.applied.set(this.toDto());
   }
 
+  protected usePreferences(preference: TourPreferenceDto): void {
+    this.form().reset({
+      ...EMPTY_FORM,
+      easy: preference.difficulties.includes('Easy'),
+      moderate: preference.difficulties.includes('Moderate'),
+      hard: preference.difficulties.includes('Hard'),
+      tags: preference.tags.join(', '),
+      transport: preference.transport ?? '',
+    });
+    this.applied.set(this.toDto());
+    this.usingPreferences.set(true);
+  }
+
   protected clear(): void {
     this.form().reset({ ...EMPTY_FORM });
     this.applied.set(NO_CRITERIA);
+    this.usingPreferences.set(false);
   }
 
   private toDto(): PublishedTourSearchDto {
     const name = this.form.name().value().trim();
-    const difficulty = this.form.difficulty().value();
+    const difficulties: TourDifficulty[] = [];
+    if (this.form.easy().value()) {
+      difficulties.push('Easy');
+    }
+    if (this.form.moderate().value()) {
+      difficulties.push('Moderate');
+    }
+    if (this.form.hard().value()) {
+      difficulties.push('Hard');
+    }
     const tags = this.form
       .tags()
       .value()
@@ -71,7 +131,7 @@ export class TourList {
     const sortByDifficulty = this.form.sortByDifficulty().value();
     return {
       name: name === '' ? null : name,
-      difficulty: difficulty === '' ? null : difficulty,
+      difficulties: difficulties.length === 0 ? null : difficulties,
       tags: tags.length === 0 ? null : tags,
       transport: transport === '' ? null : transport,
       sortByDifficulty: sortByDifficulty === '' ? null : sortByDifficulty,
@@ -84,8 +144,8 @@ export class TourList {
     if (search.name !== null) {
       query.append('name', search.name);
     }
-    if (search.difficulty !== null) {
-      query.append('difficulty', search.difficulty);
+    for (const difficulty of search.difficulties ?? []) {
+      query.append('difficulties', difficulty);
     }
     for (const tag of search.tags ?? []) {
       query.append('tags', tag);

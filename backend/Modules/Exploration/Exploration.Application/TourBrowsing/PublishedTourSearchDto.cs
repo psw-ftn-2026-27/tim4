@@ -4,7 +4,7 @@ namespace Exploration.Application.TourBrowsing;
 
 public sealed record PublishedTourSearchDto(
     string? Name,
-    TourDifficulty? Difficulty,
+    List<TourDifficulty>? Difficulties,
     List<string>? Tags,
     TransportMode? Transport,
     DifficultySort? SortByDifficulty);

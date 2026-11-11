@@ -1,12 +1,50 @@
+// Each colour is named after its role, never after its hue. Pages use these names only.
+// Every text/background pair below reaches at least 4.5:1 contrast (WCAG AA).
 :root {
-  --color-bg: #f7f7f8;
-  --color-surface: #ffffff;
-  --color-border: #e2e2e6;
-  --color-text: #1c1c1f;
-  --color-text-muted: #5c5c66;
-  --color-accent: #2f6df6;
+  // Base: parchment and ink
+  --color-bg: #f6f1e7;
+  --color-surface: #fffdf8;
+  --color-border: #e0d6c2;
+  --color-control-border: #8c8170;
+  --color-text: #2b2a26;
+  --color-text-muted: #635c50;
+
+  // Accent: forest green, the way through the application
+  --color-accent: #2d6a4f;
   --color-accent-text: #ffffff;
-  --color-danger: #c02626;
+  --color-accent-soft: #e4efe8;
+
+  // Danger: failures and actions that cannot be undone
+  --color-danger: #b3261e;
+  --color-danger-text: #ffffff;
+
+  // Success
+  --color-success-bg: #e3f1e7;
+  --color-success-text: #1e5a3a;
+
+  // Muted: reversed payments, archived and retired items
+  --color-muted-bg: #ebe5d9;
+  --color-muted-text: #635c50;
+
+  // Gamification: EC (coins) and XP (experience)
+  --color-ec-bg: #fbefc8;
+  --color-ec-text: #7a5300;
+  --color-xp-bg: #ece4fb;
+  --color-xp-text: #5b3fa8;
+
+  // States of a tour and of a challenge (archived and retired use the muted pair)
+  --color-state-draft-bg: #dfe8ee;
+  --color-state-draft-text: #2f4f66;
+  --color-state-published-bg: #2d6a4f;
+  --color-state-published-text: #ffffff;
+
+  // Difficulty scale
+  --color-difficulty-easy-bg: #e6eed8;
+  --color-difficulty-easy-text: #3d5a1a;
+  --color-difficulty-moderate-bg: #f5e3c8;
+  --color-difficulty-moderate-text: #7d4a12;
+  --color-difficulty-hard-bg: #f4d9cf;
+  --color-difficulty-hard-text: #8a2e14;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
