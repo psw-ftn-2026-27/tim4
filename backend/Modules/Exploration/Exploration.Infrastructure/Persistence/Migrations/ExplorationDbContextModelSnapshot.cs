@@ -24,6 +24,26 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Exploration.Domain.TourPreferences.TourPreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("OpenSearchWithPreferences")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TouristId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TouristId")
+                        .IsUnique();
+
+                    b.ToTable("TourPreferences", "exploration");
+                });
+
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
                 {
                     b.Property<Guid>("Id")
@@ -62,6 +82,36 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tours", "exploration");
+                });
+
+            modelBuilder.Entity("Exploration.Domain.TourPreferences.TourPreference", b =>
+                {
+                    b.OwnsOne("Exploration.Domain.TourPreferences.PreferenceCriteria", "Criteria", b1 =>
+                        {
+                            b1.Property<Guid>("TourPreferenceId");
+
+                            b1.PrimitiveCollection<string>("Difficulties")
+                                .IsRequired();
+
+                            b1.PrimitiveCollection<string>("Tags")
+                                .IsRequired();
+
+                            b1.Property<string>("Transport");
+
+                            b1.HasKey("TourPreferenceId");
+
+                            b1.ToTable("TourPreferences", "exploration");
+
+                            b1
+                                .ToJson("Criteria")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourPreferenceId");
+                        });
+
+                    b.Navigation("Criteria")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
