@@ -1,0 +1,26 @@
+<section aria-labelledby="steps-title">
+  <div class="section-head reveal">
+    <p class="kicker">Kako funkcioniše</p>
+    <h2 id="steps-title">Od mape do priče u tri koraka</h2>
+  </div>
+  <div class="steps-wrap">
+    <svg class="route" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 8 C 25 -4, 25 14, 50 6 S 75 -4, 100 6" vector-effect="non-scaling-stroke" />
+    </svg>
+    <ol class="steps">
+      @for (step of steps; track step.title) {
+        <li class="step reveal">
+          <div class="step__art">
+            <img [src]="'/images/ilustracije/' + step.illustration + '.svg'" alt="" />
+          </div>
+          <div>
+            <h3>
+              <span class="step__number" aria-hidden="true">{{ $index + 1 }}</span> {{ step.title }}
+            </h3>
+            <p>{{ step.text }}</p>
+          </div>
+        </li>
+      }
+    </ol>
+  </div>
+</section>

@@ -1,7 +1,7 @@
+// The page uses the whole window width; only the side margin grows with the screen.
+// Forms and text set their own max-width where long lines would hurt reading.
 .container {
-  max-width: var(--container-width);
-  margin-inline: auto;
-  padding-inline: var(--space-4);
+  padding-inline: max(var(--space-4), 3vw);
 }
 
 .stack > * + * {

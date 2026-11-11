@@ -1,0 +1,97 @@
+<section aria-labelledby="welcome-title">
+  <div class="welcome">
+    <span class="avatar" aria-hidden="true">{{ name().charAt(0).toUpperCase() }}</span>
+    <div>
+      <h1 id="welcome-title">Zdravo, {{ name() }}!</h1>
+      <p>Gde nastavljaš danas?</p>
+    </div>
+  </div>
+
+  <div class="goals" [class.goals--three]="isAdmin()">
+    <div class="goal goal--explore">
+      <img class="goal__art" src="/images/ilustracije/finding-the-way.svg" alt="" />
+      <div class="goal__head">
+        <p class="goal__kicker">Istraži</p>
+        <h2>Pronađi sledeću turu</h2>
+        <p>Pretraži ture po mestu, težini i prevozu.</p>
+      </div>
+      <div class="goal__links">
+        <a class="goal__main" routerLink="/exploration">
+          <span>Pretraži ture</span><span class="arrow" aria-hidden="true">→</span>
+        </a>
+        @if (!isAdmin()) {
+          <a routerLink="/exploration/preferences">
+            <span>Moje preference <small>· šta voliš da obilaziš</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        }
+      </div>
+    </div>
+
+    <div class="goal goal--play">
+      <img class="goal__art" src="/images/ilustracije/winner.svg" alt="" />
+      <div class="goal__head">
+        <p class="goal__kicker">Igraj</p>
+        <h2>Izazovi na mapi</h2>
+        <p>Kviz, skrivena lokacija i izazovi sa klubom.</p>
+      </div>
+      <div class="goal__links">
+        <a class="goal__main" routerLink="/games">
+          <span>Izazovi</span><span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+
+    @if (!isAdmin()) {
+      <div class="goal goal--create">
+        <img class="goal__art" src="/images/ilustracije/adventure-map.svg" alt="" />
+        <div class="goal__head">
+          <p class="goal__kicker">Stvaraj</p>
+          <h2>Ispričaj svoje mesto</h2>
+          <p>Sastavi turu od ključnih tačaka.</p>
+        </div>
+        <div class="goal__links">
+          <a class="goal__main" routerLink="/exploration/create">
+            <span>Nova tura</span><span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a routerLink="/exploration/mine">
+            <span>Moje ture</span><span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    }
+
+    <div class="goal goal--community">
+      <img class="goal__art" src="/images/ilustracije/my-current-location.svg" alt="" />
+      <div class="goal__head">
+        <p class="goal__kicker">Zajednica</p>
+        <h2>Blogovi putnika</h2>
+        <p>Čitaj utiske i piši svoje.</p>
+      </div>
+      <div class="goal__links">
+        <a class="goal__main" routerLink="/social">
+          <span>Blogovi</span><span class="arrow" aria-hidden="true">→</span>
+        </a>
+        @if (!isAdmin()) {
+          <a routerLink="/social/create">
+            <span>Napiši blog</span><span class="arrow" aria-hidden="true">→</span>
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (!isAdmin()) {
+    <p class="tip">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 18h6" />
+        <path d="M10 22h4" />
+        <path d="M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2Z" />
+      </svg>
+      <span
+        ><b>Savet:</b> sačuvaj preference, pa će pretraga tura odmah krenuti od onoga što
+        voliš.</span
+      >
+    </p>
+  }
+</section>
