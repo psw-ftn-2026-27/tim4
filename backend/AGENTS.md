@@ -20,10 +20,14 @@ backend/
   Host.Tests/                      ArchUnitNET architecture tests            [platform]
   Shared/
     Shared.Domain/                 Entity, AggregateRoot, PageResult,
-                                   DomainException, NotFoundException       [platform]
+                                   DomainException, NotFoundException,
+                                   ImageFile (JPEG/PNG, at most 5 MB)        [platform]
+    Shared.Domain.Tests/           Unit/ tests of Shared.Domain              [platform]
+    Shared.Application/            IImageStorage                             [platform]
     Shared.Api/                    ClaimsPrincipal.GetUserId()               [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
-                                   module, per-schema migrations history)    [platform]
+                                   module, per-schema migrations history),
+                                   disk IImageStorage, AddImageStorage       [platform]
     Shared.Tests/                  ExplorerApiFactory (per-assembly test DB,
                                    reseed, test JWTs), WellKnownUsers        [platform]
   Modules/
@@ -52,8 +56,8 @@ The compiler enforces the layering instead of a reviewer having to spot it.
 ## Reference rules
 
 - `Domain` references `Shared.Domain` and nothing else. No EF Core, no ASP.NET.
-- `Application` references `Domain` and its own `Contracts`. Never `Infrastructure`,
-  never ASP.NET.
+- `Application` references `Domain`, its own `Contracts`, and `Shared.Application`.
+  Never `Infrastructure`, never ASP.NET.
 - `Contracts` references nothing. Primitives, IDs, and contract types built from them.
 - `Api` references `Application` and `Shared.Api`, plus
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
@@ -190,6 +194,24 @@ enforced in aggregate constructors and methods, which throw `DomainException` (o
 middleware in `Host.Api` maps `DomainException` to 400, `NotFoundException` to 404, and
 anything else to a logged 500, all as ProblemDetails. Services and controllers contain no
 try/catch and no validation code.
+
+## Image upload
+
+The image checks (size, format by content signature, server-assigned file name) exist
+once, in the platform; a module never writes them again. A module that accepts an image:
+
+1. The controller receives the image as `IFormFile` in the same request as the module's
+   command, copies it to a `byte[]`, and passes the bytes to the service, because
+   `Application` must not name an ASP.NET type.
+2. The command service builds `new ImageFile(bytes)` (it throws `DomainException`, which
+   becomes 400), calls `IImageStorage.SaveAsync(image)` (injected like a repository), and
+   gets back the image address.
+3. The aggregate stores that address as a plain `string`; `ImageFile` is never persisted.
+   The service saves once, as for any command.
+
+`Host.Api` serves stored images as static files under `/images` without any application
+code, and caps the request body slightly above 5 MB. Whether an image is required, and
+deleting images no longer used, are decisions of the module.
 
 ## Events
 

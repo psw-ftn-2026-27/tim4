@@ -1,0 +1,33 @@
+<label
+  class="upload"
+  [class.upload--dragover]="dragging()"
+  [class.upload--preview]="file() && !dragging()"
+  [class.upload--error]="error() && !dragging()"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave()"
+  (drop)="onDrop($event)"
+>
+  @if (dragging()) {
+    <span>⇩ Pustite sliku da je dodate</span>
+    <span class="meta">JPG ili PNG, najviše 5 MB</span>
+  } @else if (file()) {
+    @if (preview()) {
+      <img [src]="preview()" alt="Pregled izabrane slike" />
+    }
+    <span>✓ {{ file()?.name }} ({{ sizeText(file()?.size ?? 0) }})</span>
+    <span class="meta">Kliknite da zamenite sliku</span>
+  } @else {
+    <span>⇪ Prevucite sliku ovde ili kliknite da izaberete</span>
+    @if (error()) {
+      <span class="error">⚠ {{ error() }}</span>
+    } @else {
+      <span class="meta">JPG ili PNG, najviše 5 MB</span>
+    }
+  }
+  <input
+    type="file"
+    accept="image/jpeg,image/png"
+    [attr.aria-invalid]="error() ? 'true' : null"
+    (change)="onChange($event)"
+  />
+</label>

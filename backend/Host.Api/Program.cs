@@ -8,14 +8,19 @@ using Host.Api;
 using Identity.Api;
 using Identity.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Payment.Api;
 using Payment.Infrastructure;
 using Scalar.AspNetCore;
+using Shared.Infrastructure.Images;
 using Social.Api;
 using Social.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Slightly above the 5 MB image limit, so a larger request is cut off before it is fully received.
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 6 * 1024 * 1024);
 
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 
@@ -47,6 +52,11 @@ builder.Services
     .AddSocialModule(builder.Configuration)
     .AddPaymentModule(builder.Configuration);
 
+var imageFolder = Path.Combine(builder.Environment.ContentRootPath, builder.Configuration["ImageStorage:Folder"]!);
+var imageRequestPath = builder.Configuration["ImageStorage:RequestPath"]!;
+Directory.CreateDirectory(imageFolder);
+builder.Services.AddImageStorage(imageFolder, imageRequestPath);
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -56,6 +66,12 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options => options.AddPreferredSecuritySchemes("Bearer"));
 }
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imageFolder),
+    RequestPath = imageRequestPath
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -24,7 +24,7 @@ Datoteka je u vlasništvu platformskog tima. Menja se kada se u sistem uvodi nov
 
 ## Host.Api
 
-Sadrži projekat koji predstavlja ulaznu tačku i kompozicioni koren cele aplikacije. To je jedini projekat koji se pokreće. U njemu se rešava registracija svih modula i osnovna konfiguracija procesa obrade HTTP odgovora i zahteva (provera JWT tokena, middleware koji izuzetke pretvara u HTTP odgovore). Tu su i konfiguracione datoteke `appsettings.json` i `appsettings.Development.json`, u kojima su podaci za povezivanje sa bazom i ključ za potpisivanje tokena.
+Sadrži projekat koji predstavlja ulaznu tačku i kompozicioni koren cele aplikacije. To je jedini projekat koji se pokreće. U njemu se rešava registracija svih modula i osnovna konfiguracija procesa obrade HTTP odgovora i zahteva (provera JWT tokena, middleware koji izuzetke pretvara u HTTP odgovore). Tu se postavlja i najveća veličina tela zahteva i isporučuju sačuvane slike kao statički fajlovi pod adresom `/images`. Tu su i konfiguracione datoteke `appsettings.json` i `appsettings.Development.json`, u kojima su podaci za povezivanje sa bazom i ključ za potpisivanje tokena.
 
 Projekat je u vlasništvu platformskog tima. Menja se kada se u sistem dodaje nov modul koji treba registrovati ili kada se menja ponašanje koje važi za celu aplikaciju, na primer obrada grešaka ili provera tokena.
 
@@ -36,13 +36,15 @@ Projekat je u vlasništvu platformskog tima. Menja se kada se menja arhitektura 
 
 ## Shared
 
-Sadrži zajednički kod koji koriste svi moduli. Podeljen je na četiri projekta:
+Sadrži zajednički kod koji koriste svi moduli. Podeljen je na šest projekata:
 - `Shared.Api` sadrži pomoćni kod za kontrolerski sloj (npr. metodu `GetUserId`, kojom kontroler čita identifikator prijavljenog korisnika iz tokena).
-- `Shared.Domain` sadrži klase `Entity` i `AggregateRoot`, koje nasleđuju domenske klase (vrednosni objekat se modeluje kroz C# record). Izuzecima `DomainException` i `NotFoundException` domen prijavljuje narušavanje pravila, odnosno nepostojanje traženog podatka. Klasa `PageResult` je oblik rezultata upita koji vraća stranicu liste.
-- `Shared.Infrastructure` sadrži pomoćni kod za sloj infrastrukture (npr. metoda `AddModuleDbContext`, koja registruje bazu podataka modula tako da modul dobije sopstvenu šemu i sopstvenu tabelu istorije migracija).
+- `Shared.Domain` sadrži klase `Entity` i `AggregateRoot`, koje nasleđuju domenske klase (vrednosni objekat se modeluje kroz C# record). Izuzecima `DomainException` i `NotFoundException` domen prijavljuje narušavanje pravila, odnosno nepostojanje traženog podatka. Klasa `PageResult` je oblik rezultata upita koji vraća stranicu liste. Vrednosni objekat `ImageFile` predstavlja poslatu sliku i odbija prazan fajl, fajl veći od 5 MB i sadržaj čiji potpis nije JPEG ni PNG.
+- `Shared.Domain.Tests` sadrži jedinične testove za `Shared.Domain` (direktorijum `Unit`).
+- `Shared.Application` sadrži interfejs `IImageStorage`, kojim aplikacioni servis modula čuva `ImageFile` i dobija adresu slike. Kako modul uključuje slanje slike opisano je u odeljku Image upload dokumenta `backend/AGENTS.md`.
+- `Shared.Infrastructure` sadrži pomoćni kod za sloj infrastrukture (npr. metoda `AddModuleDbContext`, koja registruje bazu podataka modula tako da modul dobije sopstvenu šemu i sopstvenu tabelu istorije migracija) i implementaciju `IImageStorage`, koja sliku upisuje na disk pod imenom koje sama dodeljuje.
 - `Shared.Tests` sadrži pomoćni kod za integracione testove: klasu `ExplorerApiFactory`, koja svakom test projektu obezbeđuje sopstvenu testnu bazu (obara je i ponovo kreira jednom po pokretanju testova), metodu `Reseed` za vraćanje podataka na početno stanje pre svakog testa, izdavanje test tokena (`CreateClientFor`), metodu `CreateContext`, kroz koju provera čita bazu, i klasu `WellKnownUsers` sa fiksnim identifikatorima korisnika koje testovi koriste.
 
-Sva četiri projekta su u vlasništvu platformskog tima. Menjaju se samo kada se pojavi potreba koja je zaista zajednička za više modula. Premeštanje koda u zajedničke projekte je odluka koja se donosi u dogovoru sa platformskim timom, jer svaki dodatak ovde postaje zavisnost svih modula.
+Svih šest projekata je u vlasništvu platformskog tima. Menjaju se samo kada se pojavi potreba koja je zaista zajednička za više modula. Premeštanje koda u zajedničke projekte je odluka koja se donosi u dogovoru sa platformskim timom, jer svaki dodatak ovde postaje zavisnost svih modula.
 
 ## Modules
 

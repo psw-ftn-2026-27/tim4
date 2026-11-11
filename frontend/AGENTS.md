@@ -31,7 +31,8 @@ frontend/src/
     core/                    auth (state, interceptor, login, register), home,
                              design-preview (style guide), app.routes.ts      [platform]
     shared/
-      util/
+      util/                  serverMessage                                     [platform]
+      image-upload/          image field for a form, see "Image upload" below  [platform]
       api/                   shared types (PageResult, ProblemDetails),
                              mirror the server, no client-only fields          [platform]
     modules/
@@ -149,6 +150,26 @@ with mock data. It is reached only by typing the URL, never linked from the app'
 navigation. Before writing a style, look there for a class that already fits. When a
 global class is added to `_components.scss`, show it on the overview page in the same
 change. The sketches never call the server and are never imported by a module.
+
+## Image upload
+
+`shared/image-upload/` is the one image field in the app. It checks size (at most 5 MB)
+and format (JPEG or PNG) before anything is sent, shows the reason when it rejects a
+file, and shows a client-only preview. A module never writes these checks again; the
+server repeats them regardless (`backend/AGENTS.md`, "Image upload"). A page that takes
+an image:
+
+1. Places `<app-image-upload (imageChange)="image.set($event)" />` inside its form and
+   keeps the emitted `File | null` in a signal, `image = signal<File | null>(null)`.
+2. On submit calls its group's service, which sends the form fields and the image
+   together in one request: build a `FormData`, `append` each field and the file, and
+   post it with `HttpClient` and `firstValueFrom` like any command. The image is sent
+   only then, never on selection.
+3. A server rejection shows through `serverMessage` above the button like any command
+   error; the entered values and the chosen image stay.
+
+The server returns the image address (`/images/<guid>.jpg`), which the DTO carries as a
+`string` and the template shows with `<img [src]>`.
 
 ## Conventions
 
