@@ -148,7 +148,7 @@
       @if (publishForm.pricingType().value() === 'Paid') {
         <div class="field">
           <label for="price">Price</label>
-          <input id="price" type="number" [formField]="publishForm.amount" />
+          <input id="price" type="number" step="any" [formField]="publishForm.amount" />
         </div>
       }
 
