@@ -28,7 +28,7 @@ public sealed class Tour : AggregateRoot
     }
 
     public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags,
-        int minGroupSize, int maxGroupSize)
+        RecommendedGroupSize recommendedGroupSize)
         : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -43,13 +43,17 @@ public sealed class Tour : AggregateRoot
         {
             throw new DomainException("A tour requires at least one tag.");
         }
+        if (recommendedGroupSize is null)
+        {
+            throw new DomainException("A tour requires a recommended group size.");
+        }
 
         AuthorId = authorId;
         Name = name;
         Description = description;
         Difficulty = difficulty;
         Tags = tags;
-        RecommendedGroupSize = new RecommendedGroupSize(minGroupSize, maxGroupSize);
+        RecommendedGroupSize = recommendedGroupSize;
         Status = TourStatus.Draft;
     }
 
