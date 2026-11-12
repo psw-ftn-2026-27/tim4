@@ -161,6 +161,9 @@ an image:
 
 1. Places `<app-image-upload (imageChange)="image.set($event)" />` inside its form and
    keeps the emitted `File | null` in a signal, `image = signal<File | null>(null)`.
+   The field emits `null` when a file is rejected or the user removes it with its
+   "Ukloni sliku" button. The field knows only a newly chosen file: an edit page shows
+   the already stored image itself, with `<img [src]>` of its address above the field.
 2. On submit calls its group's service, which sends the form fields and the image
    together in one request: build a `FormData`, `append` each field and the file, and
    post it with `HttpClient` and `firstValueFrom` like any command. The image is sent

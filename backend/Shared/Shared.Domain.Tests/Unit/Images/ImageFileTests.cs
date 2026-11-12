@@ -40,6 +40,16 @@ public class ImageFileTests
     }
 
     [Fact]
+    public void Image_of_exactly_5_mb_is_accepted()
+    {
+        var content = ContentStartingWith(JpegSignature, 5 * 1024 * 1024);
+
+        var image = new ImageFile(content);
+
+        image.Content.Should().HaveCount(5 * 1024 * 1024);
+    }
+
+    [Fact]
     public void Image_larger_than_5_mb_is_rejected()
     {
         var content = ContentStartingWith(JpegSignature, 5 * 1024 * 1024 + 1);

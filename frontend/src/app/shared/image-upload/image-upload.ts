@@ -12,7 +12,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png'];
   templateUrl: './image-upload.html',
 })
 export class ImageUpload {
-  // The accepted file, or null when the chosen file was rejected.
+  // The accepted file, or null when the chosen file was rejected or removed.
   readonly imageChange = output<File | null>();
 
   protected readonly file = signal<File | null>(null);
@@ -48,6 +48,14 @@ export class ImageUpload {
     if (dropped) {
       this.choose(dropped);
     }
+  }
+
+  // Returns the field to its initial state, for a form where the image is optional.
+  protected remove(): void {
+    this.file.set(null);
+    this.preview.set(null);
+    this.error.set(null);
+    this.imageChange.emit(null);
   }
 
   protected sizeText(size: number): string {

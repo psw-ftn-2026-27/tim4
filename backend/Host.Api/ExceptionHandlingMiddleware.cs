@@ -29,6 +29,12 @@ public sealed class ExceptionHandlingMiddleware
             await Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: exception.Message)
                 .ExecuteAsync(context);
         }
+        catch (BadHttpRequestException exception)
+        {
+            // Raised by Kestrel, e.g. 413 when a request body is larger than the limit in Program.cs.
+            await Results.Problem(statusCode: exception.StatusCode, title: exception.Message)
+                .ExecuteAsync(context);
+        }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Unhandled exception for {Method} {Path}", context.Request.Method, context.Request.Path);

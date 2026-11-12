@@ -31,3 +31,7 @@
     (change)="onChange($event)"
   />
 </label>
+@if (file()) {
+  <!-- Outside the label, so a click does not open the file dialog. -->
+  <button type="button" class="button" (click)="remove()">Ukloni sliku</button>
+}
