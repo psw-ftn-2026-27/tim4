@@ -102,13 +102,16 @@ services as an explicit `Guid userId` parameter. There is no ambient current-use
 abstraction.
 
 A module that needs to know who the users are goes through `IIdentityApi` in
-`Identity.Contracts`: `GetExplorersAsync()` returns every user with the `explorer` role as
-`ExplorerSummary` (ID and email only, sorted by email), and `ExplorerExistsAsync(userId)`
-is true only for an explorer. The contract is read-only and has no HTTP endpoint. A module
-injects `IIdentityApi` into its queries class like any other module's contract and maps
-`ExplorerSummary` into its own DTO. Because Identity has no Application layer, the
-implementation is an internal class in `Identity/Infrastructure/` that projects over
-`IdentityModuleDbContext`.
+`Identity.Contracts`: `GetExplorersAsync(page, pageSize)` returns one page of the users
+with the `explorer` role as `ExplorerPage` (items of `ExplorerSummary`, ID and email only,
+sorted by email, plus the total count; clamped like any list query), and
+`ExplorerExistsAsync(userId)` is true only for an explorer. The contract is read-only and
+has no HTTP endpoint. A module injects `IIdentityApi` into its queries class or command
+service like any other module's contract and maps `ExplorerSummary` into its own DTO. The
+reference to `Identity.Contracts` sits in the module's `Application` project and is added
+by the platform team on request; `Payment.Application` already has it. Because Identity
+has no Application layer, the implementation is an internal class in
+`Identity/Infrastructure/` that projects over `IdentityModuleDbContext`.
 
 Migrations are added with `dotnet ef` (tool manifest in `.config/`), e.g.
 `dotnet ef migrations add X --project Modules/Identity/Identity --startup-project Host.Api --context IdentityModuleDbContext`.
@@ -350,7 +353,10 @@ with the base class's `JsonOptions`.
 mirror the application layer's use-case groups, with `<Group>CommandTests` and
 `<Group>QueryTests` side by side. Feature-module tests authenticate with
 `Factory.CreateClientFor(userId, role)` and `WellKnownUsers`; only `Identity.Tests`
-uses the real register and login endpoints.
+uses the real register and login endpoints. `WellKnownUsers` carries the IDs of demo users
+that `IdentityModuleInitializer` creates in every test database, so a test that reaches
+`IIdentityApi` finds them as real explorers and an administrator; a module never seeds
+the `identity` schema itself.
 
 **Test doubles.** Only for an out-of-process dependency whose effects other systems see
 and that has no test instance. Never for the database or the module's own classes.

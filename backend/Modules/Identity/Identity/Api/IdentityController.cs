@@ -31,7 +31,7 @@ public sealed class IdentityController : ControllerBase
             return Problem(statusCode: StatusCodes.Status400BadRequest, title: reasons);
         }
 
-        await _userManager.AddToRoleAsync(user, "explorer");
+        await _userManager.AddToRoleAsync(user, RoleNames.Explorer);
 
         return new AccessTokenDto(_tokenFactory.CreateToken(user, await _userManager.GetRolesAsync(user)));
     }

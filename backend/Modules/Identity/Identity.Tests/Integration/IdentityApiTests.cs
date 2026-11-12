@@ -17,17 +17,12 @@ public sealed class IdentityApiTests : BaseIntegrationTest
     {
         using var scope = Factory.Services.CreateScope();
         var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
-        var explorerIds = UserSeed.All.OfType<IdentityUserRole<Guid>>()
-            .Where(userRole => userRole.RoleId == RoleSeed.Explorer.Id)
-            .Select(userRole => userRole.UserId);
-        var expected = UserSeed.All.OfType<ApplicationUser>()
-            .Where(user => explorerIds.Contains(user.Id))
-            .Select(user => new ExplorerSummary(user.Id, user.Email!));
 
-        var explorers = await identityApi.GetExplorersAsync();
+        var explorers = await identityApi.GetExplorersAsync(1, 100);
 
-        explorers.Should().BeEquivalentTo(expected);
-        explorers.Should().NotContain(explorer => explorer.Id == UserSeed.Administrator.Id);
+        explorers.Items.Should().BeEquivalentTo(SeededExplorers());
+        explorers.Items.Should().NotContain(explorer => explorer.Id == UserSeed.Administrator.Id);
+        explorers.TotalCount.Should().Be(SeededExplorers().Count());
     }
 
     [Fact]
@@ -36,9 +31,22 @@ public sealed class IdentityApiTests : BaseIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
 
-        var explorers = await identityApi.GetExplorersAsync();
+        var explorers = await identityApi.GetExplorersAsync(1, 100);
 
-        explorers.Should().BeInAscendingOrder(explorer => explorer.Email, StringComparer.Ordinal);
+        explorers.Items.Should().BeInAscendingOrder(explorer => explorer.Email, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public async Task Explorers_are_listed_page_by_page()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
+        var secondByEmail = SeededExplorers().OrderBy(explorer => explorer.Email, StringComparer.Ordinal).ElementAt(1);
+
+        var explorers = await identityApi.GetExplorersAsync(2, 1);
+
+        explorers.Items.Should().ContainSingle().Which.Should().Be(secondByEmail);
+        explorers.TotalCount.Should().Be(SeededExplorers().Count());
     }
 
     [Fact]
@@ -64,5 +72,15 @@ public sealed class IdentityApiTests : BaseIntegrationTest
         var exists = await identityApi.ExplorerExistsAsync(userId);
 
         exists.Should().BeFalse();
+    }
+
+    private static IEnumerable<ExplorerSummary> SeededExplorers()
+    {
+        var explorerIds = UserSeed.All.OfType<IdentityUserRole<Guid>>()
+            .Where(userRole => userRole.RoleId == RoleSeed.Explorer.Id)
+            .Select(userRole => userRole.UserId);
+        return UserSeed.All.OfType<ApplicationUser>()
+            .Where(user => explorerIds.Contains(user.Id))
+            .Select(user => new ExplorerSummary(user.Id, user.Email!));
     }
 }

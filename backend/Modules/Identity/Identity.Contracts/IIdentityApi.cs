@@ -2,7 +2,7 @@ namespace Identity.Contracts;
 
 public interface IIdentityApi
 {
-    Task<List<ExplorerSummary>> GetExplorersAsync();
+    Task<ExplorerPage> GetExplorersAsync(int page, int pageSize);
 
     Task<bool> ExplorerExistsAsync(Guid userId);
 }
