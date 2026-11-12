@@ -18,6 +18,8 @@ export interface TourDto {
   tags: string[];
   status: TourStatus;
   publishedAt: string | null;
+  recommendedGroupSizeMin: number;
+  recommendedGroupSizeMax: number;
   transportTimes: TransportTimeDto[];
 }
 
@@ -26,6 +28,8 @@ export interface CreateTourDto {
   description: string;
   difficulty: TourDifficulty;
   tags: string[];
+  recommendedGroupSizeMin: number;
+  recommendedGroupSizeMax: number;
 }
 
 export interface TourPreferenceDto {

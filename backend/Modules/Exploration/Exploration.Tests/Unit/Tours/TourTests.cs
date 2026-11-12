@@ -11,7 +11,10 @@ public class TourTests
     private static readonly string LongDescription = new('o', 100);
 
     private static Tour CreateTour(string description) =>
-        new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"]);
+        new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"], 1, 10);
+
+    private static Tour CreateTourForGroupSize(int minGroupSize, int maxGroupSize) =>
+        new(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, ["istorija"], minGroupSize, maxGroupSize);
 
     [Fact]
     public void New_tour_starts_as_a_draft()
@@ -28,7 +31,7 @@ public class TourTests
     [InlineData("   ")]
     public void New_tour_requires_a_name(string name)
     {
-        var creation = () => new Tour(WellKnownUsers.Explorer, name, "Opis ture.", TourDifficulty.Easy, ["istorija"]);
+        var creation = () => new Tour(WellKnownUsers.Explorer, name, "Opis ture.", TourDifficulty.Easy, ["istorija"], 1, 10);
 
         creation.Should().Throw<DomainException>();
     }
@@ -46,7 +49,36 @@ public class TourTests
     [Fact]
     public void New_tour_requires_tags()
     {
-        var creation = () => new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, []);
+        var creation = () => new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, [], 1, 10);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Recommended_group_size_may_have_the_same_minimum_and_maximum()
+    {
+        var tour = CreateTourForGroupSize(4, 4);
+
+        tour.RecommendedGroupSize.Min.Should().Be(4);
+        tour.RecommendedGroupSize.Max.Should().Be(4);
+    }
+
+    [Theory]
+    [InlineData(0, 5)]
+    [InlineData(-2, 5)]
+    [InlineData(0, 0)]
+    [InlineData(-3, -1)]
+    public void Recommended_group_size_below_one_person_is_rejected(int minGroupSize, int maxGroupSize)
+    {
+        var creation = () => CreateTourForGroupSize(minGroupSize, maxGroupSize);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Recommended_group_size_with_a_minimum_greater_than_the_maximum_is_rejected()
+    {
+        var creation = () => CreateTourForGroupSize(6, 5);
 
         creation.Should().Throw<DomainException>();
     }
