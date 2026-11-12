@@ -34,6 +34,8 @@ frontend/src/
       util/
       api/                   shared types (PageResult, ProblemDetails),
                              mirror the server, no client-only fields          [platform]
+      map/                   LocationMap (Leaflet): pins, path, picking a location;
+                             see its README, example at /design-preview/map    [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields

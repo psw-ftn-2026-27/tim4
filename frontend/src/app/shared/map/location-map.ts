@@ -133,8 +133,12 @@ export class LocationMap {
     ]);
 
     locations.forEach((location, index) => {
+      // Leaflet writes a string popup through innerHTML, and users type these names, so the
+      // name goes in as text: a name like <img onerror=...> must never run as code.
+      const label = document.createElement('span');
+      label.textContent = location.name;
       L.marker(points[index], { icon: PIN_ICON })
-        .bindPopup(location.name)
+        .bindPopup(label)
         .on('click', () => this.locationClick.emit(index))
         .addTo(this.layers);
     });

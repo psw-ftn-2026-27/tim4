@@ -10,7 +10,7 @@ koordinate.
 Mapa koristi biblioteku Leaflet i podlogu OpenStreetMap, besplatno i bez ključa. Timovi
 modula ne uče Leaflet: koriste samo ulaze i izlaze opisane ispod.
 
-Živi primer je probna stranica `/map-demo` u `core/map-demo/`.
+Živi primer je stranica `/design-preview/map` u stilskom vodiču (`core/design-preview/map-view/`).
 
 ## Ulazi i izlazi
 
@@ -122,7 +122,7 @@ export class CreateChallenge {
 ```
 
 Pri slanju komande stranica uzima `form.location().value()` i šalje njene `latitude` i
-`longitude` zajedno sa ostalim poljima forme. Sekcija "Izbor lokacije" na `/map-demo`
+`longitude` zajedno sa ostalim poljima forme. Sekcija "Izbor lokacije" na `/design-preview/map`
 pokazuje samu mapu za izbor, sa novom lokacijom i izmenom postojeće; forma iz ovog primera
 je posao stranice modula.
 
@@ -133,3 +133,12 @@ upravljala Leaflet mapom, koja živi van stabla komponenti, koristi `inject(Elem
 `afterNextRender`, `effect()` i `DestroyRef`. Izuzetak je zatvoren u `shared/map`. Timovi
 modula koriste samo njene ulaze i izlaze i ne pišu ove konstrukcije u svojim modulima.
 Izmena komponente je platformska odluka.
+
+## Stilovi biblioteke
+
+JavaScript Leaflet-a stiže lenjo, zajedno sa stranicom koja koristi mapu. Njegov CSS
+(`leaflet.css`, oko 15 kB) je, naprotiv, svesno u globalnim stilovima (`angular.json`, niz
+`styles`), pa se učitava na svakoj stranici. Leaflet sam pravi DOM mape, a stilovi komponente
+se pod podrazumevanom (emulated) enkapsulacijom ne primenjuju na elemente koje komponenta
+nije napisala u šablonu; `::ng-deep` i isključivanje enkapsulacije su van pravila projekta.
+Globalni CSS je zato najjednostavnije rešenje koje radi.

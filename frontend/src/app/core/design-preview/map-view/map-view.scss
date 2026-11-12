@@ -1,47 +1,5 @@
-.map {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  display: block;
-  max-width: 40rem;
-  width: 100%;
-}
-
-.map__land {
-  fill: var(--color-bg);
-}
-
-.map__street {
-  fill: none;
-  stroke: var(--color-border);
-  stroke-width: 6;
-}
-
-.map__path {
-  fill: none;
-  stroke: var(--color-accent);
-  stroke-dasharray: 8 4;
-  stroke-width: 3;
-}
-
-.map__pin--challenge {
-  fill: var(--color-xp-text);
-}
-
-.map__pin--tour {
-  fill: var(--color-accent);
-}
-
-.map__pin--picked {
-  fill: var(--color-text);
-}
-
-.map__label {
-  fill: var(--color-accent-text);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  text-anchor: middle;
-}
-
-.picker {
-  max-width: 40rem;
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
