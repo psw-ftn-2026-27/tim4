@@ -1,0 +1,293 @@
+// A dark section: the map above the list on a phone, side by side on wider screens.
+// Hovering a challenge enlarges its marker on the map.
+
+h3,
+p {
+  margin: 0;
+}
+
+.challenges {
+  background: var(--color-text);
+  border-radius: var(--space-6);
+  color: var(--color-surface);
+  padding: clamp(2.75rem, 7vw, 4.5rem) var(--space-4);
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.section-head > p {
+  color: var(--color-border);
+  max-width: 24rem;
+}
+
+.kicker {
+  color: var(--color-difficulty-easy-bg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4.5vw, 2.3rem);
+  font-weight: 600;
+  margin: 0;
+}
+
+.board {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.board__map {
+  background: var(--color-state-draft-bg);
+  border-radius: var(--space-5);
+  min-height: 15rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.board__map svg {
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.map__river {
+  fill: none;
+  stroke: var(--color-accent-soft);
+  stroke-width: 40;
+}
+
+.map__road {
+  fill: none;
+  stroke: var(--color-surface);
+  stroke-width: 14;
+}
+
+.map__road--thin {
+  stroke-width: 10;
+}
+
+.map__park {
+  fill: var(--color-difficulty-easy-bg);
+}
+
+.map__trail {
+  animation: march 1.4s linear infinite;
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-dasharray: 6 8;
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.marker {
+  background: var(--color-accent);
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 6px 0 -2px var(--color-text);
+  color: var(--color-accent-text);
+  display: grid;
+  font-weight: 700;
+  height: 2.5rem;
+  place-items: center;
+  position: absolute;
+  rotate: -45deg;
+  transform: translate(-50%, -100%);
+  transition: scale 0.25s;
+  width: 2.5rem;
+}
+
+.marker span {
+  rotate: 45deg;
+}
+
+.marker--1 {
+  left: 22%;
+  top: 42%;
+}
+
+.marker--2 {
+  background: var(--color-xp-text);
+  left: 62%;
+  top: 30%;
+}
+
+.marker--3 {
+  background: var(--color-ec-text);
+  left: 78%;
+  top: 78%;
+}
+
+.board:has(.challenge--1:hover, .challenge--1:focus-visible) .marker--1,
+.board:has(.challenge--2:hover, .challenge--2:focus-visible) .marker--2,
+.board:has(.challenge--3:hover, .challenge--3:focus-visible) .marker--3 {
+  scale: 1.35;
+}
+
+.board__list {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.challenge {
+  align-items: center;
+  background: var(--color-surface);
+  border-radius: var(--space-5);
+  color: var(--color-text);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.challenge:hover {
+  transform: translateX(6px);
+}
+
+.challenge__icon {
+  border-radius: var(--space-4);
+  display: grid;
+  height: 3.5rem;
+  place-items: center;
+  width: 3.5rem;
+}
+
+.challenge__icon svg {
+  fill: none;
+  height: 1.75rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
+  width: 1.75rem;
+}
+
+.challenge--1 .challenge__icon {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.challenge--2 .challenge__icon {
+  background: var(--color-xp-bg);
+  color: var(--color-xp-text);
+}
+
+.challenge--3 .challenge__icon {
+  background: var(--color-ec-bg);
+  color: var(--color-ec-text);
+}
+
+.challenge__kind {
+  color: var(--color-text-muted);
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.challenge h3 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+}
+
+.challenge p {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+// Rounder and roomier than the global badge; its colours come from .badge--xp.
+// On a phone it sits under the text, so the text keeps its width (P2).
+.badge {
+  border-radius: 999px;
+  grid-column: 2;
+  justify-self: start;
+  padding: var(--space-1) var(--space-3);
+}
+
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: rise linear both;
+    animation-range: entry 0% cover 25%;
+    animation-timeline: view();
+  }
+}
+
+@media (min-width: 48rem) {
+  .challenges {
+    padding-inline: var(--space-6);
+  }
+
+  .board {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .challenge {
+    gap: var(--space-4);
+    grid-template-columns: 4.5rem 1fr auto;
+    padding: var(--space-5);
+  }
+
+  .badge {
+    grid-column: auto;
+  }
+
+  .challenge__icon {
+    height: 4.5rem;
+    width: 4.5rem;
+  }
+
+  .challenge__icon svg {
+    height: 2.25rem;
+    width: 2.25rem;
+  }
+
+  .challenge p {
+    font-size: var(--font-size-md);
+  }
+
+  .marker {
+    font-size: var(--font-size-lg);
+    height: 3.25rem;
+    width: 3.25rem;
+  }
+}
+
+@keyframes march {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(36px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

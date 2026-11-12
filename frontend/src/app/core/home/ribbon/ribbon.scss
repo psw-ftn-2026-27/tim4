@@ -1,0 +1,49 @@
+// A dark band that scrolls the kinds of content the platform really has (P6).
+
+// It reaches past the page container to both edges of the window: the negative margin
+// is the container's side padding from _layout.scss, so nothing overflows (P2).
+:host {
+  display: block;
+  margin-inline: calc(-1 * max(var(--space-4), 3vw));
+}
+
+.ribbon {
+  overflow: hidden;
+  padding-block: var(--space-3);
+}
+
+.ribbon__band {
+  background: var(--color-text);
+  color: var(--color-surface);
+  margin-inline: calc(-1 * var(--space-4));
+  overflow: hidden;
+  padding-block: var(--space-3);
+  transform: rotate(-1deg);
+}
+
+.ribbon__track {
+  animation: scroll 32s linear infinite;
+  display: flex;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  gap: var(--space-6);
+  width: max-content;
+}
+
+.ribbon__track span::after {
+  color: var(--color-difficulty-easy-bg);
+  content: '✦';
+  margin-left: var(--space-6);
+}
+
+@keyframes scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+}
