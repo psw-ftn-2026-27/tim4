@@ -34,6 +34,7 @@ backend/
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
+      Identity.Contracts/          IIdentityApi, the read-only user contract [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -64,7 +65,9 @@ The compiler enforces the layering instead of a reviewer having to spot it.
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID.
+- No module references the `Identity` project. Other modules carry a `UserId` as a plain
+  ID; a module that needs user data references `Identity.Contracts`, which references
+  nothing.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -97,6 +100,15 @@ What matters outside it: token validation is configured in `Host.Api`; role chec
 caller's ID with `User.GetUserId()` from `Shared.Api` and pass it to application
 services as an explicit `Guid userId` parameter. There is no ambient current-user
 abstraction.
+
+A module that needs to know who the users are goes through `IIdentityApi` in
+`Identity.Contracts`: `GetExplorersAsync()` returns every user with the `explorer` role as
+`ExplorerSummary` (ID and email only, sorted by email), and `ExplorerExistsAsync(userId)`
+is true only for an explorer. The contract is read-only and has no HTTP endpoint. A module
+injects `IIdentityApi` into its queries class like any other module's contract and maps
+`ExplorerSummary` into its own DTO. Because Identity has no Application layer, the
+implementation is an internal class in `Identity/Infrastructure/` that projects over
+`IdentityModuleDbContext`.
 
 Migrations are added with `dotnet ef` (tool manifest in `.config/`), e.g.
 `dotnet ef migrations add X --project Modules/Identity/Identity --startup-project Host.Api --context IdentityModuleDbContext`.
@@ -314,6 +326,10 @@ restored by `Reseed` before every test. The action is the single HTTP request.
 Observation goes through `Factory.CreateContext<TContext>()`, read-only, opened in a
 `using` where it is needed and never reused across Act. Never prepare state through
 another endpoint or by writing through a context.
+
+A contract with no endpoint is tested in its own module by calling it from a DI scope:
+Arrange opens `Factory.Services.CreateScope()` in a `using` and resolves `I<Name>Api`
+from it, and Act is one call on the contract.
 
 **Seeds.** `Integration/Seeds/` holds one static class of named instances per aggregate
 and a module class gathering them in `All`. Instances are built only through
