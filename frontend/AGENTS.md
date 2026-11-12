@@ -34,6 +34,8 @@ frontend/src/
       util/
       api/                   shared types (PageResult, ProblemDetails),
                              mirror the server, no client-only fields          [platform]
+      map/                   LocationMap (Leaflet): pins, path, picking a location;
+                             see its README, example at /design-preview/map    [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -122,6 +124,9 @@ construct means adding a lesson, so treat it as a platform decision.
   after a command.
 - No RxJS in student code. `Observable` appears only as the return type of `HttpClient`
   writes, immediately awaited. No NgRx, no facades.
+- The one exception to this subset is `shared/map`, which may use `inject(ElementRef)`,
+  `afterNextRender`, `effect()` and `DestroyRef` to drive Leaflet; modules use only its
+  inputs and outputs (see `src/app/shared/map/README.md`).
 
 ## Styling
 
