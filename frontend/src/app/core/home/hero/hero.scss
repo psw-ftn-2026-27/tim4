@@ -1,0 +1,313 @@
+// Mobile first. On a 375x667 screen the headline and "Registruj se" come before the
+// picture, so both are visible without scrolling (P1). Every colour is a token (P3).
+// Animations are CSS only and stop when the user asks for reduced motion.
+
+:host {
+  display: block;
+}
+
+p {
+  margin: 0;
+}
+
+.hero {
+  align-items: center;
+  display: grid;
+  gap: var(--space-5);
+  padding-bottom: var(--space-6);
+}
+
+.eyebrow {
+  align-items: center;
+  background: var(--color-accent-soft);
+  border-radius: 999px;
+  color: var(--color-accent);
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 600;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: 0.3rem 0.8rem;
+}
+
+.eyebrow__dot {
+  animation: pulse 2s infinite;
+  background: var(--color-accent);
+  border-radius: 50%;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 7vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  overflow-wrap: break-word;
+}
+
+.squiggle {
+  color: var(--color-accent);
+  position: relative;
+}
+
+.squiggle svg {
+  bottom: -0.18em;
+  height: 0.3em;
+  left: 0;
+  overflow: visible;
+  position: absolute;
+  width: 100%;
+}
+
+.squiggle path {
+  animation: draw 1.2s 0.4s forwards ease-out;
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  stroke-linecap: round;
+  stroke-width: 5;
+}
+
+.hero__subtitle {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  max-width: 32rem;
+}
+
+.actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+// The primary button: at least 44x44 CSS px (P4), the only accent-coloured button (P7).
+.cta {
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 6px 0 -2px var(--color-text);
+  display: inline-flex;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding-inline: var(--space-5);
+  text-decoration: none;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.cta:hover {
+  transform: translateY(-2px);
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+a:hover .arrow {
+  transform: translateX(4px);
+}
+
+.link {
+  align-items: center;
+  display: inline-flex;
+  font-weight: 600;
+  min-height: 44px;
+}
+
+.hero__visual {
+  justify-self: center;
+  position: relative;
+  // Narrower than the column on a phone, so the blob and the cards stay on screen (P2).
+  width: min(19rem, 85%);
+}
+
+.blob {
+  animation: morph 12s ease-in-out infinite;
+  aspect-ratio: 1;
+  background: var(--color-difficulty-easy-bg);
+  border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+  position: absolute;
+  right: 0;
+  top: -6%;
+  width: 75%;
+}
+
+// The arch frames the hero picture; the illustration stands in for naslovna.jpg.
+.arch {
+  aspect-ratio: 4 / 5;
+  background: linear-gradient(
+    180deg,
+    var(--color-state-draft-bg) 0%,
+    var(--color-accent-soft) 55%,
+    var(--color-difficulty-easy-bg) 100%
+  );
+  border: 6px solid var(--color-surface);
+  border-radius: 999px 999px var(--space-5) var(--space-5);
+  box-shadow: 0 20px 40px -20px var(--color-control-border);
+  overflow: hidden;
+  position: relative;
+}
+
+.arch img {
+  bottom: 4%;
+  height: auto;
+  left: 4%;
+  position: absolute;
+  width: 92%;
+}
+
+.float {
+  align-items: center;
+  animation: bob 4s ease-in-out infinite;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--space-4);
+  box-shadow: 0 10px 24px -14px var(--color-text);
+  display: flex;
+  font-size: 0.8rem;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  position: absolute;
+}
+
+.float small {
+  color: var(--color-text-muted);
+  display: block;
+}
+
+.float--xp {
+  left: -4%;
+  top: 22%;
+}
+
+.float--point {
+  animation-delay: 1.5s;
+  bottom: 10%;
+  right: 0;
+}
+
+.float__icon {
+  border-radius: 50%;
+  display: grid;
+  flex: none;
+  height: 2rem;
+  place-items: center;
+  width: 2rem;
+}
+
+.float__icon--xp {
+  background: var(--color-xp-bg);
+  color: var(--color-xp-text);
+}
+
+.float__icon--point {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.float__icon svg {
+  fill: none;
+  height: 1.1rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
+  width: 1.1rem;
+}
+
+.progress {
+  background: var(--color-muted-bg);
+  border-radius: 999px;
+  display: block;
+  height: 6px;
+  margin-top: var(--space-1);
+  overflow: hidden;
+  width: 6.5rem;
+}
+
+.progress span {
+  animation: fill 2.4s 1s forwards ease-out;
+  background: var(--color-accent);
+  display: block;
+  height: 100%;
+  width: 0;
+}
+
+@media (min-width: 48rem) {
+  .hero {
+    grid-template-columns: 1.1fr 0.9fr;
+    min-height: min(44rem, calc(100svh - 6rem));
+  }
+
+  .hero__visual {
+    width: min(29rem, 100%);
+  }
+}
+
+// Only a wide window leaves room beside the hero for the blob and the cards to stick
+// out past the arch without a horizontal scroll (P2).
+@media (min-width: 80rem) {
+  .float--xp {
+    left: -12%;
+  }
+
+  .blob,
+  .float--point {
+    right: -10%;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--color-accent);
+  }
+  70% {
+    box-shadow: 0 0 0 0.5rem transparent;
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes morph {
+  50% {
+    border-radius: 58% 42% 37% 63% / 55% 38% 62% 45%;
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fill {
+  to {
+    width: 72%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .squiggle path {
+    stroke-dashoffset: 0;
+  }
+
+  .progress span {
+    width: 72%;
+  }
+}

@@ -1,0 +1,10 @@
+@if (auth.isLoggedIn()) {
+  <app-start [name]="name()" [isAdmin]="isAdmin()" />
+} @else {
+  <app-hero />
+  <app-ribbon />
+  <app-steps />
+  <app-example-tours />
+  <app-example-challenges />
+  <app-closing />
+}

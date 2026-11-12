@@ -1,0 +1,31 @@
+<section aria-labelledby="tours-title">
+  <div class="section-head reveal">
+    <div>
+      <p class="kicker">Primeri tura</p>
+      <h2 id="tours-title">Ture koje se čitaju kao knjiga</h2>
+    </div>
+    <p>Svaka tura je niz ključnih tačaka, a na svakoj te čeka sledeći deo priče.</p>
+  </div>
+  <ul class="tours">
+    @for (tour of tours; track tour.name) {
+      <li class="reveal">
+        <a class="tour" routerLink="/register">
+          <div class="tour__media" [class]="'tour__media--' + tour.difficulty">
+            <img [src]="'/images/ilustracije/' + tour.illustration + '.svg'" alt="" />
+          </div>
+          <div class="tour__body">
+            <h3>{{ tour.name }}</h3>
+            <p>{{ tour.excerpt }}</p>
+            <p class="tags">
+              <span class="tag">{{ tour.length }}</span>
+              <span class="badge" [class]="'badge--' + tour.difficulty">
+                <span aria-hidden="true">{{ difficultyIcons[tour.difficulty] }}</span>
+                {{ difficultyLabels[tour.difficulty] }}
+              </span>
+            </p>
+          </div>
+        </a>
+      </li>
+    }
+  </ul>
+</section>
