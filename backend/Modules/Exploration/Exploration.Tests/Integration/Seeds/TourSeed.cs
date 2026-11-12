@@ -22,23 +22,23 @@ internal static class TourSeed
 
         PublishedVineyards = new(WellKnownUsers.Explorer, "Vinogradi Sremskih Karlovaca", "Tura vodi kroz vinograde na obroncima Fruške gore, uz obilazak dva porodična podruma i degustaciju bermeta u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "priroda"], new RecommendedGroupSize(1, 10));
         PublishedVineyards.AddTransportTime(TransportMode.Bicycle, 60);
-        PublishedVineyards.Publish();
+        PublishedVineyards.Publish(new TourPricing(TourPricingType.Free, null));
 
         PublishedMonasteries = new(WellKnownUsers.Explorer, "Fruškogorski manastiri", "Tura obilazi tri fruškogorska manastira: Krušedol, Grgeteg i Novo Hopovo, sa pauzom za ručak u podnožju nacionalnog parka.", TourDifficulty.Hard, ["istorija"], new RecommendedGroupSize(1, 10));
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
-        PublishedMonasteries.Publish();
+        PublishedMonasteries.Publish(new TourPricing(TourPricingType.Free, null));
 
         PublishedVineyardsByBicycleEasy = new(WellKnownUsers.SecondExplorer, "Laka vožnja kroz vinograde", "Laka vožnja biciklom vodi ravnim putem kroz vinograde podno Fruške gore, uz kratko zadržavanje kod vidikovca i povratak istim putem do polazne tačke.", TourDifficulty.Easy, ["vino", "priroda"], new RecommendedGroupSize(1, 10));
         PublishedVineyardsByBicycleEasy.AddTransportTime(TransportMode.Bicycle, 40);
-        PublishedVineyardsByBicycleEasy.Publish();
+        PublishedVineyardsByBicycleEasy.Publish(new TourPricing(TourPricingType.Free, null));
 
         PublishedWineAndHeritageWalk = new(WellKnownUsers.SecondExplorer, "Vino i nasleđe Karlovaca", "Šetnja vodi od Saborne crkve i Patrijaršijskog dvora do Stražilova, uz obilazak starog podruma i priču o istoriji vinarstva u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "istorija"], new RecommendedGroupSize(1, 10));
         PublishedWineAndHeritageWalk.AddTransportTime(TransportMode.Walking, 120);
-        PublishedWineAndHeritageWalk.Publish();
+        PublishedWineAndHeritageWalk.Publish(new TourPricing(TourPricingType.Free, null));
 
         ArchivedOldTownWalk = new(WellKnownUsers.Explorer, "Stari grad zimi", "Zimska šetnja vodi od Trga slobode kroz Dunavsku i Zmaj Jovinu ulicu do Katoličke porte, uz priču o starim zanatskim radnjama i gradskim kafanama.", TourDifficulty.Easy, ["grad", "istorija"], new RecommendedGroupSize(1, 10));
         ArchivedOldTownWalk.AddTransportTime(TransportMode.Walking, 75);
-        ArchivedOldTownWalk.Publish();
+        ArchivedOldTownWalk.Publish(new TourPricing(TourPricingType.Free, null));
         ArchivedOldTownWalk.Archive();
     }
 

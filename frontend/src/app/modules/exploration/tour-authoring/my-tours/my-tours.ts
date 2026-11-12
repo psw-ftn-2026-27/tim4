@@ -3,7 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormField, form, min, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { TourDto, TransportMode } from '../../api/exploration-api-types';
+import { TourDto, TourPricingType, TransportMode } from '../../api/exploration-api-types';
 import { TourAuthoring } from '../tour-authoring';
 
 @Component({
@@ -28,18 +28,53 @@ export class MyTours {
     min(path.minutes, 1, { message: 'Minutes must be at least 1.' });
   });
 
+  // The tour whose publish form is open; at most one of the two forms is open at a time.
+  protected readonly publishingTour = signal<TourDto | null>(null);
+
+  private readonly publishModel = signal({
+    pricingType: '' as TourPricingType | '',
+    amount: null as number | null,
+  });
+
+  protected readonly publishForm = form(this.publishModel, (path) => {
+    required(path.pricingType, { message: 'Choose whether the tour is free or paid.' });
+  });
+
   protected select(tourId: string): void {
     this.error.set(null);
+    this.publishingTour.set(null);
     this.selectedTourId.set(tourId);
     this.form().reset({ transport: 'Walking', minutes: 30 });
   }
 
-  protected async publish(tourId: string): Promise<void> {
+  protected startPublish(tour: TourDto): void {
+    this.error.set(null);
+    this.selectedTourId.set(null);
+    this.publishingTour.set(tour);
+    this.publishForm().reset({ pricingType: '', amount: null });
+  }
+
+  protected cancelPublish(): void {
+    this.publishingTour.set(null);
+  }
+
+  protected async publish(event: Event): Promise<void> {
+    event.preventDefault();
+    const tour = this.publishingTour();
+    const pricingType = this.publishForm.pricingType().value();
+    if (tour === null || pricingType === '') {
+      return;
+    }
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.tourAuthoring.publish(tourId);
+      await this.tourAuthoring.publish(tour.id, {
+        pricingType,
+        // A free tour sends no amount, even if one was typed while Paid was chosen.
+        pricingAmount: pricingType === 'Paid' ? this.publishForm.amount().value() : null,
+      });
       this.tours.reload();
+      this.publishingTour.set(null);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not publish the tour.'));
     } finally {

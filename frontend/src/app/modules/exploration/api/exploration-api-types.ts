@@ -33,6 +33,13 @@ export interface CreateTourDto {
   recommendedGroupSizeMax: number;
 }
 
+export type TourPricingType = 'Free' | 'Paid';
+
+export interface PublishTourDto {
+  pricingType: TourPricingType | null;
+  pricingAmount: number | null;
+}
+
 export interface TourPreferenceDto {
   difficulties: TourDifficulty[];
   transport: TransportMode | null;
