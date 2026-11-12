@@ -28,7 +28,12 @@
           <tr>
             <td>{{ tour.name }}</td>
             <td>{{ tour.difficulty }}</td>
-            <td>{{ tour.status }}</td>
+            <td>
+              {{ tour.status }}
+              @if (tour.archivedAt) {
+                · {{ formatTime(tour.archivedAt) }}
+              }
+            </td>
             <td>{{ tour.recommendedGroupSizeMin }}–{{ tour.recommendedGroupSizeMax }}</td>
             <td>
               @for (time of tour.transportTimes; track time.transport) {
@@ -38,16 +43,45 @@
               }
             </td>
             <td class="actions">
-              <button class="button" type="button" (click)="select(tour.id)">Add time</button>
-              @if (tour.status === 'Draft') {
-                <button
-                  class="button button--primary"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="publish(tour.id)"
-                >
-                  Publish
-                </button>
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="select(tour.id)"
+              >
+                Add time
+              </button>
+              @switch (tour.status) {
+                @case ('Draft') {
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="publish(tour.id)"
+                  >
+                    Publish
+                  </button>
+                }
+                @case ('Published') {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="archive(tour.id)"
+                  >
+                    Archive
+                  </button>
+                }
+                @case ('Archived') {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="reactivate(tour.id)"
+                  >
+                    Reactivate
+                  </button>
+                }
               }
             </td>
           </tr>

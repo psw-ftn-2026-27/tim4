@@ -13,6 +13,7 @@ internal static class TourSeed
     public static readonly Tour PublishedMonasteries;
     public static readonly Tour PublishedVineyardsByBicycleEasy;
     public static readonly Tour PublishedWineAndHeritageWalk;
+    public static readonly Tour ArchivedOldTownWalk;
 
     static TourSeed()
     {
@@ -34,7 +35,12 @@ internal static class TourSeed
         PublishedWineAndHeritageWalk = new(WellKnownUsers.SecondExplorer, "Vino i nasleđe Karlovaca", "Šetnja vodi od Saborne crkve i Patrijaršijskog dvora do Stražilova, uz obilazak starog podruma i priču o istoriji vinarstva u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "istorija"], new RecommendedGroupSize(1, 10));
         PublishedWineAndHeritageWalk.AddTransportTime(TransportMode.Walking, 120);
         PublishedWineAndHeritageWalk.Publish();
+
+        ArchivedOldTownWalk = new(WellKnownUsers.Explorer, "Stari grad zimi", "Zimska šetnja vodi od Trga slobode kroz Dunavsku i Zmaj Jovinu ulicu do Katoličke porte, uz priču o starim zanatskim radnjama i gradskim kafanama.", TourDifficulty.Easy, ["grad", "istorija"], new RecommendedGroupSize(1, 10));
+        ArchivedOldTownWalk.AddTransportTime(TransportMode.Walking, 75);
+        ArchivedOldTownWalk.Publish();
+        ArchivedOldTownWalk.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk, ArchivedOldTownWalk];
 }

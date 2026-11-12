@@ -47,6 +47,41 @@ export class MyTours {
     }
   }
 
+  protected async archive(tourId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.tourAuthoring.archive(tourId);
+      this.tours.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not archive the tour.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected async reactivate(tourId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.tourAuthoring.reactivate(tourId);
+      this.tours.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not reactivate the tour.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected formatTime(value: string): string {
+    const date = new Date(value);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}.${month}.${date.getFullYear()}. ${hours}:${minutes}`;
+  }
+
   protected async addTransportTime(event: Event): Promise<void> {
     event.preventDefault();
     const tourId = this.selectedTourId();
