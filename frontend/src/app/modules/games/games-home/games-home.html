@@ -1,0 +1,4 @@
+<h1>Games</h1>
+@if (auth.user()?.roles?.includes('administrator')) {
+  <a routerLink="/games/social-challenges">Društveni izazovi</a>
+}

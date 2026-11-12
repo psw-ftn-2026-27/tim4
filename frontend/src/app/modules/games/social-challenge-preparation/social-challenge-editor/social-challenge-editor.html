@@ -1,0 +1,24 @@
+<section class="card stack">
+  <a routerLink="/games/social-challenges">Društveni izazovi</a>
+  <h1>{{ id() ? 'Izmeni izazov' : 'Kreiraj izazov' }}</h1>
+  @if (!isAdministrator()) {
+    <p>Priprema društvenih izazova dostupna je administratoru.</p>
+  } @else if (!id()) {
+    <app-social-challenge-form [pending]="pending()" [error]="error()" (save)="save($event)" />
+  } @else if (challenge.isLoading()) {
+    <p>Učitavanje izazova…</p>
+  } @else if (challenge.error()) {
+    <p class="error" role="alert">{{ loadError() }}</p>
+  } @else if (challenge.value(); as existing) {
+    @if (existing.status === 'Draft') {
+      <app-social-challenge-form
+        [initial]="existing"
+        [pending]="pending()"
+        [error]="error()"
+        (save)="save($event)"
+      />
+    } @else {
+      <p class="error" role="alert">Moguće je izmeniti samo nacrt izazova.</p>
+    }
+  }
+</section>
