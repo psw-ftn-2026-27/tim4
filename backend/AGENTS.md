@@ -20,12 +20,17 @@ backend/
   Host.Tests/                      ArchUnitNET architecture tests            [platform]
   Shared/
     Shared.Domain/                 Entity, AggregateRoot, PageResult,
-                                   DomainException, NotFoundException       [platform]
+                                   DomainException, NotFoundException,
+                                   ImageFile (JPEG/PNG, at most 5 MB)        [platform]
+    Shared.Domain.Tests/           Unit/ tests of Shared.Domain              [platform]
+    Shared.Application/            IImageStorage                             [platform]
     Shared.Api/                    ClaimsPrincipal.GetUserId()               [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
-                                   module, per-schema migrations history)    [platform]
-    Shared.Tests/                  ExplorerApiFactory (per-assembly test DB,
-                                   reseed, test JWTs), WellKnownUsers        [platform]
+                                   module, per-schema migrations history),
+                                   disk IImageStorage, AddImageStorage       [platform]
+    Shared.Tests/                  ExplorerApiFactory (per-assembly test DB and
+                                   image folder, reseed, test JWTs),
+                                   WellKnownUsers                            [platform]
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
@@ -52,8 +57,8 @@ The compiler enforces the layering instead of a reviewer having to spot it.
 ## Reference rules
 
 - `Domain` references `Shared.Domain` and nothing else. No EF Core, no ASP.NET.
-- `Application` references `Domain` and its own `Contracts`. Never `Infrastructure`,
-  never ASP.NET.
+- `Application` references `Domain`, its own `Contracts`, and `Shared.Application`.
+  Never `Infrastructure`, never ASP.NET.
 - `Contracts` references nothing. Primitives, IDs, and contract types built from them.
 - `Api` references `Application` and `Shared.Api`, plus
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
@@ -190,6 +195,37 @@ enforced in aggregate constructors and methods, which throw `DomainException` (o
 middleware in `Host.Api` maps `DomainException` to 400, `NotFoundException` to 404, and
 anything else to a logged 500, all as ProblemDetails. Services and controllers contain no
 try/catch and no validation code.
+
+## Image upload
+
+The image checks (size, format by content signature, server-assigned file name) exist
+once, in the platform; a module never writes them again. A module that accepts an image:
+
+1. The controller receives the image as `IFormFile` in the same request as the module's
+   command, copies it to a `byte[]`, and passes the bytes to the service, because
+   `Application` must not name an ASP.NET type.
+2. The command service, in this order: loads the aggregate (so a request for a missing
+   one ends in 404 before any file is written); builds `new ImageFile(bytes)` (it throws
+   `DomainException`, which becomes 400); calls `IImageStorage.SaveAsync(image)`
+   (injected like a repository) and gets back the image address; calls the aggregate's
+   method with that address; calls `SaveChangesAsync` once.
+3. The aggregate stores that address as a plain `string`; `ImageFile` is never persisted.
+4. When the command replaces or removes an image, the service calls
+   `IImageStorage.DeleteAsync(oldAddress)` after `SaveChangesAsync`, never before, so a
+   failed save never leaves a record pointing at a deleted file.
+
+The disk and the database share no transaction. If the aggregate throws or
+`SaveChangesAsync` fails after `SaveAsync`, the new file stays on disk with nothing
+referring to it. That leftover is invisible to users and is an accepted trade-off: the
+service writes no try/catch to clean it up.
+
+`Host.Api` serves stored images as static files under `/images` without any application
+code and before authentication, so every stored image is public to anyone who has its
+address. Never store a private image through `IImageStorage`. The host caps the request
+body slightly above 5 MB; a larger request is rejected with 413. Whether an image is
+required, and deleting images no longer used, are decisions of the module. Integration
+tests write images to a temporary folder set by `ExplorerApiFactory`, not to
+`Host.Api/images/`.
 
 ## Events
 

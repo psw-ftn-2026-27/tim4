@@ -21,6 +21,7 @@ namespace Shared.Tests;
 public abstract class ExplorerApiFactory : WebApplicationFactory<Program>
 {
     private readonly NpgsqlConnectionStringBuilder _connection;
+    private readonly string _imageFolder;
 
     protected ExplorerApiFactory()
     {
@@ -29,12 +30,16 @@ public abstract class ExplorerApiFactory : WebApplicationFactory<Program>
                 ?? "Host=localhost;Port=5432;Database=explorer-test;Username=postgres;Password=admin");
         _connection.Database += $"-{ModuleName()}";
         RecreateDatabase();
+
+        _imageFolder = Path.Combine(Path.GetTempPath(), "explorer-test-images", ModuleName());
+        RecreateImageFolder();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
         builder.UseSetting("ConnectionStrings:Database", _connection.ConnectionString);
+        builder.UseSetting("ImageStorage:Folder", _imageFolder);
     }
 
     /// <summary>
@@ -121,5 +126,16 @@ public abstract class ExplorerApiFactory : WebApplicationFactory<Program>
         command.ExecuteNonQuery();
         command.CommandText = $"CREATE DATABASE \"{_connection.Database}\"";
         command.ExecuteNonQuery();
+    }
+
+    // Images written by tests go to a temporary folder per test assembly, emptied once
+    // per test run together with the database, never to the development images folder.
+    private void RecreateImageFolder()
+    {
+        if (Directory.Exists(_imageFolder))
+        {
+            Directory.Delete(_imageFolder, recursive: true);
+        }
+        Directory.CreateDirectory(_imageFolder);
     }
 }

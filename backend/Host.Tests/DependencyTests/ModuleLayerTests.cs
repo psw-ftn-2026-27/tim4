@@ -11,13 +11,13 @@ public class ModuleLayerTests : BaseArchitectureTests
     {
         AssertNoDependency($"{module}.Domain",
             $"{module}.Application", $"{module}.Infrastructure", $"{module}.Api", $"{module}.Contracts",
-            "Shared.Api", "Shared.Infrastructure");
+            "Shared.Application", "Shared.Api", "Shared.Infrastructure");
         AssertNoNamespaceDependency($"{module}.Domain", "Microsoft.EntityFrameworkCore", "Microsoft.AspNetCore");
     }
 
     [Theory]
     [MemberData(nameof(ModuleNames))]
-    public void Application_depends_only_on_domain_contracts_and_shared_domain(string module)
+    public void Application_depends_only_on_domain_contracts_shared_domain_and_shared_application(string module)
     {
         AssertNoDependency($"{module}.Application",
             $"{module}.Infrastructure", $"{module}.Api",
@@ -31,7 +31,7 @@ public class ModuleLayerTests : BaseArchitectureTests
     {
         AssertNoDependency($"{module}.Contracts",
             $"{module}.Domain", $"{module}.Application", $"{module}.Infrastructure", $"{module}.Api",
-            "Shared.Domain", "Shared.Api", "Shared.Infrastructure");
+            "Shared.Domain", "Shared.Application", "Shared.Api", "Shared.Infrastructure");
     }
 
     [Theory]
