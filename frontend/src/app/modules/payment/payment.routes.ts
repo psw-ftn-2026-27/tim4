@@ -1,4 +1,4 @@
 import { Routes } from '@angular/router';
-import { PaymentHome } from './payment-home/payment-home';
+import { PersonalWallet } from './personal-wallet/personal-wallet/personal-wallet';
 
-export const paymentRoutes: Routes = [{ path: '', component: PaymentHome }];
+export const paymentRoutes: Routes = [{ path: '', component: PersonalWallet }];

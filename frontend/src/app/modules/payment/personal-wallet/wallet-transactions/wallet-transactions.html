@@ -1,0 +1,28 @@
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Vreme</th>
+        <th scope="col">Opis</th>
+        <th scope="col">Iznos</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (transaction of transactions(); track transaction.id) {
+        <tr [class.row--muted]="transaction.status === 'Cancelled'">
+          <td>{{ formatTime(transaction.submittedAt) }}</td>
+          <td>Uplata administratora</td>
+          <td>+{{ transaction.amount }} EC</td>
+          <td>
+            @if (transaction.status === 'Cancelled') {
+              <span class="badge badge--muted">Stornirano</span>
+            } @else {
+              <span class="badge badge--success">Izvrseno</span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
