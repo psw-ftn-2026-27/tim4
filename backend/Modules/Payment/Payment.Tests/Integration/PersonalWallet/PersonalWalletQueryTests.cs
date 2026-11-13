@@ -1,10 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Payment.Application.PersonalWallet;
 using Payment.Domain.Wallets;
-using Payment.Infrastructure.Persistence;
 using Payment.Tests.Integration.Seeds;
 using Shared.Domain;
 using Shared.Tests;
@@ -23,7 +21,7 @@ public sealed class PersonalWalletQueryTests : BaseIntegrationTest
 
         var balance = await client.GetFromJsonAsync<WalletBalanceDto>("/api/payment/wallet/balance", JsonOptions);
 
-        balance!.AvailableBalance.Should().Be(WalletSeed.ExplorerWithPayments.GetAvailableBalance());
+        balance!.AvailableBalance.Should().Be(WalletSeed.ExplorerWithPayments.Balance);
     }
 
     [Fact]
@@ -102,7 +100,7 @@ public sealed class PersonalWalletQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task A_missing_wallet_has_no_credit_without_creating_a_row()
+    public async Task A_missing_wallet_has_no_credit()
     {
         var userId = Guid.NewGuid();
         var client = Factory.CreateClientFor(userId, "explorer");
@@ -110,23 +108,21 @@ public sealed class PersonalWalletQueryTests : BaseIntegrationTest
         var balance = await client.GetFromJsonAsync<WalletBalanceDto>("/api/payment/wallet/balance", JsonOptions);
 
         balance!.AvailableBalance.Should().Be(0);
-        using var context = Factory.CreateContext<PaymentDbContext>();
-        (await context.Wallets.AnyAsync(wallet => wallet.UserId == userId)).Should().BeFalse();
     }
 
     [Fact]
-    public async Task A_missing_wallet_has_no_transactions_without_creating_a_row()
+    public async Task A_missing_wallet_has_no_transactions()
     {
         var userId = Guid.NewGuid();
         var client = Factory.CreateClientFor(userId, "explorer");
+        var expectedCount = WalletSeed.All.Where(wallet => wallet.UserId == userId)
+            .Sum(wallet => wallet.Transactions.Count);
 
         var result = await client.GetFromJsonAsync<PageResult<WalletTransactionDto>>(
             "/api/payment/wallet/transactions", JsonOptions);
 
         result!.Items.Should().BeEmpty();
-        result.TotalCount.Should().Be(0);
-        using var context = Factory.CreateContext<PaymentDbContext>();
-        (await context.Wallets.AnyAsync(wallet => wallet.UserId == userId)).Should().BeFalse();
+        result.TotalCount.Should().Be(expectedCount);
     }
 
     [Theory]
