@@ -34,6 +34,7 @@ backend/
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
+      Identity.Contracts/          IIdentityApi, the read-only user contract [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -64,7 +65,9 @@ The compiler enforces the layering instead of a reviewer having to spot it.
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID.
+- No module references the `Identity` project. Other modules carry a `UserId` as a plain
+  ID; a module that needs user data references `Identity.Contracts`, which references
+  nothing.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -97,6 +100,18 @@ What matters outside it: token validation is configured in `Host.Api`; role chec
 caller's ID with `User.GetUserId()` from `Shared.Api` and pass it to application
 services as an explicit `Guid userId` parameter. There is no ambient current-user
 abstraction.
+
+A module that needs to know who the users are goes through `IIdentityApi` in
+`Identity.Contracts`: `GetExplorersAsync(page, pageSize)` returns one page of the users
+with the `explorer` role as `ExplorerPage` (items of `ExplorerSummary`, ID and email only,
+sorted by email, plus the total count; clamped like any list query), and
+`ExplorerExistsAsync(userId)` is true only for an explorer. The contract is read-only and
+has no HTTP endpoint. A module injects `IIdentityApi` into its queries class or command
+service like any other module's contract and maps `ExplorerSummary` into its own DTO. The
+reference to `Identity.Contracts` sits in the module's `Application` project and is added
+by the platform team on request; `Payment.Application` already has it. Because Identity
+has no Application layer, the implementation is an internal class in
+`Identity/Infrastructure/` that projects over `IdentityModuleDbContext`.
 
 Migrations are added with `dotnet ef` (tool manifest in `.config/`), e.g.
 `dotnet ef migrations add X --project Modules/Identity/Identity --startup-project Host.Api --context IdentityModuleDbContext`.
@@ -315,6 +330,10 @@ Observation goes through `Factory.CreateContext<TContext>()`, read-only, opened 
 `using` where it is needed and never reused across Act. Never prepare state through
 another endpoint or by writing through a context.
 
+A contract with no endpoint is tested in its own module by calling it from a DI scope:
+Arrange opens `Factory.Services.CreateScope()` in a `using` and resolves `I<Name>Api`
+from it, and Act is one call on the contract.
+
 **Seeds.** `Integration/Seeds/` holds one static class of named instances per aggregate
 and a module class gathering them in `All`. Instances are built only through
 constructors and domain methods, as linear statements without branching, helpers, or
@@ -334,7 +353,10 @@ with the base class's `JsonOptions`.
 mirror the application layer's use-case groups, with `<Group>CommandTests` and
 `<Group>QueryTests` side by side. Feature-module tests authenticate with
 `Factory.CreateClientFor(userId, role)` and `WellKnownUsers`; only `Identity.Tests`
-uses the real register and login endpoints.
+uses the real register and login endpoints. `WellKnownUsers` carries the IDs of demo users
+that `IdentityModuleInitializer` creates in every test database, so a test that reaches
+`IIdentityApi` finds them as real explorers and an administrator; a module never seeds
+the `identity` schema itself.
 
 **Test doubles.** Only for an out-of-process dependency whose effects other systems see
 and that has no test instance. Never for the database or the module's own classes.
