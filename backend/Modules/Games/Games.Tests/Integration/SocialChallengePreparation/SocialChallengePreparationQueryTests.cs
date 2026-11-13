@@ -23,7 +23,7 @@ public sealed class SocialChallengePreparationQueryTests : BaseIntegrationTest
         var page = await client.GetFromJsonAsync<PageResult<SocialChallengeDto>>(
             $"{Url}?page=2&pageSize=1", JsonOptions);
 
-        page!.TotalCount.Should().Be(GamesSeed.All.Length);
+        page!.TotalCount.Should().Be(SocialChallengeSeed.All.Length);
         page.Items.Should().ContainSingle().Which.Id.Should().Be(SocialChallengeSeed.MorningDraft.Id);
     }
 
