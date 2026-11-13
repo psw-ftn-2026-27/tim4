@@ -20,7 +20,8 @@ public sealed class TourAuthoringService
 
     public async Task<TourDto> CreateAsync(Guid authorId, CreateTourDto dto)
     {
-        var tour = new Tour(authorId, dto.Name, dto.Description, dto.Difficulty, dto.Tags);
+        var groupSize = new RecommendedGroupSize(dto.RecommendedGroupSizeMin, dto.RecommendedGroupSizeMax);
+        var tour = new Tour(authorId, dto.Name, dto.Description, dto.Difficulty, dto.Tags, groupSize);
 
         _tourRepository.Add(tour);
         await _unitOfWork.SaveChangesAsync();
@@ -36,11 +37,28 @@ public sealed class TourAuthoringService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task PublishAsync(Guid tourId, Guid authorId)
+    public async Task PublishAsync(Guid tourId, Guid authorId, PublishTourDto dto)
+    {
+        var tour = await GetOwnedTourAsync(tourId, authorId);
+        var pricing = new TourPricing(dto.PricingType, dto.PricingAmount);
+
+        tour.Publish(pricing);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ArchiveAsync(Guid tourId, Guid authorId)
     {
         var tour = await GetOwnedTourAsync(tourId, authorId);
 
-        tour.Publish();
+        tour.Archive();
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ReactivateAsync(Guid tourId, Guid authorId)
+    {
+        var tour = await GetOwnedTourAsync(tourId, authorId);
+
+        tour.Reactivate();
         await _unitOfWork.SaveChangesAsync();
     }
 

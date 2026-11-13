@@ -1,0 +1,54 @@
+<div class="stack">
+  <h1>Moj novcanik</h1>
+
+  @if (balance.error() || transactions.error()) {
+    <div class="stack" role="alert">
+      <p class="error">Nije moguce ucitati novcanik. Pokusaj ponovo.</p>
+      <button class="button" type="button" (click)="retry()">Pokusaj ponovo</button>
+    </div>
+  } @else {
+    <section class="card balance" aria-labelledby="wallet-balance-heading">
+      <h2 id="wallet-balance-heading" class="meta">Raspolozivo stanje</h2>
+      @if (balance.isLoading()) {
+        <p role="status">Ucitavanje stanja...</p>
+      } @else if (balance.value(); as wallet) {
+        <p class="balance__value">
+          <span class="badge badge--ec balance__amount">{{ wallet.availableBalance }} EC</span>
+        </p>
+      }
+    </section>
+
+    <section class="stack" aria-labelledby="wallet-history-heading">
+      <h2 id="wallet-history-heading">Transakcije</h2>
+      @if (transactions.isLoading()) {
+        <p role="status">Ucitavanje transakcija...</p>
+      } @else if (transactions.value(); as history) {
+        @if (history.totalCount === 0) {
+          <p>Jos nema transakcija</p>
+        } @else {
+          <app-wallet-transactions [transactions]="history.items" />
+          <p class="meta">Stornirana uplata ne ulazi u raspolozivo stanje.</p>
+          <nav class="pagination" aria-label="Stranice istorije transakcija">
+            <button
+              class="button"
+              type="button"
+              [disabled]="page() === 1"
+              (click)="previousPage()"
+            >
+              Prethodna
+            </button>
+            <p class="meta" aria-live="polite">Stranica {{ page() }} od {{ pageCount() }}</p>
+            <button
+              class="button"
+              type="button"
+              [disabled]="page() >= pageCount()"
+              (click)="nextPage()"
+            >
+              Sledeca
+            </button>
+          </nav>
+        }
+      }
+    </section>
+  }
+</div>

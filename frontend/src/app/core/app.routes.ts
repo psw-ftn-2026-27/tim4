@@ -24,4 +24,9 @@ export const routes: Routes = [
     path: 'payment',
     loadChildren: () => import('../modules/payment/payment.routes').then((m) => m.paymentRoutes),
   },
+  {
+    path: 'design-preview',
+    loadChildren: () =>
+      import('./design-preview/design-preview.routes').then((m) => m.designPreviewRoutes),
+  },
 ];

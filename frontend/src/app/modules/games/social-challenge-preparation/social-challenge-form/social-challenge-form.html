@@ -1,0 +1,45 @@
+<form class="stack" (submit)="submit($event)">
+  <div class="field">
+    <label for="name">Naziv</label>
+    <input id="name" type="text" [formField]="fields.name" />
+  </div>
+  <div class="field">
+    <label for="start">Početak aktivnosti</label>
+    <input id="start" type="time" step="1" [formField]="fields.start" />
+  </div>
+  <div class="field">
+    <label for="end">Završetak aktivnosti</label>
+    <input id="end" type="time" step="1" [formField]="fields.end" />
+  </div>
+  <div class="field">
+    <label for="required-participants">Potreban broj učesnika</label>
+    <input id="required-participants" type="number" step="1" [formField]="fields.requiredParticipants" />
+    @for (issue of fields.requiredParticipants().errors(); track $index) {
+      <p class="error">{{ issue.message }}</p>
+    }
+  </div>
+  <div class="field">
+    <label for="range">Opseg (m)</label>
+    <input id="range" type="number" step="any" [formField]="fields.rangeInMeters" />
+    @for (issue of fields.rangeInMeters().errors(); track $index) {
+      <p class="error">{{ issue.message }}</p>
+    }
+  </div>
+  <div class="field">
+    <label for="xp">XP nagrada</label>
+    <input id="xp" type="number" step="1" [formField]="fields.xpReward" />
+    @for (issue of fields.xpReward().errors(); track $index) {
+      <p class="error">{{ issue.message }}</p>
+    }
+  </div>
+  <div class="field">
+    <label for="message">Završna poruka</label>
+    <textarea id="message" rows="3" [formField]="fields.completionMessage"></textarea>
+  </div>
+  @if (error(); as message) {
+    <p class="error" role="alert">{{ message }}</p>
+  }
+  <button class="button button--primary" type="submit" [disabled]="!fields().valid() || pending()">
+    Sačuvaj
+  </button>
+</form>

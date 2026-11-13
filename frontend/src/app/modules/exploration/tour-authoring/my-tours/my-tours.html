@@ -18,6 +18,7 @@
           <th scope="col">Name</th>
           <th scope="col">Difficulty</th>
           <th scope="col">Status</th>
+          <th scope="col">Group size</th>
           <th scope="col">Transport times</th>
           <th scope="col">Actions</th>
         </tr>
@@ -27,7 +28,13 @@
           <tr>
             <td>{{ tour.name }}</td>
             <td>{{ tour.difficulty }}</td>
-            <td>{{ tour.status }}</td>
+            <td>
+              {{ tour.status }}
+              @if (tour.archivedAt) {
+                · {{ formatTime(tour.archivedAt) }}
+              }
+            </td>
+            <td>{{ tour.recommendedGroupSizeMin }}–{{ tour.recommendedGroupSizeMax }}</td>
             <td>
               @for (time of tour.transportTimes; track time.transport) {
                 <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
@@ -36,22 +43,51 @@
               }
             </td>
             <td class="actions">
-              <button class="button" type="button" (click)="select(tour.id)">Add time</button>
-              @if (tour.status === 'Draft') {
-                <button
-                  class="button button--primary"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="publish(tour.id)"
-                >
-                  Publish
-                </button>
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="select(tour.id)"
+              >
+                Add time
+              </button>
+              @switch (tour.status) {
+                @case ('Draft') {
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="startPublish(tour)"
+                  >
+                    Publish
+                  </button>
+                }
+                @case ('Published') {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="archive(tour.id)"
+                  >
+                    Archive
+                  </button>
+                }
+                @case ('Archived') {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="reactivate(tour.id)"
+                  >
+                    Reactivate
+                  </button>
+                }
               }
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="5">You have no tours yet.</td>
+            <td colspan="6">You have no tours yet.</td>
           </tr>
         }
       </tbody>
@@ -88,6 +124,46 @@
       >
         Save
       </button>
+    </form>
+  }
+
+  @if (publishingTour(); as tour) {
+    <form class="card stack" (submit)="publish($event)">
+      <h2>Publish {{ tour.name }}</h2>
+
+      <div class="field">
+        <label for="pricing-type">Pricing</label>
+        <select id="pricing-type" [formField]="publishForm.pricingType">
+          <option value=""></option>
+          <option value="Free">Free</option>
+          <option value="Paid">Paid</option>
+        </select>
+        @if (publishForm.pricingType().touched()) {
+          @for (message of publishForm.pricingType().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      @if (publishForm.pricingType().value() === 'Paid') {
+        <div class="field">
+          <label for="price">Price</label>
+          <input id="price" type="number" step="any" [formField]="publishForm.amount" />
+        </div>
+      }
+
+      <div class="actions">
+        <button
+          class="button button--primary"
+          type="submit"
+          [disabled]="!publishForm().valid() || pending()"
+        >
+          Publish
+        </button>
+        <button class="button" type="button" [disabled]="pending()" (click)="cancelPublish()">
+          Cancel
+        </button>
+      </div>
     </form>
   }
 </div>

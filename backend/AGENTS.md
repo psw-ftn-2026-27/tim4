@@ -20,15 +20,21 @@ backend/
   Host.Tests/                      ArchUnitNET architecture tests            [platform]
   Shared/
     Shared.Domain/                 Entity, AggregateRoot, PageResult,
-                                   DomainException, NotFoundException       [platform]
+                                   DomainException, NotFoundException,
+                                   ImageFile (JPEG/PNG, at most 5 MB)        [platform]
+    Shared.Domain.Tests/           Unit/ tests of Shared.Domain              [platform]
+    Shared.Application/            IImageStorage                             [platform]
     Shared.Api/                    ClaimsPrincipal.GetUserId()               [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
-                                   module, per-schema migrations history)    [platform]
-    Shared.Tests/                  ExplorerApiFactory (per-assembly test DB,
-                                   reseed, test JWTs), WellKnownUsers        [platform]
+                                   module, per-schema migrations history),
+                                   disk IImageStorage, AddImageStorage       [platform]
+    Shared.Tests/                  ExplorerApiFactory (per-assembly test DB and
+                                   image folder, reseed, test JWTs),
+                                   WellKnownUsers                            [platform]
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
+      Identity.Contracts/          IIdentityApi, the read-only user contract [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -52,14 +58,16 @@ The compiler enforces the layering instead of a reviewer having to spot it.
 ## Reference rules
 
 - `Domain` references `Shared.Domain` and nothing else. No EF Core, no ASP.NET.
-- `Application` references `Domain` and its own `Contracts`. Never `Infrastructure`,
-  never ASP.NET.
+- `Application` references `Domain`, its own `Contracts`, and `Shared.Application`.
+  Never `Infrastructure`, never ASP.NET.
 - `Contracts` references nothing. Primitives, IDs, and contract types built from them.
 - `Api` references `Application` and `Shared.Api`, plus
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID.
+- No module references the `Identity` project. Other modules carry a `UserId` as a plain
+  ID; a module that needs user data references `Identity.Contracts`, which references
+  nothing.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -92,6 +100,18 @@ What matters outside it: token validation is configured in `Host.Api`; role chec
 caller's ID with `User.GetUserId()` from `Shared.Api` and pass it to application
 services as an explicit `Guid userId` parameter. There is no ambient current-user
 abstraction.
+
+A module that needs to know who the users are goes through `IIdentityApi` in
+`Identity.Contracts`: `GetExplorersAsync(page, pageSize)` returns one page of the users
+with the `explorer` role as `ExplorerPage` (items of `ExplorerSummary`, ID and email only,
+sorted by email, plus the total count; clamped like any list query), and
+`ExplorerExistsAsync(userId)` is true only for an explorer. The contract is read-only and
+has no HTTP endpoint. A module injects `IIdentityApi` into its queries class or command
+service like any other module's contract and maps `ExplorerSummary` into its own DTO. The
+reference to `Identity.Contracts` sits in the module's `Application` project and is added
+by the platform team on request; `Payment.Application` already has it. Because Identity
+has no Application layer, the implementation is an internal class in
+`Identity/Infrastructure/` that projects over `IdentityModuleDbContext`.
 
 Migrations are added with `dotnet ef` (tool manifest in `.config/`), e.g.
 `dotnet ef migrations add X --project Modules/Identity/Identity --startup-project Host.Api --context IdentityModuleDbContext`.
@@ -191,6 +211,37 @@ middleware in `Host.Api` maps `DomainException` to 400, `NotFoundException` to 4
 anything else to a logged 500, all as ProblemDetails. Services and controllers contain no
 try/catch and no validation code.
 
+## Image upload
+
+The image checks (size, format by content signature, server-assigned file name) exist
+once, in the platform; a module never writes them again. A module that accepts an image:
+
+1. The controller receives the image as `IFormFile` in the same request as the module's
+   command, copies it to a `byte[]`, and passes the bytes to the service, because
+   `Application` must not name an ASP.NET type.
+2. The command service, in this order: loads the aggregate (so a request for a missing
+   one ends in 404 before any file is written); builds `new ImageFile(bytes)` (it throws
+   `DomainException`, which becomes 400); calls `IImageStorage.SaveAsync(image)`
+   (injected like a repository) and gets back the image address; calls the aggregate's
+   method with that address; calls `SaveChangesAsync` once.
+3. The aggregate stores that address as a plain `string`; `ImageFile` is never persisted.
+4. When the command replaces or removes an image, the service calls
+   `IImageStorage.DeleteAsync(oldAddress)` after `SaveChangesAsync`, never before, so a
+   failed save never leaves a record pointing at a deleted file.
+
+The disk and the database share no transaction. If the aggregate throws or
+`SaveChangesAsync` fails after `SaveAsync`, the new file stays on disk with nothing
+referring to it. That leftover is invisible to users and is an accepted trade-off: the
+service writes no try/catch to clean it up.
+
+`Host.Api` serves stored images as static files under `/images` without any application
+code and before authentication, so every stored image is public to anyone who has its
+address. Never store a private image through `IImageStorage`. The host caps the request
+body slightly above 5 MB; a larger request is rejected with 413. Whether an image is
+required, and deleting images no longer used, are decisions of the module. Integration
+tests write images to a temporary folder set by `ExplorerApiFactory`, not to
+`Host.Api/images/`.
+
 ## Events
 
 There are none. Modules communicate synchronously through `I<Name>Api` in `Contracts`.
@@ -279,6 +330,10 @@ Observation goes through `Factory.CreateContext<TContext>()`, read-only, opened 
 `using` where it is needed and never reused across Act. Never prepare state through
 another endpoint or by writing through a context.
 
+A contract with no endpoint is tested in its own module by calling it from a DI scope:
+Arrange opens `Factory.Services.CreateScope()` in a `using` and resolves `I<Name>Api`
+from it, and Act is one call on the contract.
+
 **Seeds.** `Integration/Seeds/` holds one static class of named instances per aggregate
 and a module class gathering them in `All`. Instances are built only through
 constructors and domain methods, as linear statements without branching, helpers, or
@@ -298,7 +353,10 @@ with the base class's `JsonOptions`.
 mirror the application layer's use-case groups, with `<Group>CommandTests` and
 `<Group>QueryTests` side by side. Feature-module tests authenticate with
 `Factory.CreateClientFor(userId, role)` and `WellKnownUsers`; only `Identity.Tests`
-uses the real register and login endpoints.
+uses the real register and login endpoints. `WellKnownUsers` carries the IDs of demo users
+that `IdentityModuleInitializer` creates in every test database, so a test that reaches
+`IIdentityApi` finds them as real explorers and an administrator; a module never seeds
+the `identity` schema itself.
 
 **Test doubles.** Only for an out-of-process dependency whose effects other systems see
 and that has no test instance. Never for the database or the module's own classes.

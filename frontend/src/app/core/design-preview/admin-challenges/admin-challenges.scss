@@ -1,0 +1,24 @@
+.actions {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.forms {
+  align-items: start;
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+}
+
+.answer {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.answer__text {
+  flex: 1;
+  min-width: 0;
+}

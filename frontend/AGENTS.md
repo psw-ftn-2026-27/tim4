@@ -29,11 +29,14 @@ frontend/src/
     _components.scss         global classes: button, card, form field, table
   app/
     core/                    auth (state, interceptor, login, register), home,
-                             app.routes.ts                                    [platform]
+                             design-preview (style guide), app.routes.ts      [platform]
     shared/
-      util/
+      util/                  serverMessage                                     [platform]
+      image-upload/          image field for a form, see "Image upload" below  [platform]
       api/                   shared types (PageResult, ProblemDetails),
                              mirror the server, no client-only fields          [platform]
+      map/                   LocationMap (Leaflet): pins, path, picking a location;
+                             see its README, example at /design-preview/map    [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -122,6 +125,9 @@ construct means adding a lesson, so treat it as a platform decision.
   after a command.
 - No RxJS in student code. `Observable` appears only as the return type of `HttpClient`
   writes, immediately awaited. No NgRx, no facades.
+- The one exception to this subset is `shared/map`, which may use `inject(ElementRef)`,
+  `afterNextRender`, `effect()` and `DestroyRef` to drive Leaflet; modules use only its
+  inputs and outputs (see `src/app/shared/map/README.md`).
 
 ## Styling
 
@@ -142,6 +148,36 @@ Where a style goes, in order:
 Do not hand-roll a design system, do not add utility-class frameworks, do not introduce
 `shared/ui` wrappers unprompted. Visual consistency across modules is an open problem
 assigned to the platform team, and misalignment is an accepted learning experience.
+
+`/design-preview` (`core/design-preview/`, platform-owned) is the living style guide:
+the palette with its role names, every global class, and static sketches of screens
+with mock data. It is reached only by typing the URL, never linked from the app's
+navigation. Before writing a style, look there for a class that already fits. When a
+global class is added to `_components.scss`, show it on the overview page in the same
+change. The sketches never call the server and are never imported by a module.
+
+## Image upload
+
+`shared/image-upload/` is the one image field in the app. It checks size (at most 5 MB)
+and format (JPEG or PNG) before anything is sent, shows the reason when it rejects a
+file, and shows a client-only preview. A module never writes these checks again; the
+server repeats them regardless (`backend/AGENTS.md`, "Image upload"). A page that takes
+an image:
+
+1. Places `<app-image-upload (imageChange)="image.set($event)" />` inside its form and
+   keeps the emitted `File | null` in a signal, `image = signal<File | null>(null)`.
+   The field emits `null` when a file is rejected or the user removes it with its
+   "Ukloni sliku" button. The field knows only a newly chosen file: an edit page shows
+   the already stored image itself, with `<img [src]>` of its address above the field.
+2. On submit calls its group's service, which sends the form fields and the image
+   together in one request: build a `FormData`, `append` each field and the file, and
+   post it with `HttpClient` and `firstValueFrom` like any command. The image is sent
+   only then, never on selection.
+3. A server rejection shows through `serverMessage` above the button like any command
+   error; the entered values and the chosen image stay.
+
+The server returns the image address (`/images/<guid>.jpg`), which the DTO carries as a
+`string` and the template shows with `<img [src]>`.
 
 ## Conventions
 

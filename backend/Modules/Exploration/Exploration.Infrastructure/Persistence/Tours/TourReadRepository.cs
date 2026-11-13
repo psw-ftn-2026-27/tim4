@@ -41,18 +41,18 @@ internal sealed class TourReadRepository : ITourReadRepository
             var name = search.Name.ToLower();
             tours = tours.Where(tour => tour.Name.ToLower().Contains(name));
         }
-        if (search.Difficulty is not null)
+        var difficulties = search.Difficulties ?? [];
+        if (difficulties.Count > 0)
         {
-            var difficulty = search.Difficulty.Value;
-            tours = tours.Where(tour => tour.Difficulty == difficulty);
+            tours = tours.Where(tour => difficulties.Contains(tour.Difficulty));
         }
-        foreach (var tag in search.Tags ?? [])
+        var lowerTags = (search.Tags ?? [])
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => tag.ToLower())
+            .ToList();
+        if (lowerTags.Count > 0)
         {
-            if (!string.IsNullOrWhiteSpace(tag))
-            {
-                var lowerTag = tag.ToLower();
-                tours = tours.Where(tour => tour.Tags.Any(tourTag => tourTag.ToLower() == lowerTag));
-            }
+            tours = tours.Where(tour => tour.Tags.Any(tourTag => lowerTags.Contains(tourTag.ToLower())));
         }
         if (search.Transport is not null)
         {
@@ -90,6 +90,9 @@ internal sealed class TourReadRepository : ITourReadRepository
                 tour.Tags,
                 tour.Status,
                 tour.PublishedAt,
+                tour.ArchivedAt,
+                tour.RecommendedGroupSize.Min,
+                tour.RecommendedGroupSize.Max,
                 tour.TransportTimes
                     .Select(time => new TransportTimeDto(time.Transport, time.Minutes))
                     .ToList()));

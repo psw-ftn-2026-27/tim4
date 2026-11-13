@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Host.Tests.DependencyTests;
 
-// No Shared project may know about any module and Shared.Domain stays free of frameworks.
+// No Shared project may know about any module, and Shared.Domain and Shared.Application stay free of frameworks.
 public class SharedKernelTests : BaseArchitectureTests
 {
     [Theory]
@@ -16,9 +16,11 @@ public class SharedKernelTests : BaseArchitectureTests
         AssertNoDependency(sharedProject, moduleAssemblies);
     }
 
-    [Fact]
-    public void Shared_domain_is_framework_free()
+    [Theory]
+    [InlineData("Shared.Domain")]
+    [InlineData("Shared.Application")]
+    public void Shared_domain_and_application_are_framework_free(string sharedProject)
     {
-        AssertNoNamespaceDependency("Shared.Domain", "Microsoft.EntityFrameworkCore", "Microsoft.AspNetCore");
+        AssertNoNamespaceDependency(sharedProject, "Microsoft.EntityFrameworkCore", "Microsoft.AspNetCore");
     }
 }

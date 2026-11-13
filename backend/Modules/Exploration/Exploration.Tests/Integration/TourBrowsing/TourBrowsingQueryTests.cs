@@ -27,6 +27,16 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Archived_tour_is_not_listed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?pageSize=100", JsonOptions);
+
+        tours!.Items.Should().NotContain(tour => tour.Id == TourSeed.ArchivedOldTownWalk.Id);
+    }
+
+    [Fact]
     public async Task Published_tours_are_listed_page_by_page()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
@@ -42,7 +52,7 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?name=vinograd&difficulty=Moderate&tags=priroda&transport=Bicycle", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?name=vinograd&difficulties=Moderate&tags=priroda&transport=Bicycle", JsonOptions);
 
         tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
         tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
@@ -50,15 +60,28 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Tour_with_only_some_of_the_chosen_tags_is_not_found()
+    public async Task Search_with_several_difficulties_finds_tours_of_any_of_them()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?tags=vino&tags=istorija", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficulties=Easy&difficulties=Hard", JsonOptions);
 
-        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
         tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
-        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+    }
+
+    [Fact]
+    public async Task Tour_with_at_least_one_of_the_chosen_tags_is_found_and_tour_with_none_is_not()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?tags=istorija&tags=grad", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
     }
 
     [Fact]
