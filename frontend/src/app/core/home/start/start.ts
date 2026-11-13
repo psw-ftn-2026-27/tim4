@@ -2,7 +2,8 @@ import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 // What a signed-in user sees at `/`: a greeting and links grouped by goal. It only
-// links to existing module routes; an administrator gets the reading links only.
+// links to existing module routes; an explorer also gets tour authoring and the wallet,
+// an administrator gets tours and challenges.
 @Component({
   imports: [RouterLink],
   selector: 'app-start',

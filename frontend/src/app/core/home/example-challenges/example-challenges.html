@@ -4,7 +4,7 @@
       <p class="kicker">Primeri izazova</p>
       <h2 id="challenges-title">Usput igraj. Svaki izazov nosi XP.</h2>
     </div>
-    <p>Izazovi stoje na mapi, pored ključnih tačaka tura.</p>
+    <p>Izazovi su na mapi grada.</p>
   </div>
   <div class="board">
     <div class="board__map reveal" aria-hidden="true">
@@ -37,14 +37,18 @@
                 }
                 @case (1) {
                   <svg viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20.5 20.5-4.6-4.6" />
+                    <path
+                      d="M4 8a2 2 0 0 1 2-2h1.6l1.5-2h5.8l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"
+                    />
+                    <circle cx="12" cy="12.5" r="3.5" />
                   </svg>
                 }
                 @default {
                   <svg viewBox="0 0 24 24">
-                    <path d="M5 21V4" />
-                    <path d="M5 4h11l-2.2 4L16 12H5" />
+                    <circle cx="9" cy="8" r="3" />
+                    <path d="M3 20a6 6 0 0 1 12 0" />
+                    <circle cx="17" cy="9" r="2.5" />
+                    <path d="M16 14.2a5 5 0 0 1 6 4.8" />
                   </svg>
                 }
               }

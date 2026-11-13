@@ -10,10 +10,11 @@ export class Ribbon {
   // The list is shown twice so the scrolling animation can loop without a gap.
   protected readonly items = [
     'Ture sa pričom',
+    'Besplatne i plaćene ture',
     'Kviz',
-    'Skrivena lokacija',
+    'Lokacijski izazov',
     'Društveni izazov',
-    'XP za svaki pređen put',
+    'XP za rešene izazove',
     'Ključne tačke',
   ];
 }

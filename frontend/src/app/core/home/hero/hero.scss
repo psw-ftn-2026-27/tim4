@@ -82,7 +82,7 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  margin-top: var(--space-5);
+  margin: var(--space-5) 0 var(--space-3);
 }
 
 // The primary button: at least 44x44 CSS px (P4), the only accent-coloured button (P7).

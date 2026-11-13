@@ -17,10 +17,24 @@
             <h3>{{ tour.name }}</h3>
             <p>{{ tour.excerpt }}</p>
             <p class="tags">
-              <span class="tag">{{ tour.length }}</span>
-              <span class="badge" [class]="'badge--' + tour.difficulty">
-                <span aria-hidden="true">{{ difficultyIcons[tour.difficulty] }}</span>
-                {{ difficultyLabels[tour.difficulty] }}
+              @for (tag of tour.tags; track tag) {
+                <span class="tag">{{ tag }}</span>
+              }
+            </p>
+            <p class="tour__meta">
+              <span class="tour__facts">
+                <span class="tour__length">{{ tour.length }}</span>
+                <span class="badge" [class]="'badge--' + tour.difficulty">
+                  <span aria-hidden="true">{{ difficultyIcons[tour.difficulty] }}</span>
+                  {{ difficultyLabels[tour.difficulty] }}
+                </span>
+              </span>
+              <span class="badge badge--ec price">
+                @if (tour.price === null) {
+                  Besplatna
+                } @else {
+                  {{ tour.price }} EC
+                }
               </span>
             </p>
           </div>

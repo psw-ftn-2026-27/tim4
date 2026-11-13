@@ -7,42 +7,70 @@
     </div>
   </div>
 
-  <div class="goals" [class.goals--three]="isAdmin()">
-    <div class="goal goal--explore">
-      <img class="goal__art" src="/images/ilustracije/finding-the-way.svg" alt="" />
-      <div class="goal__head">
-        <p class="goal__kicker">Istraži</p>
-        <h2>Pronađi sledeću turu</h2>
-        <p>Pretraži ture po mestu, težini i prevozu.</p>
+  @if (isAdmin()) {
+    <div class="goals goals--two">
+      <div class="goal goal--explore">
+        <img class="goal__art" src="/images/ilustracije/finding-the-way.svg" alt="" />
+        <div class="goal__head">
+          <p class="goal__kicker">Ture</p>
+          <h2>Pregled tura</h2>
+          <p>Pretraži ture po mestu, težini i prevozu.</p>
+        </div>
+        <div class="goal__links">
+          <a class="goal__main" routerLink="/exploration">
+            <span>Pretraži ture</span><span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
       </div>
-      <div class="goal__links">
-        <a class="goal__main" routerLink="/exploration">
-          <span>Pretraži ture</span><span class="arrow" aria-hidden="true">→</span>
-        </a>
-        @if (!isAdmin()) {
+
+      <div class="goal goal--play">
+        <img class="goal__art" src="/images/ilustracije/winner.svg" alt="" />
+        <div class="goal__head">
+          <p class="goal__kicker">Izazovi</p>
+          <h2>Izazovi na mapi</h2>
+          <p>Kvizovi, lokacijski i društveni izazovi.</p>
+        </div>
+        <div class="goal__links">
+          <a class="goal__main" routerLink="/games">
+            <span>Izazovi</span><span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="goals">
+      <div class="goal goal--explore">
+        <img class="goal__art" src="/images/ilustracije/finding-the-way.svg" alt="" />
+        <div class="goal__head">
+          <p class="goal__kicker">Istraži</p>
+          <h2>Pronađi sledeću turu</h2>
+          <p>Pretraži ture po mestu, težini i prevozu.</p>
+        </div>
+        <div class="goal__links">
+          <a class="goal__main" routerLink="/exploration">
+            <span>Pretraži ture</span><span class="arrow" aria-hidden="true">→</span>
+          </a>
           <a routerLink="/exploration/preferences">
             <span>Moje preference <small>· šta voliš da obilaziš</small></span>
             <span class="arrow" aria-hidden="true">→</span>
           </a>
-        }
+        </div>
       </div>
-    </div>
 
-    <div class="goal goal--play">
-      <img class="goal__art" src="/images/ilustracije/winner.svg" alt="" />
-      <div class="goal__head">
-        <p class="goal__kicker">Igraj</p>
-        <h2>Izazovi na mapi</h2>
-        <p>Kviz, skrivena lokacija i izazovi sa klubom.</p>
+      <div class="goal goal--play">
+        <img class="goal__art" src="/images/ilustracije/winner.svg" alt="" />
+        <div class="goal__head">
+          <p class="goal__kicker">Igraj</p>
+          <h2>Izazovi na mapi</h2>
+          <p>Kvizovi, lokacijski i društveni izazovi.</p>
+        </div>
+        <div class="goal__links">
+          <a class="goal__main" routerLink="/games">
+            <span>Izazovi</span><span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
       </div>
-      <div class="goal__links">
-        <a class="goal__main" routerLink="/games">
-          <span>Izazovi</span><span class="arrow" aria-hidden="true">→</span>
-        </a>
-      </div>
-    </div>
 
-    @if (!isAdmin()) {
       <div class="goal goal--create">
         <img class="goal__art" src="/images/ilustracije/adventure-map.svg" alt="" />
         <div class="goal__head">
@@ -59,29 +87,22 @@
           </a>
         </div>
       </div>
-    }
 
-    <div class="goal goal--community">
-      <img class="goal__art" src="/images/ilustracije/my-current-location.svg" alt="" />
-      <div class="goal__head">
-        <p class="goal__kicker">Zajednica</p>
-        <h2>Blogovi putnika</h2>
-        <p>Čitaj utiske i piši svoje.</p>
-      </div>
-      <div class="goal__links">
-        <a class="goal__main" routerLink="/social">
-          <span>Blogovi</span><span class="arrow" aria-hidden="true">→</span>
-        </a>
-        @if (!isAdmin()) {
-          <a routerLink="/social/create">
-            <span>Napiši blog</span><span class="arrow" aria-hidden="true">→</span>
+      <div class="goal goal--wallet">
+        <img class="goal__art" src="/images/ilustracije/my-current-location.svg" alt="" />
+        <div class="goal__head">
+          <p class="goal__kicker">Novčanik</p>
+          <h2>Explorer Coin-i</h2>
+          <p>Stanje novčanika i sve uplate.</p>
+        </div>
+        <div class="goal__links">
+          <a class="goal__main" routerLink="/payment">
+            <span>Stanje i transakcije</span><span class="arrow" aria-hidden="true">→</span>
           </a>
-        }
+        </div>
       </div>
     </div>
-  </div>
 
-  @if (!isAdmin()) {
     <p class="tip">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M9 18h6" />

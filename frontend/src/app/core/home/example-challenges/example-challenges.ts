@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-// Three illustrative challenges on a drawn map (P6): every one leads to /register.
+// Three illustrative challenges on a drawn map (P6), one of each kind the Games module
+// has: a quiz, a location challenge and a social challenge. Every one leads to /register.
 
 interface ExampleChallenge {
   kind: string;
@@ -22,19 +23,21 @@ export class ExampleChallenges {
     {
       kind: 'Kviz',
       title: 'Ko je sagradio tvrđavu?',
-      description: 'Odgovori na pitanja o mestu na kom stojiš.',
+      description:
+        'Obiđi ulicu, pročitaj natpise i odgovori na pitanja. Što tačnije, to više XP-a.',
       xp: 50,
     },
     {
-      kind: 'Skrivena lokacija',
-      title: 'Pronađi skrivenu česmu',
-      description: 'Po tragovima na mapi otkrij mesto koje turisti promaše.',
+      kind: 'Lokacijski izazov',
+      title: 'Gde je nastala ova fotografija?',
+      description: 'Dobiješ fotografiju i krug na mapi. Pronađi mesto sa kog je snimljena.',
       xp: 120,
     },
     {
       kind: 'Društveni izazov',
-      title: 'Obiđite trg sa klubom',
-      description: 'Zajedno sa članovima kluba stignite do cilja.',
+      title: 'Okupite se na trgu',
+      description:
+        'Kad se između 18 i 20h okupi dovoljno ljudi na istom mestu, izazov je rešen za sve.',
       xp: 200,
     },
   ];

@@ -1,5 +1,5 @@
-// One column on a phone, two (three for an administrator) on a tablet or laptop, and
-// all goals in one row on a wide window.
+// One column on a phone, two on a tablet or laptop, and all goals in one row on a wide
+// window (an administrator's two goals stay two).
 // Every colour is a token (P3); links are at least 48 CSS px tall (P4).
 
 :host {
@@ -73,12 +73,13 @@ p {
 }
 
 .goal--create {
-  background: var(--color-ec-bg);
-}
-
-.goal--community {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
+}
+
+// The wallet holds Explorer Coins, so it takes the EC colour.
+.goal--wallet {
+  background: var(--color-ec-bg);
 }
 
 .goal__art {
@@ -115,7 +116,7 @@ p {
 }
 
 .goal--explore .goal__kicker,
-.goal--community .goal__kicker {
+.goal--create .goal__kicker {
   color: var(--color-accent);
 }
 
@@ -123,7 +124,7 @@ p {
   color: var(--color-xp-text);
 }
 
-.goal--create .goal__kicker {
+.goal--wallet .goal__kicker {
   color: var(--color-ec-text);
 }
 
@@ -150,7 +151,7 @@ p {
     box-shadow 0.2s;
 }
 
-.goal--community .goal__links a:not(.goal__main) {
+.goal--create .goal__links a:not(.goal__main) {
   background: var(--color-bg);
 }
 
@@ -217,10 +218,6 @@ a:hover .arrow {
   .goals {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  .goals--three {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 // On a wide window all goals sit in one row, so the cards keep the prototype's size
@@ -230,8 +227,8 @@ a:hover .arrow {
     grid-template-columns: repeat(4, 1fr);
   }
 
-  .goals--three {
-    grid-template-columns: repeat(3, 1fr);
+  .goals--two {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
