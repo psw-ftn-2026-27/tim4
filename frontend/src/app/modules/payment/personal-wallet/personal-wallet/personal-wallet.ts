@@ -1,16 +1,19 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
 import { WalletBalanceDto, WalletTransactionDto } from '../../api/payment-api-types';
 import { WalletTransactions } from '../wallet-transactions/wallet-transactions';
 
 @Component({
-  imports: [WalletTransactions],
+  imports: [WalletTransactions, RouterLink],
   selector: 'app-personal-wallet',
   styleUrl: './personal-wallet.scss',
   templateUrl: './personal-wallet.html',
 })
 export class PersonalWallet {
+  protected readonly auth = inject(Auth);
   protected readonly page = signal(1);
   protected readonly pageSize = 20;
 

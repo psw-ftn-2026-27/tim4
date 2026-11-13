@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.PersonalWallet;
+using Payment.Application.Wallets;
 using Payment.Domain.Wallets;
 using Payment.Infrastructure.Persistence;
 using Payment.Tests.Integration.Seeds;

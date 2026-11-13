@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Payment.Application.PersonalWallet;
+using Payment.Application.Wallets;
 using Shared.Api;
 using Shared.Domain;
 

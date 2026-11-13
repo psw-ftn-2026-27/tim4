@@ -17,3 +17,13 @@ export interface WalletTransactionDto {
 export interface WalletTransactionSearchDto {
   status: TransactionStatus | null;
 }
+
+export interface ExplorerWalletDto {
+  userId: string;
+  email: string;
+  balance: number;
+}
+
+export interface CreditWalletDto {
+  amount: number;
+}

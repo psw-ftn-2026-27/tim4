@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Payment.Application.PersonalWallet;
 using Payment.Application.Wallets;
 using Payment.Domain.Wallets;
 using Shared.Domain;
@@ -14,6 +13,11 @@ internal sealed class WalletReadRepository : IWalletReadRepository
     {
         _dbContext = dbContext;
     }
+
+    public Task<Dictionary<Guid, long>> GetBalancesAsync(IReadOnlyCollection<Guid> userIds) => _dbContext.Wallets
+        .Where(wallet => userIds.Contains(wallet.UserId))
+        .Select(wallet => new { wallet.UserId, wallet.Balance })
+        .ToDictionaryAsync(wallet => wallet.UserId, wallet => wallet.Balance);
 
     public async Task<PageResult<WalletTransactionDto>> GetTransactionsAsync(
         Guid userId, int page, int pageSize, TransactionStatus? status)
