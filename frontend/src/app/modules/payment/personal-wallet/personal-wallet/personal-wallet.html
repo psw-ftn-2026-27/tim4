@@ -1,5 +1,8 @@
 <div class="stack">
   <h1>Moj novcanik</h1>
+  @if (auth.user()?.roles.includes('administrator')) {
+    <p><a routerLink="/payment/administration">Administracija novcanika</a></p>
+  }
 
   @if (balance.error() || transactions.error()) {
     <div class="stack" role="alert">
@@ -29,12 +32,7 @@
           <app-wallet-transactions [transactions]="history.items" />
           <p class="meta">Stornirana uplata ne ulazi u raspolozivo stanje.</p>
           <nav class="pagination" aria-label="Stranice istorije transakcija">
-            <button
-              class="button"
-              type="button"
-              [disabled]="page() === 1"
-              (click)="previousPage()"
-            >
+            <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
               Prethodna
             </button>
             <p class="meta" aria-live="polite">Stranica {{ page() }} od {{ pageCount() }}</p>

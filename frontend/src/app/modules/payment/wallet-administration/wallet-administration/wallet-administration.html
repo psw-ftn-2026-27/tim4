@@ -1,0 +1,153 @@
+<div class="stack">
+  <p><a routerLink="/payment">Moj novcanik</a></p>
+  <h1>Novcanici korisnika</h1>
+
+  @if (!isAdministrator()) {
+    <p class="error">Ova stranica je dostupna samo administratorima.</p>
+  } @else {
+    <div class="administration-layout">
+      <section class="stack" aria-labelledby="wallet-users-title">
+        <h2 id="wallet-users-title">Istrazivaci</h2>
+        @if (users.isLoading()) {
+          <p role="status">Ucitavanje korisnika...</p>
+        } @else if (users.error()) {
+          <p class="error" role="alert">Nije moguce ucitati korisnike.</p>
+          <button class="button" type="button" (click)="retry()">Pokusaj ponovo</button>
+        } @else if (users.value(); as result) {
+          @if (result.totalCount === 0) {
+            <p>Nema registrovanih istrazivaca.</p>
+          } @else {
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Mejl</th>
+                    <th scope="col">Stanje</th>
+                    <th scope="col">Izbor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (user of result.items; track user.userId) {
+                    <tr>
+                      <td>{{ user.email }}</td>
+                      <td>
+                        <span class="badge badge--ec">{{ user.balance }} EC</span>
+                      </td>
+                      <td>
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          [attr.aria-pressed]="selectedUser()?.userId === user.userId"
+                          (click)="selectUser(user)"
+                        >
+                          {{ selectedUser()?.userId === user.userId ? 'Izabran' : 'Izaberi' }}
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <nav class="pagination" aria-label="Stranice korisnika">
+              <button
+                class="button"
+                type="button"
+                [disabled]="page() === 1 || pending()"
+                (click)="changePage(-1)"
+              >
+                Prethodna
+              </button>
+              <p class="meta">Stranica {{ page() }} od {{ pageCount() }}</p>
+              <button
+                class="button"
+                type="button"
+                [disabled]="page() >= pageCount() || pending()"
+                (click)="changePage(1)"
+              >
+                Sledeca
+              </button>
+            </nav>
+          }
+        }
+      </section>
+
+      <section class="card stack" aria-labelledby="wallet-payment-title">
+        <h2 id="wallet-payment-title">Uplata EC</h2>
+        @if (selectedUser(); as user) {
+          <p>
+            Primalac: <strong>{{ user.email }}</strong>
+          </p>
+          <form class="stack" (submit)="submit($event)">
+            <div class="field">
+              <label for="wallet-credit-amount">Iznos (EC)</label>
+              <input
+                id="wallet-credit-amount"
+                type="number"
+                step="1"
+                [formField]="paymentForm.amount"
+              />
+              @if (paymentForm.amount().touched()) {
+                @for (message of paymentForm.amount().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+            @if (error()) {
+              <p class="error" role="alert">{{ error() }}</p>
+            }
+            @if (success()) {
+              <p role="status">{{ success() }}</p>
+            }
+            <button
+              class="button button--primary"
+              type="submit"
+              [disabled]="pending() || !paymentForm().valid()"
+            >
+              {{ pending() ? 'Uplata je u toku...' : 'Uplati' }}
+            </button>
+          </form>
+        } @else {
+          <p>Izaberi korisnika iz tabele za uplatu i pregled transakcija.</p>
+        }
+      </section>
+    </div>
+
+    @if (selectedUser(); as user) {
+      <section class="stack" aria-labelledby="wallet-user-history-title">
+        <h2 id="wallet-user-history-title">Transakcije: {{ user.email }}</h2>
+        @if (transactions.isLoading()) {
+          <p role="status">Ucitavanje transakcija...</p>
+        } @else if (transactions.error()) {
+          <p class="error" role="alert">Nije moguce ucitati transakcije.</p>
+          <button class="button" type="button" (click)="retry()">Pokusaj ponovo</button>
+        } @else if (transactions.value(); as history) {
+          @if (history.totalCount === 0) {
+            <p>Jos nema transakcija</p>
+          } @else {
+            <app-wallet-transactions [transactions]="history.items" />
+            <nav class="pagination" aria-label="Stranice transakcija korisnika">
+              <button
+                class="button"
+                type="button"
+                [disabled]="historyPage() === 1 || pending()"
+                (click)="changeHistoryPage(-1)"
+              >
+                Prethodna
+              </button>
+              <p class="meta">Stranica {{ historyPage() }} od {{ historyPageCount() }}</p>
+              <button
+                class="button"
+                type="button"
+                [disabled]="historyPage() >= historyPageCount() || pending()"
+                (click)="changeHistoryPage(1)"
+              >
+                Sledeca
+              </button>
+            </nav>
+          }
+        }
+      </section>
+    }
+  }
+</div>

@@ -15,6 +15,11 @@ internal sealed class WalletReadRepository : IWalletReadRepository
         _dbContext = dbContext;
     }
 
+    public Task<Dictionary<Guid, long>> GetBalancesAsync(IReadOnlyCollection<Guid> userIds) => _dbContext.Wallets
+        .Where(wallet => userIds.Contains(wallet.UserId))
+        .Select(wallet => new { wallet.UserId, wallet.Balance })
+        .ToDictionaryAsync(wallet => wallet.UserId, wallet => wallet.Balance);
+
     public Task<WalletBalanceDto?> GetBalanceAsync(Guid userId) => _dbContext.Wallets
         .Where(wallet => wallet.UserId == userId)
         .Select(wallet => new WalletBalanceDto(wallet.Balance))

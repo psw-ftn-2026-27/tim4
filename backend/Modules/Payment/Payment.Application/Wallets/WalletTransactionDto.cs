@@ -1,6 +1,6 @@
 using Payment.Domain.Wallets;
 
-namespace Payment.Application.PersonalWallet;
+namespace Payment.Application.Wallets;
 
 public sealed record WalletTransactionDto(
     Guid Id,

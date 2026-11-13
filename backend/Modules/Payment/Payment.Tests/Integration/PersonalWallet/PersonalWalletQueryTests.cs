@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Payment.Application.PersonalWallet;
+using Payment.Application.Wallets;
 using Payment.Domain.Wallets;
 using Payment.Tests.Integration.Seeds;
 using Shared.Domain;

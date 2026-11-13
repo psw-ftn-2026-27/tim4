@@ -6,6 +6,8 @@ namespace Payment.Application.Wallets;
 
 public interface IWalletReadRepository
 {
+    Task<Dictionary<Guid, long>> GetBalancesAsync(IReadOnlyCollection<Guid> userIds);
+
     Task<WalletBalanceDto?> GetBalanceAsync(Guid userId);
 
     Task<PageResult<WalletTransactionDto>> GetTransactionsAsync(
