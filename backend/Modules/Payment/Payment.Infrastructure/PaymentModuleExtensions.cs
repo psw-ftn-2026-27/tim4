@@ -1,6 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Payment.Application;
+using Payment.Application.ProductOffering;
+using Payment.Application.Products;
+using Payment.Contracts;
+using Payment.Infrastructure.Persistence.Products;
 using Payment.Application.PersonalWallet;
 using Payment.Application.WalletAdministration;
 using Payment.Application.Wallets;
@@ -24,6 +28,9 @@ public static class PaymentModuleExtensions
         services.AddScoped<PersonalWalletQueries>();
         services.AddScoped<WalletAdministrationQueries>();
         services.AddScoped<WalletAdministrationService>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<ProductOfferingService>();
+        services.AddScoped<IPaymentApi, PaymentApi>();
 
         return services;
     }
