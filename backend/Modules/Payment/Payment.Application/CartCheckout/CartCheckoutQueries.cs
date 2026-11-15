@@ -2,14 +2,14 @@ using Payment.Application.Purchases;
 using Payment.Application.ShoppingCarts;
 using Shared.Domain.Exceptions;
 
-namespace Payment.Application.ShoppingCart;
+namespace Payment.Application.CartCheckout;
 
-public sealed class ShoppingCartQueries
+public sealed class CartCheckoutQueries
 {
     private readonly IShoppingCartReadRepository _carts;
     private readonly IPurchaseReadRepository _purchases;
 
-    public ShoppingCartQueries(IShoppingCartReadRepository carts, IPurchaseReadRepository purchases)
+    public CartCheckoutQueries(IShoppingCartReadRepository carts, IPurchaseReadRepository purchases)
     {
         _carts = carts;
         _purchases = purchases;

@@ -13,7 +13,7 @@ internal static class ProductSeed
 
     static ProductSeed()
     {
-        ExistingOffer = new Product(Guid.NewGuid(), "Existing digital resource", WellKnownUsers.Explorer, 25);
+        ExistingOffer = new Product(Guid.NewGuid(), "Existing digital resource", WellKnownUsers.SecondExplorer, 25);
         CartOffer = new Product(Guid.NewGuid(), "Cart resource", WellKnownUsers.SecondExplorer, 30);
         ExpensiveOffer = new Product(Guid.NewGuid(), "Expensive resource", WellKnownUsers.Explorer, 1000);
         FreeOffer = new Product(Guid.NewGuid(), "Free resource", WellKnownUsers.Explorer, 0);

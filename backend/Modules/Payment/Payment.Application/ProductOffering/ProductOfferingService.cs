@@ -1,5 +1,6 @@
 using Payment.Application.Products;
 using Payment.Domain.Products;
+using Shared.Domain.Exceptions;
 
 namespace Payment.Application.ProductOffering;
 
@@ -25,6 +26,14 @@ public sealed class ProductOfferingService
         }
 
         _productRepository.Add(product);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdateProductPriceAsync(Guid entityId, Guid ownerId, long price)
+    {
+        var product = await _productRepository.GetByEntityIdAsync(entityId)
+            ?? throw new NotFoundException("The product does not exist.");
+        product.ChangePrice(ownerId, price);
         await _unitOfWork.SaveChangesAsync();
     }
 }

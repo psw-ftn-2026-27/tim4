@@ -5,11 +5,11 @@ using Payment.Application.Wallets;
 using Payment.Domain.Purchases;
 using Payment.Domain.Wallets;
 using Shared.Domain.Exceptions;
-using Cart = Payment.Domain.ShoppingCarts.ShoppingCart;
+using Payment.Domain.ShoppingCarts;
 
-namespace Payment.Application.ShoppingCart;
+namespace Payment.Application.CartCheckout;
 
-public sealed class ShoppingCartService
+public sealed class CartCheckoutService
 {
     private readonly IShoppingCartRepository _carts;
     private readonly IProductRepository _products;
@@ -18,7 +18,7 @@ public sealed class ShoppingCartService
     private readonly Purchasing _purchasing;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ShoppingCartService(IShoppingCartRepository carts, IProductRepository products,
+    public CartCheckoutService(IShoppingCartRepository carts, IProductRepository products,
         IPurchaseRepository purchases, IWalletRepository wallets, Purchasing purchasing, IUnitOfWork unitOfWork)
     {
         _carts = carts;
@@ -36,7 +36,7 @@ public sealed class ShoppingCartService
         var cart = await _carts.GetByUserIdAsync(userId);
         if (cart is null)
         {
-            cart = new Cart(userId);
+            cart = new ShoppingCart(userId);
             _carts.Add(cart);
         }
         var owned = await _purchases.GetByContentAsync(userId, [product.EntityId]);
@@ -78,6 +78,6 @@ public sealed class ShoppingCartService
         return purchase.Id;
     }
 
-    private async Task<Cart> GetCartAsync(Guid userId) => await _carts.GetByUserIdAsync(userId)
+    private async Task<ShoppingCart> GetCartAsync(Guid userId) => await _carts.GetByUserIdAsync(userId)
         ?? throw new NotFoundException("The cart does not exist.");
 }

@@ -12,13 +12,13 @@ internal sealed class ProductReadRepository : IProductReadRepository
         _context = context;
     }
 
-    public async Task<Dictionary<Guid, decimal?>> GetPricesByEntityIdsAsync(IReadOnlyCollection<Guid> entityIds)
+    public async Task<Dictionary<Guid, long?>> GetPricesByEntityIdsAsync(IReadOnlyCollection<Guid> entityIds)
     {
         var requested = entityIds.Distinct().ToArray();
         var prices = await _context.Products
             .Where(product => requested.Contains(product.EntityId))
             .Select(product => new { product.EntityId, product.Price })
-            .ToDictionaryAsync(product => product.EntityId, product => (decimal?)product.Price);
+            .ToDictionaryAsync(product => product.EntityId, product => (long?)product.Price);
 
         foreach (var entityId in requested)
         {

@@ -7,11 +7,11 @@ using Payment.Tests.Integration.Seeds;
 using Shared.Tests;
 using Xunit;
 
-namespace Payment.Tests.Integration.ShoppingCart;
+namespace Payment.Tests.Integration.CartCheckout;
 
-public sealed class ShoppingCartContractCommandTests : BaseIntegrationTest
+public sealed class CartCheckoutContractCommandTests : BaseIntegrationTest
 {
-    public ShoppingCartContractCommandTests(PaymentApiFactory factory) : base(factory) { }
+    public CartCheckoutContractCommandTests(PaymentApiFactory factory) : base(factory) { }
 
     [Fact]
     public async Task Another_module_can_add_content_to_the_buyers_cart_through_the_payment_contract()

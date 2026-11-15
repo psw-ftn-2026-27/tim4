@@ -1,18 +1,19 @@
+using Payment.Application.ProductOffering;
 using Payment.Contracts;
-using Payment.Application.ShoppingCart;
+using Payment.Application.CartCheckout;
 using Payment.Application.PurchaseAccess;
 using Payment.Application.ProductPricing;
 
-namespace Payment.Application.ProductOffering;
+namespace Payment.Application;
 
 public sealed class PaymentApi : IPaymentApi
 {
     private readonly ProductOfferingService _productOffering;
-    private readonly ShoppingCartService _shoppingCart;
+    private readonly CartCheckoutService _shoppingCart;
     private readonly PurchaseAccessQueries _purchaseAccess;
     private readonly ProductPricingQueries _productPricing;
 
-    public PaymentApi(ProductOfferingService productOffering, ShoppingCartService shoppingCart,
+    public PaymentApi(ProductOfferingService productOffering, CartCheckoutService shoppingCart,
         PurchaseAccessQueries purchaseAccess, ProductPricingQueries productPricing)
     {
         _productOffering = productOffering;
@@ -27,12 +28,15 @@ public sealed class PaymentApi : IPaymentApi
     public Task AddToCartAsync(Guid userId, Guid entityId) =>
         _shoppingCart.AddToCartAsync(userId, new AddToCartDto(entityId));
 
+    public Task UpdateProductPriceAsync(Guid entityId, Guid ownerId, long price) =>
+        _productOffering.UpdateProductPriceAsync(entityId, ownerId, price);
+
     public Task<bool> HasPurchasedAsync(Guid userId, Guid entityId) =>
         _purchaseAccess.HasPurchasedAsync(userId, entityId);
 
     public Task<List<Guid>> GetPurchasedEntityIdsAsync(Guid userId) =>
         _purchaseAccess.GetPurchasedEntityIdsAsync(userId);
 
-    public Task<Dictionary<Guid, decimal?>> GetPricesByEntityIdsAsync(IReadOnlyCollection<Guid> entityIds) =>
+    public Task<Dictionary<Guid, long?>> GetPricesByEntityIdsAsync(IReadOnlyCollection<Guid> entityIds) =>
         _productPricing.GetPricesByEntityIdsAsync(entityIds);
 }

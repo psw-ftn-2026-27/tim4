@@ -1,19 +1,16 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Payment.Application.ShoppingCart;
-using Payment.Application.Wallets;
-using Payment.Domain.Wallets;
+using Payment.Application.CartCheckout;
 using Payment.Tests.Integration.Seeds;
-using Shared.Domain;
 using Shared.Tests;
 using Xunit;
 
-namespace Payment.Tests.Integration.ShoppingCart;
+namespace Payment.Tests.Integration.CartCheckout;
 
-public sealed class ShoppingCartQueryTests : BaseIntegrationTest
+public sealed class CartCheckoutQueryTests : BaseIntegrationTest
 {
-    public ShoppingCartQueryTests(PaymentApiFactory factory) : base(factory) { }
+    public CartCheckoutQueryTests(PaymentApiFactory factory) : base(factory) { }
 
     [Fact]
     public async Task Cart_display_contains_only_the_buyers_saved_items_and_total()
@@ -66,17 +63,4 @@ public sealed class ShoppingCartQueryTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
-    public async Task Wallet_history_distinguishes_purchase_payments_from_administrator_credit()
-    {
-        var client = Factory.CreateClientFor(PurchaseSeed.Buyer, "explorer");
-
-        var history = await client.GetFromJsonAsync<PageResult<WalletTransactionDto>>("/api/payment/wallet/transactions", JsonOptions);
-
-        history!.Items.Should().ContainSingle(item => item.Kind == TransactionKind.Purchase
-            && item.PurchaseId == PurchaseSeed.Completed.Id && item.EntityId == ProductSeed.ExistingOffer.EntityId
-            && item.AdministratorId == null && item.Amount == (long)ProductSeed.ExistingOffer.Price);
-        history.Items.Should().ContainSingle(item => item.Kind == TransactionKind.Credit
-            && item.AdministratorId == WellKnownUsers.Administrator && item.PurchaseId == null);
-    }
 }

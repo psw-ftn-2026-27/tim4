@@ -1,4 +1,4 @@
-namespace Payment.Application.ShoppingCart;
+namespace Payment.Application.CartCheckout;
 
 public sealed record CompletedPurchaseDto(Guid Id, DateTime PurchasedAt, List<PurchasedItemDto> Items, long Total);
 

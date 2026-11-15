@@ -8,14 +8,38 @@ namespace Payment.Tests.Unit;
 public sealed class ProductTests
 {
     [Theory]
-    [InlineData(0.5)]
-    [InlineData(12.75)]
-    [InlineData(9223372036854775808d)]
-    public void Prices_must_be_whole_EC_within_the_supported_balance_range(double price)
+    [InlineData(0L)]
+    [InlineData(30L)]
+    [InlineData(long.MaxValue)]
+    public void The_owner_can_change_the_price_within_the_supported_balance_range(long price)
     {
-        var creation = () => new Product(Guid.NewGuid(), "Resource", Guid.NewGuid(), (decimal)price);
+        var product = new Product(Guid.NewGuid(), "Resource", Guid.NewGuid(), 10);
 
-        creation.Should().Throw<DomainException>();
+        product.ChangePrice(product.OwnerId, price);
+
+        product.Price.Should().Be(price);
+    }
+
+    [Fact]
+    public void Another_user_cannot_change_the_price()
+    {
+        var product = new Product(Guid.NewGuid(), "Resource", Guid.NewGuid(), 10);
+
+        var change = () => product.ChangePrice(Guid.NewGuid(), 20);
+
+        change.Should().Throw<DomainException>();
+        product.Price.Should().Be(10);
+    }
+
+    [Fact]
+    public void A_price_change_cannot_make_the_price_negative()
+    {
+        var product = new Product(Guid.NewGuid(), "Resource", Guid.NewGuid(), 10);
+
+        var change = () => product.ChangePrice(product.OwnerId, -1);
+
+        change.Should().Throw<DomainException>();
+        product.Price.Should().Be(10);
     }
 
     [Theory]
@@ -42,22 +66,20 @@ public sealed class ProductTests
         creation.Should().Throw<DomainException>();
     }
 
-    [Theory]
-    [InlineData(-1, false)]
-    [InlineData(0, true)]
-    [InlineData(1, true)]
-    public void A_product_can_be_free_but_cannot_have_a_negative_price(int price, bool allowed)
+    [Fact]
+    public void A_product_can_be_free()
     {
-        var creation = () => new Product(Guid.NewGuid(), "A digital resource", Guid.NewGuid(), price);
+        var product = new Product(Guid.NewGuid(), "A digital resource", Guid.NewGuid(), 0);
 
-        if (allowed)
-        {
-            creation.Should().NotThrow();
-        }
-        else
-        {
-            creation.Should().Throw<DomainException>();
-        }
+        product.Price.Should().Be(0);
+    }
+
+    [Fact]
+    public void A_product_cannot_have_a_negative_price()
+    {
+        var creation = () => new Product(Guid.NewGuid(), "A digital resource", Guid.NewGuid(), -1);
+
+        creation.Should().Throw<DomainException>();
     }
 
     [Theory]

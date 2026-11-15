@@ -12,13 +12,13 @@ public sealed class OrderItem : Entity
 
     private OrderItem() { Name = null!; }
 
-    internal OrderItem(Guid productId, Guid entityId, string name, decimal price) : base(Guid.NewGuid())
+    internal OrderItem(Guid productId, Guid entityId, string name, long price) : base(Guid.NewGuid())
     {
-        if (price < 0 || price > long.MaxValue || price != decimal.Truncate(price))
-            throw new DomainException("A product price must be a whole number of EC within the supported range.");
+        if (price < 0)
+            throw new DomainException("A product price cannot be negative.");
         ProductId = productId;
         EntityId = entityId;
         Name = name;
-        Price = (long)price;
+        Price = price;
     }
 }

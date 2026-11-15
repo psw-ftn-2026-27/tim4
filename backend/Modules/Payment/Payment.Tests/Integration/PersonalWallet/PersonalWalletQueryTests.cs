@@ -16,6 +16,20 @@ public sealed class PersonalWalletQueryTests : BaseIntegrationTest
     public PersonalWalletQueryTests(PaymentApiFactory factory) : base(factory) { }
 
     [Fact]
+    public async Task Wallet_history_distinguishes_purchase_payments_from_administrator_credit()
+    {
+        var client = Factory.CreateClientFor(PurchaseSeed.Buyer, "explorer");
+
+        var history = await client.GetFromJsonAsync<PageResult<WalletTransactionDto>>("/api/payment/wallet/transactions", JsonOptions);
+
+        history!.Items.Should().ContainSingle(item => item.Kind == TransactionKind.Purchase
+            && item.PurchaseId == PurchaseSeed.Completed.Id && item.EntityId == ProductSeed.ExistingOffer.EntityId
+            && item.AdministratorId == null && item.Amount == (long)ProductSeed.ExistingOffer.Price);
+        history.Items.Should().ContainSingle(item => item.Kind == TransactionKind.Credit
+            && item.AdministratorId == WellKnownUsers.Administrator && item.PurchaseId == null);
+    }
+
+    [Fact]
     public async Task The_user_reads_only_their_available_credit()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");

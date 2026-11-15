@@ -1,4 +1,4 @@
-using Payment.Application.ShoppingCart;
+using Payment.Application.CartCheckout;
 
 namespace Payment.Application.ShoppingCarts;
 

@@ -5,7 +5,7 @@ import { Auth } from '../../../../core/auth/auth';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { CartCheckoutDto } from '../../api/payment-api-types';
 import { CartItems } from '../cart-items/cart-items';
-import { ShoppingCart } from '../shopping-cart';
+import { CartCheckout } from '../cart-checkout';
 
 @Component({
   selector: 'app-checkout',
@@ -14,7 +14,7 @@ import { ShoppingCart } from '../shopping-cart';
   styleUrl: './checkout.scss',
 })
 export class Checkout {
-  private readonly shoppingCart = inject(ShoppingCart);
+  private readonly cartCheckout = inject(CartCheckout);
   private readonly router = inject(Router);
   readonly checkoutId = input.required<string>();
   protected readonly auth = inject(Auth);
@@ -44,7 +44,7 @@ export class Checkout {
     this.pending.set(true);
     this.error.set(null);
     try {
-      const purchaseId = await this.shoppingCart.confirmCartCheckout(this.checkoutId());
+      const purchaseId = await this.cartCheckout.confirmCartCheckout(this.checkoutId());
       await this.router.navigate(['/payment/purchases', purchaseId]);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Kupovina nije uspela. Pokusaj ponovo.'));

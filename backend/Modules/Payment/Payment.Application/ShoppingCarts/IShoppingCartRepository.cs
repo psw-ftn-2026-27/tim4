@@ -1,9 +1,9 @@
-using Cart = Payment.Domain.ShoppingCarts.ShoppingCart;
+using Payment.Domain.ShoppingCarts;
 
 namespace Payment.Application.ShoppingCarts;
 
 public interface IShoppingCartRepository
 {
-    Task<Cart?> GetByUserIdAsync(Guid userId);
-    void Add(Cart cart);
+    Task<ShoppingCart?> GetByUserIdAsync(Guid userId);
+    void Add(ShoppingCart cart);
 }

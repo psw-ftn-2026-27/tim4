@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.Purchases;
-using Payment.Application.ShoppingCart;
+using Payment.Application.CartCheckout;
 
 namespace Payment.Infrastructure.Persistence.Purchases;
 

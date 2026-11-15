@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Payment.Application.ShoppingCart;
+using Payment.Application.CartCheckout;
 using Shared.Api;
 
 namespace Payment.Api;
@@ -8,12 +8,12 @@ namespace Payment.Api;
 [ApiController]
 [Route("api/payment/cart")]
 [Authorize(Roles = "explorer")]
-public sealed class ShoppingCartController : ControllerBase
+public sealed class CartCheckoutController : ControllerBase
 {
-    private readonly ShoppingCartService _service;
-    private readonly ShoppingCartQueries _queries;
+    private readonly CartCheckoutService _service;
+    private readonly CartCheckoutQueries _queries;
 
-    public ShoppingCartController(ShoppingCartService service, ShoppingCartQueries queries)
+    public CartCheckoutController(CartCheckoutService service, CartCheckoutQueries queries)
     {
         _service = service;
         _queries = queries;

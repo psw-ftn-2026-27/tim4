@@ -18,7 +18,7 @@ public sealed class ProductPricingQueryTests : BaseIntegrationTest
         var paid = ProductSeed.ExistingOffer;
         var free = ProductSeed.FreeOffer;
         var unpriced = Guid.NewGuid();
-        var expected = new Dictionary<Guid, decimal?>
+        var expected = new Dictionary<Guid, long?>
         {
             [paid.EntityId] = paid.Price,
             [free.EntityId] = 0,
@@ -48,7 +48,7 @@ public sealed class ProductPricingQueryTests : BaseIntegrationTest
         var api = scope.ServiceProvider.GetRequiredService<IPaymentApi>();
         var first = Guid.NewGuid();
         var second = Guid.NewGuid();
-        var expected = new Dictionary<Guid, decimal?> { [first] = null, [second] = null };
+        var expected = new Dictionary<Guid, long?> { [first] = null, [second] = null };
 
         var prices = await api.GetPricesByEntityIdsAsync([first, second]);
 

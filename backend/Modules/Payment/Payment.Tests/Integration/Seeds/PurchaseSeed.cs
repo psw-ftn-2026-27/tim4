@@ -1,5 +1,5 @@
 using Payment.Domain.Purchases;
-using Cart = Payment.Domain.ShoppingCarts.ShoppingCart;
+using Payment.Domain.ShoppingCarts;
 using Payment.Domain.Wallets;
 using Shared.Tests;
 
@@ -8,7 +8,7 @@ namespace Payment.Tests.Integration.Seeds;
 internal static class PurchaseSeed
 {
     public static readonly Guid Buyer = Guid.Parse("20000000-0000-0000-0000-000000000004");
-    public static readonly Cart CompletedCart;
+    public static readonly ShoppingCart CompletedCart;
     public static readonly Wallet CompletedWallet;
     public static readonly Purchase Completed;
     public static readonly Purchase CompletedFree;
@@ -17,7 +17,7 @@ internal static class PurchaseSeed
     static PurchaseSeed()
     {
         var now = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds()).UtcDateTime;
-        CompletedCart = new Cart(Buyer);
+        CompletedCart = new ShoppingCart(Buyer);
         CompletedCart.Add(ProductSeed.ExistingOffer);
         var checkout = CompletedCart.PrepareCheckout([ProductSeed.ExistingOffer]);
         CompletedWallet = new Wallet(Buyer);

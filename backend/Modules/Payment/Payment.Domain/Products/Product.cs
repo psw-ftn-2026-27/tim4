@@ -8,14 +8,14 @@ public sealed class Product : AggregateRoot
     public Guid EntityId { get; private set; }
     public string Name { get; private set; }
     public Guid OwnerId { get; private set; }
-    public decimal Price { get; private set; }
+    public long Price { get; private set; }
 
     private Product()
     {
         Name = null!;
     }
 
-    public Product(Guid entityId, string name, Guid ownerId, decimal price) : base(Guid.NewGuid())
+    public Product(Guid entityId, string name, Guid ownerId, long price) : base(Guid.NewGuid())
     {
         if (entityId == Guid.Empty || ownerId == Guid.Empty)
         {
@@ -29,14 +29,19 @@ public sealed class Product : AggregateRoot
         {
             throw new DomainException("A product price cannot be negative.");
         }
-        if (price != decimal.Truncate(price) || price > long.MaxValue)
-        {
-            throw new DomainException("A product price must be a whole number of EC within the supported range.");
-        }
 
         EntityId = entityId;
         Name = name;
         OwnerId = ownerId;
+        Price = price;
+    }
+
+    public void ChangePrice(Guid ownerId, long price)
+    {
+        if (ownerId != OwnerId)
+            throw new DomainException("Only the product owner can change its price.");
+        if (price < 0)
+            throw new DomainException("A product price cannot be negative.");
         Price = price;
     }
 

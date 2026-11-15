@@ -5,7 +5,7 @@ import { Auth } from '../../../../core/auth/auth';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { CartDto } from '../../api/payment-api-types';
 import { CartItems } from '../cart-items/cart-items';
-import { ShoppingCart } from '../shopping-cart';
+import { CartCheckout } from '../cart-checkout';
 
 @Component({
   selector: 'app-cart',
@@ -14,7 +14,7 @@ import { ShoppingCart } from '../shopping-cart';
   styleUrl: './cart.scss',
 })
 export class Cart {
-  private readonly shoppingCart = inject(ShoppingCart);
+  private readonly cartCheckout = inject(CartCheckout);
   private readonly router = inject(Router);
   protected readonly auth = inject(Auth);
   protected readonly isExplorer = computed(
@@ -32,7 +32,7 @@ export class Cart {
     this.error.set(null);
     this.success.set(null);
     try {
-      await this.shoppingCart.removeCartItem(itemId);
+      await this.cartCheckout.removeCartItem(itemId);
       this.cart.reload();
       this.success.set('Stavka je uklonjena iz korpe.');
     } catch (failure) {
@@ -50,7 +50,7 @@ export class Cart {
     this.error.set(null);
     this.success.set(null);
     try {
-      const checkoutId = await this.shoppingCart.prepareCartCheckout();
+      const checkoutId = await this.cartCheckout.prepareCartCheckout();
       await this.router.navigate(['/payment/checkout', checkoutId]);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Nije moguce pripremiti checkout. Pokusaj ponovo.'));

@@ -11,6 +11,6 @@ public sealed class ProductPricingQueries
         _products = products;
     }
 
-    public Task<Dictionary<Guid, decimal?>> GetPricesByEntityIdsAsync(IReadOnlyCollection<Guid> entityIds) =>
+    public Task<Dictionary<Guid, long?>> GetPricesByEntityIdsAsync(IReadOnlyCollection<Guid> entityIds) =>
         _products.GetPricesByEntityIdsAsync(entityIds);
 }

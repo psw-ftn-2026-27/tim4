@@ -38,8 +38,8 @@ namespace Payment.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 

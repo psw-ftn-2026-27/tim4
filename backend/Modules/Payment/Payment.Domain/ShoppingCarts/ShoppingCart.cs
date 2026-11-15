@@ -24,6 +24,8 @@ public sealed class ShoppingCart : AggregateRoot
 
     public void Add(Product product)
     {
+        if (product.OwnerId == UserId)
+            throw new DomainException("Ne mozes da kupis sopstveni proizvod.");
         if (_items.Any(item => item.ProductId == product.Id))
             throw new DomainException("Proizvod je vec u korpi.");
         var item = new OrderItem(product.Id, product.EntityId, product.Name, product.Price);

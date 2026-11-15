@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Payment.Application.ShoppingCart;
+using Payment.Application.CartCheckout;
 using Payment.Application.WalletAdministration;
 using Payment.Domain.Wallets;
 using Payment.Infrastructure.Persistence;
@@ -10,11 +10,27 @@ using Payment.Tests.Integration.Seeds;
 using Shared.Tests;
 using Xunit;
 
-namespace Payment.Tests.Integration.ShoppingCart;
+namespace Payment.Tests.Integration.CartCheckout;
 
-public sealed class ShoppingCartCommandTests : BaseIntegrationTest
+public sealed class CartCheckoutCommandTests : BaseIntegrationTest
 {
-    public ShoppingCartCommandTests(PaymentApiFactory factory) : base(factory) { }
+    public CartCheckoutCommandTests(PaymentApiFactory factory) : base(factory) { }
+
+    [Fact]
+    public async Task An_author_cannot_add_their_own_content_and_keeps_the_existing_cart()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+
+        var response = await client.PostAsJsonAsync("/api/payment/cart/items", new AddToCartDto(ProductSeed.ExistingOffer.EntityId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == WellKnownUsers.SecondExplorer);
+        cart.Items.Select(item => item.Id).Should().Equal(ShoppingCartSeed.TooExpensive.Items.Select(item => item.Id));
+        cart.CheckoutId.Should().Be(ShoppingCartSeed.TooExpensive.CheckoutId);
+        cart.Total.Should().Be(ShoppingCartSeed.TooExpensive.Total);
+    }
 
     [Fact]
     public async Task An_explorer_adds_a_product_and_invalidates_the_previous_checkout()
