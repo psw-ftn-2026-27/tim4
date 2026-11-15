@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Payment.Application;
 using Payment.Application.ProductOffering;
+using Payment.Application.ProductPricing;
 using Payment.Application.Products;
 using Payment.Contracts;
 using Payment.Infrastructure.Persistence.Products;
@@ -36,7 +37,9 @@ public static class PaymentModuleExtensions
         services.AddScoped<WalletAdministrationQueries>();
         services.AddScoped<WalletAdministrationService>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductReadRepository, ProductReadRepository>();
         services.AddScoped<ProductOfferingService>();
+        services.AddScoped<ProductPricingQueries>();
         services.AddScoped<IPaymentApi, PaymentApi>();
         services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
         services.AddScoped<IShoppingCartReadRepository, ShoppingCartReadRepository>();
