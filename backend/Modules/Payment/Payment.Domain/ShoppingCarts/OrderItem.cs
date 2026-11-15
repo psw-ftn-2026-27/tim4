@@ -15,7 +15,7 @@ public sealed class OrderItem : Entity
     internal OrderItem(Guid productId, Guid entityId, string name, long price) : base(Guid.NewGuid())
     {
         if (price < 0)
-            throw new DomainException("A product price cannot be negative.");
+            throw new DomainException("Cena proizvoda ne može biti negativna.");
         ProductId = productId;
         EntityId = entityId;
         Name = name;

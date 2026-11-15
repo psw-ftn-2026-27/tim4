@@ -32,7 +32,7 @@ public sealed class ProductOfferingService
     public async Task UpdateProductPriceAsync(Guid entityId, Guid ownerId, long price)
     {
         var product = await _productRepository.GetByEntityIdAsync(entityId)
-            ?? throw new NotFoundException("The product does not exist.");
+            ?? throw new NotFoundException("Proizvod ne postoji.");
         product.ChangePrice(ownerId, price);
         await _unitOfWork.SaveChangesAsync();
     }

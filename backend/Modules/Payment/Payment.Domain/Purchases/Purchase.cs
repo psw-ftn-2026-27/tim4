@@ -19,7 +19,7 @@ public sealed class Purchase : AggregateRoot
         : base(Guid.NewGuid())
     {
         if (userId == Guid.Empty || checkoutId == Guid.Empty || items.Count == 0)
-            throw new DomainException("A purchase requires a buyer and a nonempty checkout.");
+            throw new DomainException("Kupovina mora da ima kupca i najmanje jednu stavku za plaćanje.");
         UserId = userId;
         CheckoutId = checkoutId;
         PurchasedAt = purchasedAt;

@@ -19,15 +19,15 @@ public sealed class Product : AggregateRoot
     {
         if (entityId == Guid.Empty || ownerId == Guid.Empty)
         {
-            throw new DomainException("A product requires content and owner identifiers.");
+            throw new DomainException("Proizvod mora da ima identifikatore sadržaja i vlasnika.");
         }
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new DomainException("A product requires a name.");
+            throw new DomainException("Proizvod mora da ima naziv.");
         }
         if (price < 0)
         {
-            throw new DomainException("A product price cannot be negative.");
+            throw new DomainException("Cena proizvoda ne može biti negativna.");
         }
 
         EntityId = entityId;
@@ -39,9 +39,9 @@ public sealed class Product : AggregateRoot
     public void ChangePrice(Guid ownerId, long price)
     {
         if (ownerId != OwnerId)
-            throw new DomainException("Only the product owner can change its price.");
+            throw new DomainException("Samo vlasnik proizvoda može da promeni njegovu cenu.");
         if (price < 0)
-            throw new DomainException("A product price cannot be negative.");
+            throw new DomainException("Cena proizvoda ne može biti negativna.");
         Price = price;
     }
 
@@ -49,7 +49,7 @@ public sealed class Product : AggregateRoot
     {
         if (EntityId != other.EntityId || Name != other.Name || OwnerId != other.OwnerId || Price != other.Price)
         {
-            throw new DomainException("The content already has a product with different details.");
+            throw new DomainException("Za ovaj sadržaj već postoji proizvod sa drugačijim podacima.");
         }
     }
 }

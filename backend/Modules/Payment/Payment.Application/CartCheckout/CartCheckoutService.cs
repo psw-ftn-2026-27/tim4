@@ -32,7 +32,7 @@ public sealed class CartCheckoutService
     public async Task AddToCartAsync(Guid userId, AddToCartDto dto)
     {
         var product = await _products.GetByEntityIdAsync(dto.EntityId)
-            ?? throw new NotFoundException("The product does not exist.");
+            ?? throw new NotFoundException("Proizvod ne postoji.");
         var cart = await _carts.GetByUserIdAsync(userId);
         if (cart is null)
         {
@@ -79,5 +79,5 @@ public sealed class CartCheckoutService
     }
 
     private async Task<ShoppingCart> GetCartAsync(Guid userId) => await _carts.GetByUserIdAsync(userId)
-        ?? throw new NotFoundException("The cart does not exist.");
+        ?? throw new NotFoundException("Korpa ne postoji.");
 }

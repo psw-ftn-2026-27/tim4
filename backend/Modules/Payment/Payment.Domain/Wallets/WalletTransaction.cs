@@ -21,7 +21,7 @@ public sealed class WalletTransaction : Entity
     {
         if (amount <= 0 || administratorId == Guid.Empty)
         {
-            throw new DomainException("A payment must contain a positive number of EC.");
+            throw new DomainException("Uplata mora da sadrži pozitivan broj EC i identifikator administratora.");
         }
 
         Amount = amount;
@@ -34,7 +34,7 @@ public sealed class WalletTransaction : Entity
         : base(Guid.NewGuid())
     {
         if (purchaseId == Guid.Empty || entityId == Guid.Empty || amount < 0)
-            throw new DomainException("A purchase payment requires a purchase, content and nonnegative amount.");
+            throw new DomainException("Plaćanje mora da sadrži identifikatore kupovine i sadržaja, kao i iznos koji nije negativan.");
         Kind = TransactionKind.Purchase;
         PurchaseId = purchaseId;
         EntityId = entityId;
@@ -51,7 +51,7 @@ public sealed class WalletTransaction : Entity
     {
         if (Kind != TransactionKind.Credit || now < SubmittedAt || now >= SubmittedAt.AddHours(24) || CancelledAt is not null)
         {
-            throw new DomainException("Only an unreversed payment less than 24 hours old can be reversed.");
+            throw new DomainException("Može da se stornira samo uplata koja nije već stornirana i od koje je prošlo manje od 24 sata.");
         }
 
         CancelledByAdministratorId = administratorId;

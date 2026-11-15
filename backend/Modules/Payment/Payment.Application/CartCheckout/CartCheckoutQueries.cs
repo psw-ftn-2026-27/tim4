@@ -20,9 +20,9 @@ public sealed class CartCheckoutQueries
 
     public async Task<CartCheckoutDto> GetCartCheckoutAsync(Guid userId, Guid checkoutId) =>
         await _carts.GetCheckoutAsync(userId, checkoutId)
-        ?? throw new NotFoundException("The prepared checkout does not exist. Refresh the cart.");
+        ?? throw new NotFoundException("Pripremljena kupovina ne postoji. Osveži korpu.");
 
     public async Task<CompletedPurchaseDto> GetCompletedPurchaseAsync(Guid userId, Guid purchaseId) =>
         await _purchases.GetCompletedAsync(userId, purchaseId)
-        ?? throw new NotFoundException("The purchase does not exist.");
+        ?? throw new NotFoundException("Kupovina ne postoji.");
 }

@@ -17,7 +17,7 @@ public sealed class ShoppingCart : AggregateRoot
 
     public ShoppingCart(Guid userId) : base(Guid.NewGuid())
     {
-        if (userId == Guid.Empty) throw new DomainException("A cart requires an owner.");
+        if (userId == Guid.Empty) throw new DomainException("Korpa mora da ima vlasnika.");
         UserId = userId;
         Version = Guid.NewGuid();
     }
@@ -25,9 +25,9 @@ public sealed class ShoppingCart : AggregateRoot
     public void Add(Product product)
     {
         if (product.OwnerId == UserId)
-            throw new DomainException("Ne mozes da kupis sopstveni proizvod.");
+            throw new DomainException("Ne možeš da kupiš sopstveni proizvod.");
         if (_items.Any(item => item.ProductId == product.Id))
-            throw new DomainException("Proizvod je vec u korpi.");
+            throw new DomainException("Proizvod je već u korpi.");
         var item = new OrderItem(product.Id, product.EntityId, product.Name, product.Price);
         EnsureTotalWithinRange(_items.Append(item));
         _items.Add(item);
@@ -37,16 +37,16 @@ public sealed class ShoppingCart : AggregateRoot
     public void Remove(Guid itemId)
     {
         var item = _items.SingleOrDefault(item => item.Id == itemId)
-            ?? throw new NotFoundException("The cart item does not exist.");
+            ?? throw new NotFoundException("Stavka korpe ne postoji.");
         _items.Remove(item);
         InvalidateCheckout();
     }
 
     public Guid PrepareCheckout(IReadOnlyCollection<Product> products)
     {
-        if (_items.Count == 0) throw new DomainException("An empty cart cannot be purchased.");
+        if (_items.Count == 0) throw new DomainException("Nije moguće kupiti praznu korpu.");
         var refreshed = _items.Select(item => products.SingleOrDefault(product => product.Id == item.ProductId)
-            ?? throw new NotFoundException("A product in the cart no longer exists."))
+            ?? throw new NotFoundException("Proizvod u korpi više ne postoji."))
             .Select(product => new OrderItem(product.Id, product.EntityId, product.Name, product.Price)).ToList();
         EnsureTotalWithinRange(refreshed);
         _items.Clear();
@@ -59,7 +59,7 @@ public sealed class ShoppingCart : AggregateRoot
     public void EnsureCheckout(Guid checkoutId)
     {
         if (CheckoutId is null || CheckoutId != checkoutId || _items.Count == 0)
-            throw new DomainException("Korpa je izmenjena. Ponovo pripremi checkout.");
+            throw new DomainException("Korpa je izmenjena. Ponovo pređi na plaćanje.");
     }
 
     public void CompleteCheckout(Guid checkoutId)
@@ -78,6 +78,6 @@ public sealed class ShoppingCart : AggregateRoot
     private static void EnsureTotalWithinRange(IEnumerable<OrderItem> items)
     {
         if (items.Sum(item => (decimal)item.Price) > long.MaxValue)
-            throw new DomainException("The cart total is too large.");
+            throw new DomainException("Ukupan iznos korpe premašuje dozvoljenu vrednost.");
     }
 }

@@ -23,7 +23,7 @@ public sealed class WalletAdministrationService
     {
         if (!await _identityApi.ExplorerExistsAsync(userId))
         {
-            throw new NotFoundException("The explorer does not exist.");
+            throw new NotFoundException("Korisnik sa ulogom istraživača ne postoji.");
         }
 
         var wallet = await _walletRepository.GetByUserIdAsync(userId);

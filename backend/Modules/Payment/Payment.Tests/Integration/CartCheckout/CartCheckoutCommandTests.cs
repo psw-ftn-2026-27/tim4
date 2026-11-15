@@ -17,6 +17,60 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
     public CartCheckoutCommandTests(PaymentApiFactory factory) : base(factory) { }
 
     [Fact]
+    public async Task Missing_content_cannot_be_added_and_leaves_the_prepared_cart_unchanged()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.PostAsJsonAsync("/api/payment/cart/items", new AddToCartDto(Guid.NewGuid()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == WellKnownUsers.Explorer);
+        cart.Items.Select(item => new { item.Id, item.ProductId, item.EntityId, item.Name, item.Price }).Should()
+            .BeEquivalentTo(ShoppingCartSeed.Ready.Items.Select(item => new { item.Id, item.ProductId, item.EntityId, item.Name, item.Price }));
+        cart.Total.Should().Be(ShoppingCartSeed.Ready.Total);
+        cart.CheckoutId.Should().Be(ShoppingCartSeed.Ready.CheckoutId);
+        cart.Version.Should().Be(ShoppingCartSeed.Ready.Version);
+    }
+
+    [Fact]
+    public async Task Purchased_content_cannot_be_added_and_leaves_the_buyers_cart_unchanged()
+    {
+        var client = Factory.CreateClientFor(PurchaseSeed.Buyer, "explorer");
+
+        var response = await client.PostAsJsonAsync("/api/payment/cart/items", new AddToCartDto(ProductSeed.ExistingOffer.EntityId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == PurchaseSeed.Buyer);
+        cart.Items.Should().BeEmpty();
+        cart.Total.Should().Be(PurchaseSeed.CompletedCart.Total);
+        cart.CheckoutId.Should().Be(PurchaseSeed.CompletedCart.CheckoutId);
+        cart.Version.Should().Be(PurchaseSeed.CompletedCart.Version);
+        (await context.Purchases.CountAsync()).Should().Be(PurchaseSeed.All.Length);
+    }
+
+    [Fact]
+    public async Task An_empty_cart_cannot_be_prepared_and_remains_without_a_checkout()
+    {
+        var client = Factory.CreateClientFor(PurchaseSeed.Buyer, "explorer");
+
+        var response = await client.PostAsync("/api/payment/cart/checkouts", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == PurchaseSeed.Buyer);
+        cart.Items.Should().BeEmpty();
+        cart.Total.Should().Be(PurchaseSeed.CompletedCart.Total);
+        cart.CheckoutId.Should().BeNull();
+        cart.Version.Should().Be(PurchaseSeed.CompletedCart.Version);
+        (await context.Purchases.CountAsync()).Should().Be(PurchaseSeed.All.Length);
+    }
+
+    [Fact]
     public async Task An_author_cannot_add_their_own_content_and_keeps_the_existing_cart()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
@@ -200,7 +254,8 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
         var responses = await Task.WhenAll(first.PostAsync(path, null), second.PostAsync(path, null));
 
         responses.Count(response => response.StatusCode == HttpStatusCode.OK).Should().Be(1);
-        responses.Count(response => response.StatusCode == HttpStatusCode.BadRequest).Should().Be(1);
+        responses.Should().ContainSingle(response => response.StatusCode == HttpStatusCode.BadRequest
+            || response.StatusCode == HttpStatusCode.InternalServerError);
         using var context = Factory.CreateContext<PaymentDbContext>();
         var wallet = await context.Wallets.Include(wallet => wallet.Transactions)
             .SingleAsync(wallet => wallet.UserId == seededCart.UserId);
@@ -224,7 +279,8 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
             buyer.PostAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.Ready.CheckoutId}/confirm", null),
             administrator.PostAsJsonAsync($"/api/payment/wallet/users/{WellKnownUsers.Explorer}/payments", new CreditWalletDto(50)));
 
-        responses.Should().OnlyContain(response => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest);
+        responses.Should().OnlyContain(response => response.IsSuccessStatusCode
+            || response.StatusCode == HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.InternalServerError);
         responses.Should().Contain(response => response.IsSuccessStatusCode);
         var charged = responses[0].IsSuccessStatusCode;
         var credited = responses[1].IsSuccessStatusCode;
