@@ -13,11 +13,37 @@ interface Sketch {
   title: string;
 }
 
+interface StateBadge {
+  label: string;
+  modifier: string;
+}
+
+interface StateGroup {
+  entity: string;
+  states: StateBadge[];
+}
+
+interface ProgressSample {
+  label: string;
+  done: number;
+  total: number;
+}
+
 // Mock data: the values repeat _tokens.scss so the page can print them; keep the two in step.
 const PALETTE: PaletteColor[] = [
   { token: '--color-bg', role: 'Pozadina', value: '#f6f1e7', example: 'Pozadina cele stranice' },
-  { token: '--color-surface', role: 'Površina', value: '#fffdf8', example: 'Kartica, forma, tabela' },
-  { token: '--color-border', role: 'Ivica', value: '#e0d6c2', example: 'Ivica kartice, linija u tabeli' },
+  {
+    token: '--color-surface',
+    role: 'Površina',
+    value: '#fffdf8',
+    example: 'Kartica, forma, tabela',
+  },
+  {
+    token: '--color-border',
+    role: 'Ivica',
+    value: '#e0d6c2',
+    example: 'Ivica kartice, linija u tabeli',
+  },
   {
     token: '--color-control-border',
     role: 'Ivica kontrole',
@@ -44,8 +70,18 @@ const PALETTE: PaletteColor[] = [
     value: '#b3261e',
     example: 'Poruka o grešci, dugme za brisanje',
   },
-  { token: '--color-success-bg', role: 'Uspeh', value: '#e3f1e7', example: 'Poruka o uspehu (tekst #1e5a3a)' },
-  { token: '--color-muted-bg', role: 'Prigušeno', value: '#ebe5d9', example: 'Stornirano, arhivirano, povučeno' },
+  {
+    token: '--color-success-bg',
+    role: 'Uspeh',
+    value: '#e3f1e7',
+    example: 'Poruka o uspehu (tekst #1e5a3a)',
+  },
+  {
+    token: '--color-muted-bg',
+    role: 'Prigušeno',
+    value: '#ebe5d9',
+    example: 'Stornirano, arhivirano, povučeno',
+  },
   { token: '--color-ec-bg', role: 'EC', value: '#fbefc8', example: 'Iznos u EC (tekst #7a5300)' },
   { token: '--color-xp-bg', role: 'XP', value: '#ece4fb', example: 'Nagrada u XP (tekst #5b3fa8)' },
   {
@@ -80,6 +116,50 @@ const PALETTE: PaletteColor[] = [
   },
 ];
 
+// Mock data: each label starts with its icon; the modifier is the class a screen writes next to .badge.
+const STATE_GROUPS: StateGroup[] = [
+  {
+    entity: 'Tura',
+    states: [
+      { label: '✎ U pripremi', modifier: 'badge--draft' },
+      { label: '● Objavljena', modifier: 'badge--published' },
+      { label: '▣ Arhivirana', modifier: 'badge--archived' },
+    ],
+  },
+  {
+    entity: 'Izazov',
+    states: [
+      { label: '✎ Nacrt (draft)', modifier: 'badge--draft' },
+      { label: '● Objavljen (published)', modifier: 'badge--published' },
+      { label: '⊘ Povučen (retired)', modifier: 'badge--retired' },
+      { label: '▣ Arhiviran (archived)', modifier: 'badge--archived' },
+    ],
+  },
+  {
+    entity: 'Poklon kartica',
+    states: [
+      { label: '● Važeća', modifier: 'badge--published' },
+      { label: '✓ Iskorišćena', modifier: 'badge--muted' },
+      { label: '⊘ Istekla', modifier: 'badge--retired' },
+    ],
+  },
+  {
+    entity: 'Izvedba ture',
+    states: [
+      { label: '▶ Aktivna', modifier: 'badge--published' },
+      { label: '✓ Završena', modifier: 'badge--success' },
+      { label: '✕ Napuštena', modifier: 'badge--muted' },
+    ],
+  },
+];
+
+const PROGRESS_SAMPLES: ProgressSample[] = [
+  { label: 'Izvedba ture, tek započeta: ključne tačke', done: 0, total: 5 },
+  { label: 'Izvedba ture, u toku: ključne tačke', done: 3, total: 5 },
+  { label: 'Lokacijski izazov, tek započet: pronađene lokacije', done: 0, total: 4 },
+  { label: 'Lokacijski izazov, u toku: pronađene lokacije', done: 1, total: 4 },
+];
+
 const SKETCHES: Sketch[] = [
   { path: 'user-wallet', title: 'Novčanik korisnika' },
   { path: 'admin-wallet', title: 'Administratorski pregled novčanika' },
@@ -98,5 +178,7 @@ const SKETCHES: Sketch[] = [
 })
 export class Overview {
   protected readonly palette = PALETTE;
+  protected readonly stateGroups = STATE_GROUPS;
+  protected readonly progressSamples = PROGRESS_SAMPLES;
   protected readonly sketches = SKETCHES;
 }

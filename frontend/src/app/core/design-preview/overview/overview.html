@@ -7,6 +7,10 @@
 
   <section class="stack">
     <h2>Paleta</h2>
+    <p class="meta">
+      Koristite samo ova imena boja, nikad vrednost boje napisanu u stilu komponente. Novu boju
+      dodaje platformski tim u <code>_tokens.scss</code>.
+    </p>
     <p>
       Paleta se oslanja na zemljane tonove i boje starih mapa kako bi podstakla osećaj fizičke
       avanture i istraživanja prirode. Svetla pergament pozadina asocira na mapu koja čeka da bude
@@ -45,19 +49,28 @@
 
   <section class="stack">
     <h2>UI elementi</h2>
+    <p class="meta">
+      Globalne klase koje koristi više modula; pre nego što napišete svoj stil, potražite ovde klasu
+      koja odgovara. Raspored ekrana koji pripada jednom modulu ide u stil te komponente, ne ovde.
+    </p>
 
     <h3>Dugmad</h3>
+    <p class="meta">
+      <code>.button--primary</code> za glavnu radnju, <code>.button</code> za sporednu,
+      <code>.button--danger</code> samo za radnju koja se ne može poništiti.
+    </p>
     <div class="row">
       <button class="button button--primary" type="button">Sačuvaj</button>
       <button class="button" type="button">Otkaži</button>
       <button class="button button--danger" type="button">Obriši</button>
     </div>
-    <p class="meta">
-      <code>.button--primary</code> za glavnu radnju, <code>.button</code> za sporednu,
-      <code>.button--danger</code> samo za radnju koja se ne može poništiti.
-    </p>
 
     <h3>Polja forme</h3>
+    <p class="meta">
+      <code>.field</code> za polje, <code>.field-group</code> za grupu povezanih polja,
+      <code>.field-pair</code> za dva polja u redu, <code>.choice</code> za checkbox ili radio sa
+      tekstom. Raspored polja na celoj formi ide u stil komponente te forme.
+    </p>
     <div class="form-sample">
       <div class="field">
         <label for="sample-name">Naziv ture</label>
@@ -86,21 +99,22 @@
         </label>
       </fieldset>
     </div>
-    <p class="meta">
-      <code>.field</code> za polje, <code>.field-group</code> za grupu povezanih polja,
-      <code>.field-pair</code> za dva polja u redu, <code>.choice</code> za checkbox ili radio sa
-      tekstom.
-    </p>
 
     <h3>Poruke</h3>
+    <p class="meta">
+      <code>.notice--success</code> posle uspele radnje, <code>.notice--muted</code> za obaveštenje
+      bez akcije, <code>.error</code> za grešku polja ili servera. Tekst uvek počinje ikonom ili
+      rečju.
+    </p>
     <p class="notice notice--success">✓ Tura je sačuvana.</p>
     <p class="notice notice--muted">↶ Uplata je stornirana.</p>
     <p class="error">⚠ Uplata nije uspela. Pokušajte ponovo.</p>
 
     <h3>Tabela</h3>
     <p class="meta">
-      <code>.table</code> uvek unutar <code>.table-wrap</code>, da široka tabela skroluje na uskom
-      ekranu.
+      <code>.table</code> za spisak podataka u kolonama, uvek unutar <code>.table-wrap</code>, da
+      široka tabela skroluje na uskom ekranu; <code>.row--muted</code> za red koji se više ne
+      računa.
     </p>
     <div class="table-wrap">
       <table class="table">
@@ -124,6 +138,10 @@
     </div>
 
     <h3>Kartice</h3>
+    <p class="meta">
+      <code>.card</code> za uokviren sadržaj, kao jedna tura u spisku. Raspored kartica na ekranu
+      ide u stil komponente.
+    </p>
     <div class="grid">
       <div class="card">
         <h3>Obična kartica</h3>
@@ -131,22 +149,47 @@
       </div>
     </div>
 
-    <h3>Oznake stanja ture</h3>
-    <div class="row">
-      <span class="badge badge--draft">✎ U pripremi</span>
-      <span class="badge badge--published">● Objavljena</span>
-      <span class="badge badge--archived">▣ Arhivirana</span>
-    </div>
+    <h3>Oznake stanja</h3>
+    <p class="meta">
+      Stanje entiteta uvek prikažite oznakom iz ove sekcije, sa ikonom i tekstom, nikad sirovom
+      vrednošću sa servera. Pišite <code>.badge</code> zajedno sa modifikatorom navedenim uz stanje.
+    </p>
+    @for (group of stateGroups; track group.entity) {
+      <h4>{{ group.entity }}</h4>
+      <div class="row">
+        @for (state of group.states; track state.label) {
+          <span class="state-sample">
+            <span class="badge" [class]="state.modifier">{{ state.label }}</span>
+            <code>.{{ state.modifier }}</code>
+          </span>
+        }
+      </div>
+    }
 
-    <h3>Oznake stanja izazova</h3>
-    <div class="row">
-      <span class="badge badge--draft">✎ Nacrt (draft)</span>
-      <span class="badge badge--published">● Objavljen (published)</span>
-      <span class="badge badge--retired">⊘ Povučen (retired)</span>
-      <span class="badge badge--archived">▣ Arhiviran (archived)</span>
+    <h3>Napredak</h3>
+    <p class="meta">
+      <code>.progress</code> za napredak „X od Y“, kao pređene ključne tačke ili pronađene lokacije;
+      broj se uvek ispisuje i tekstom. Širinu trake i mesto na ekranu određuje stil komponente.
+    </p>
+    <div class="progress-samples">
+      @for (sample of progressSamples; track sample.label) {
+        <div class="stack">
+          <p class="meta">{{ sample.label }}</p>
+          <p class="progress">
+            <span aria-hidden="true"
+              ><span [style.width]="(sample.done / sample.total) * 100 + '%'"></span
+            ></span>
+            {{ sample.done }} od {{ sample.total }}
+          </p>
+        </div>
+      }
     </div>
 
     <h3>Oznake težine</h3>
+    <p class="meta">
+      <code>.badge--easy</code>, <code>.badge--moderate</code> i <code>.badge--hard</code> za težinu
+      ture ili izazova, uvek sa ikonom koja pokazuje stepen.
+    </p>
     <div class="row">
       <span class="badge badge--easy">●○○ Lako</span>
       <span class="badge badge--moderate">●●○ Srednje</span>
@@ -154,6 +197,10 @@
     </div>
 
     <h3>EC i XP</h3>
+    <p class="meta">
+      <code>.badge--ec</code> za iznos u EC, <code>.badge--xp</code> za nagradu u XP,
+      <code>.badge--success</code> za potvrdu ishoda, kao tačan odgovor.
+    </p>
     <div class="row">
       <span class="badge badge--ec">◎ 50 EC</span>
       <span class="badge badge--xp">★ 120 XP</span>
@@ -161,7 +208,11 @@
     </div>
 
     <h3>Polje za upload slike</h3>
-    <p class="meta">Ograničenja su ilustrativna: JPG ili PNG, najviše 5 MB.</p>
+    <p class="meta">
+      Klase <code>.upload</code> koristi samo <code>app-image-upload</code> iz
+      <code>shared/image-upload</code>; ekran postavlja tu komponentu, a ne piše polje sam.
+      Ograničenja su ilustrativna: JPG ili PNG, najviše 5 MB.
+    </p>
     <div class="upload-states">
       <div class="stack">
         <p class="meta">Prazno</p>
@@ -205,6 +256,10 @@
 
   <section class="stack">
     <h2>Skice ekrana</h2>
+    <p class="meta">
+      Statične skice ekrana sa izmišljenim podacima, za poređenje sa ekranom koji pravite. Ništa iz
+      njih ne uvozite u modul; raspored skice prenesite u stil svoje komponente.
+    </p>
     <ul>
       @for (sketch of sketches; track sketch.path) {
         <li>

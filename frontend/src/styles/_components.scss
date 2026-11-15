@@ -149,7 +149,8 @@ input[type='radio'] {
   white-space: nowrap;
 }
 
-// States, shared by tours (u pripremi, objavljena, arhivirana) and challenges (all four).
+// States, shared by tours (u pripremi, objavljena, arhivirana), challenges (all four),
+// gift cards and tour runs; /design-preview lists which modifier each state uses.
 .badge--draft {
   background: var(--color-state-draft-bg);
   color: var(--color-state-draft-text);
@@ -201,6 +202,32 @@ input[type='radio'] {
 .badge--success {
   background: var(--color-success-bg);
   color: var(--color-success-text);
+}
+
+// Progress "X od Y": a bar followed by the count as text, never the bar alone.
+// The first span is the bar and holds a span whose width is the filled share.
+.progress {
+  align-items: center;
+  display: flex;
+  font-size: var(--font-size-sm);
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.progress > span {
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius);
+  display: block;
+  flex: 1;
+  height: var(--space-2);
+  overflow: hidden;
+}
+
+.progress > span > span {
+  background: var(--color-accent);
+  display: block;
+  height: 100%;
 }
 
 // Tag: a plain keyword on a tour.

@@ -156,6 +156,9 @@ navigation. Before writing a style, look there for a class that already fits. Wh
 global class is added to `_components.scss`, show it on the overview page in the same
 change. The sketches never call the server and are never imported by a module.
 
+An entity's state is always shown with a state badge from the style guide (`.badge` with
+the modifier `/design-preview` lists for that state), never as its raw value.
+
 ## Image upload
 
 `shared/image-upload/` is the one image field in the app. It checks size (at most 5 MB)
