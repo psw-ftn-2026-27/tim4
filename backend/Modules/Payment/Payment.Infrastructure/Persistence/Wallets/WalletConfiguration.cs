@@ -15,6 +15,7 @@ internal static class WalletConfiguration
     private static void ConfigureWallet(EntityTypeBuilder<Wallet> builder)
     {
         builder.Property(wallet => wallet.Id).ValueGeneratedNever();
+        builder.Property(wallet => wallet.Version).IsConcurrencyToken();
         builder.HasIndex(wallet => wallet.UserId).IsUnique();
         builder.HasMany(wallet => wallet.Transactions).WithOne().HasForeignKey("WalletId")
             .IsRequired().OnDelete(DeleteBehavior.Cascade);
@@ -25,5 +26,6 @@ internal static class WalletConfiguration
     {
         builder.ToTable("WalletTransactions");
         builder.Property(transaction => transaction.Id).ValueGeneratedNever();
+        builder.Property(transaction => transaction.Kind).HasDefaultValue(TransactionKind.Credit);
     }
 }

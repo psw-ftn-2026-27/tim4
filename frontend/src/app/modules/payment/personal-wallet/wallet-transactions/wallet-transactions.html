@@ -12,8 +12,16 @@
       @for (transaction of transactions(); track transaction.id) {
         <tr [class.row--muted]="transaction.status === 'Cancelled'">
           <td>{{ formatTime(transaction.submittedAt) }}</td>
-          <td>Uplata administratora</td>
-          <td>+{{ transaction.amount }} EC</td>
+          <td>
+            {{ transaction.kind === 'Purchase' ? 'Kupovina proizvoda' : 'Uplata administratora' }}
+          </td>
+          <td>
+            @if (transaction.kind === 'Purchase') {
+              {{ transaction.amount > 0 ? '-' : '' }}{{ transaction.amount }} EC
+            } @else {
+              +{{ transaction.amount }} EC
+            }
+          </td>
           <td>
             @if (transaction.status === 'Cancelled') {
               <span class="badge badge--muted">Stornirano</span>

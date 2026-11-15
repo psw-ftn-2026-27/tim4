@@ -1,0 +1,36 @@
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Proizvod</th>
+        <th scope="col">Cena</th>
+        @if (removable()) {
+          <th scope="col">Uklanjanje</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of items(); track item.id) {
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>
+            <span class="badge badge--ec">{{ item.price }} EC</span>
+          </td>
+          @if (removable()) {
+            <td>
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                [attr.aria-label]="'Ukloni ' + item.name + ' iz korpe'"
+                (click)="removeItem.emit(item.id)"
+              >
+                Ukloni
+              </button>
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

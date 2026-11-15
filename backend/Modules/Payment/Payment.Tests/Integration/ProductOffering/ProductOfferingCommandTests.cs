@@ -18,7 +18,7 @@ public sealed class ProductOfferingCommandTests : BaseIntegrationTest
     {
         using var scope = Factory.Services.CreateScope();
         var api = scope.ServiceProvider.GetRequiredService<IPaymentApi>();
-        var request = new CreateProductRequest(Guid.NewGuid(), "New digital resource", WellKnownUsers.Explorer, 12.75m);
+        var request = new CreateProductRequest(Guid.NewGuid(), "New digital resource", WellKnownUsers.Explorer, 12);
         int previousCount;
         using (var arrangeContext = Factory.CreateContext<PaymentDbContext>())
         {

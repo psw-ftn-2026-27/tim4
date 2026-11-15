@@ -1,0 +1,10 @@
+.actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.total {
+  font-size: var(--font-size-lg);
+}

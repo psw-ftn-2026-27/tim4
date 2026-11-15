@@ -6,6 +6,8 @@ namespace Payment.Infrastructure.Persistence.Products;
 
 internal sealed class ProductRepository : IProductRepository
 {
+    public Task<List<Product>> GetByIdsAsync(IReadOnlyCollection<Guid> productIds) =>
+        _dbContext.Products.Where(product => productIds.Contains(product.Id)).ToListAsync();
     private readonly PaymentDbContext _dbContext;
 
     public ProductRepository(PaymentDbContext dbContext)

@@ -29,6 +29,10 @@ public sealed class Product : AggregateRoot
         {
             throw new DomainException("A product price cannot be negative.");
         }
+        if (price != decimal.Truncate(price) || price > long.MaxValue)
+        {
+            throw new DomainException("A product price must be a whole number of EC within the supported range.");
+        }
 
         EntityId = entityId;
         Name = name;

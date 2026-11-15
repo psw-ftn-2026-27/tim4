@@ -8,6 +8,23 @@
 
     <span class="nav-user">
       @if (auth.user(); as user) {
+        @if (user.roles.includes('explorer')) {
+          <a class="cart-link" routerLink="/payment/cart" aria-label="Otvori korpu">
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 3h2l3 12h10l3-9H6" />
+              <circle cx="9" cy="20" r="1" />
+              <circle cx="18" cy="20" r="1" />
+            </svg>
+            Korpa
+          </a>
+        }
         <span>{{ user.email }}</span>
         <button class="button" type="button" (click)="auth.logout()">Logout</button>
       } @else {

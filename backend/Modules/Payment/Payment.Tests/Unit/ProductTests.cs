@@ -8,6 +8,17 @@ namespace Payment.Tests.Unit;
 public sealed class ProductTests
 {
     [Theory]
+    [InlineData(0.5)]
+    [InlineData(12.75)]
+    [InlineData(9223372036854775808d)]
+    public void Prices_must_be_whole_EC_within_the_supported_balance_range(double price)
+    {
+        var creation = () => new Product(Guid.NewGuid(), "Resource", Guid.NewGuid(), (decimal)price);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(null)]

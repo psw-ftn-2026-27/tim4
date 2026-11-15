@@ -31,3 +31,14 @@ nav a:hover {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }
+
+.cart-link {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.cart-link svg {
+  height: var(--space-5);
+  width: var(--space-5);
+}

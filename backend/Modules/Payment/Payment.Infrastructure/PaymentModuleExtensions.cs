@@ -11,6 +11,12 @@ using Payment.Application.Wallets;
 using Payment.Infrastructure.Persistence;
 using Payment.Infrastructure.Persistence.Wallets;
 using Shared.Infrastructure;
+using Payment.Application.Purchases;
+using Payment.Application.ShoppingCart;
+using Payment.Application.ShoppingCarts;
+using Payment.Domain.Purchases;
+using Payment.Infrastructure.Persistence.Purchases;
+using Payment.Infrastructure.Persistence.ShoppingCarts;
 
 namespace Payment.Infrastructure;
 
@@ -31,6 +37,13 @@ public static class PaymentModuleExtensions
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ProductOfferingService>();
         services.AddScoped<IPaymentApi, PaymentApi>();
+        services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
+        services.AddScoped<IShoppingCartReadRepository, ShoppingCartReadRepository>();
+        services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+        services.AddScoped<IPurchaseReadRepository, PurchaseReadRepository>();
+        services.AddScoped<Purchasing>();
+        services.AddScoped<ShoppingCartService>();
+        services.AddScoped<ShoppingCartQueries>();
 
         return services;
     }

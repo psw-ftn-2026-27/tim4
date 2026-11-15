@@ -1,0 +1,57 @@
+<div class="stack">
+  <h1>Moja korpa</h1>
+  <p><a routerLink="/exploration">Nastavi pregled tura</a></p>
+
+  @if (!isExplorer()) {
+    <p class="error" role="alert">Korpa je dostupna prijavljenim istrazivacima.</p>
+    @if (!auth.isLoggedIn()) {
+      <p><a routerLink="/login">Prijavi se</a></p>
+    }
+  } @else {
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    @if (success()) {
+      <p class="notice notice--success" role="status">{{ success() }}</p>
+    }
+
+    @if (cart.isLoading()) {
+      <p role="status">Ucitavanje korpe...</p>
+    } @else if (cart.error()) {
+      <p class="error" role="alert">Nije moguce ucitati korpu. Pokusaj ponovo.</p>
+      <button class="button" type="button" (click)="reload()">Pokusaj ponovo</button>
+    } @else if (cart.value(); as basket) {
+      @if (basket.items.length === 0) {
+        <section class="card stack">
+          <h2>Korpa je prazna</h2>
+          <p>Izaberi proizvode koje zelis da kupis.</p>
+          <a routerLink="/exploration">Pregledaj ture</a>
+        </section>
+      } @else {
+        <app-cart-items
+          [items]="basket.items"
+          [removable]="true"
+          [pending]="pending()"
+          (removeItem)="remove($event)"
+        />
+        <section class="card stack" aria-labelledby="cart-total-heading">
+          <h2 id="cart-total-heading">Ukupno: {{ basket.total }} EC</h2>
+          <p class="meta">Pre potvrde kupovine videces osvezene cene i raspolozivo stanje.</p>
+          <div class="actions">
+            <button
+              class="button button--primary"
+              type="button"
+              [disabled]="pending()"
+              (click)="checkout()"
+            >
+              {{ pending() ? 'Obrada je u toku...' : 'Nastavi na checkout' }}
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="reload()">
+              Osvezi korpu
+            </button>
+          </div>
+        </section>
+      }
+    }
+  }
+</div>

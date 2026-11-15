@@ -9,6 +9,7 @@ public sealed class Wallet : AggregateRoot
 
     public Guid UserId { get; private set; }
     public long Balance { get; private set; }
+    public Guid Version { get; private set; }
     public IReadOnlyList<WalletTransaction> Transactions => _transactions.AsReadOnly();
 
     private Wallet() { }
@@ -16,6 +17,7 @@ public sealed class Wallet : AggregateRoot
     public Wallet(Guid userId) : base(Guid.NewGuid())
     {
         UserId = userId;
+        Version = Guid.NewGuid();
     }
 
     public void Credit(int amount, Guid administratorId, DateTime submittedAt)
@@ -28,6 +30,7 @@ public sealed class Wallet : AggregateRoot
 
         _transactions.Add(transaction);
         Balance += transaction.Amount;
+        Version = Guid.NewGuid();
     }
 
     public void ReversePayment(Guid transactionId, Guid administratorId, DateTime now)
@@ -42,6 +45,22 @@ public sealed class Wallet : AggregateRoot
 
         transaction.Reverse(administratorId, now);
         Balance -= transaction.Amount;
+        Version = Guid.NewGuid();
+    }
+
+    public void Pay(Guid purchaseId, IReadOnlyCollection<PurchasePayment> payments, DateTime submittedAt)
+    {
+        if (payments.Count == 0 || payments.Select(payment => payment.EntityId).Distinct().Count() != payments.Count)
+            throw new DomainException("A purchase requires distinct payment items.");
+        var transactions = payments.Select(payment =>
+            new WalletTransaction(purchaseId, payment.EntityId, payment.Amount, submittedAt)).ToList();
+        var total = transactions.Sum(transaction => (decimal)transaction.Amount);
+        if (total > Balance) throw new DomainException("Nema dovoljno EC za kupovinu.");
+        if (_transactions.Any(transaction => transaction.PurchaseId == purchaseId))
+            throw new DomainException("Ova kupovina je vec zavrsena.");
+        Balance -= (long)total;
+        _transactions.AddRange(transactions);
+        Version = Guid.NewGuid();
     }
 
     public long GetAvailableBalance() => Balance;

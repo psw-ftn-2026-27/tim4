@@ -1,0 +1,48 @@
+<div class="stack">
+  <h1>Potvrda kupovine</h1>
+  <p><a routerLink="/payment/cart">Vrati se u korpu</a></p>
+
+  @if (!isExplorer()) {
+    <p class="error" role="alert">Kupovina je dostupna prijavljenim istrazivacima.</p>
+    @if (!auth.isLoggedIn()) {
+      <p><a routerLink="/login">Prijavi se</a></p>
+    }
+  } @else if (checkout.isLoading()) {
+    <p role="status">Ucitavanje checkouta...</p>
+  } @else if (checkout.error()) {
+    <p class="error" role="alert">{{ loadError() }}</p>
+    <button class="button" type="button" (click)="reload()">Pokusaj ponovo</button>
+  } @else if (checkout.value(); as summary) {
+    <app-cart-items [items]="summary.items" />
+    <section class="card stack" aria-labelledby="checkout-summary-heading">
+      <h2 id="checkout-summary-heading">Ukupno za placanje: {{ summary.total }} EC</h2>
+      <p>
+        Raspolozivo stanje: <span class="badge badge--ec">{{ summary.availableBalance }} EC</span>
+      </p>
+      <p class="meta">
+        Potvrdjujes prikazane cene i stavke. Izmena korpe zahteva novu pripremu checkouta.
+      </p>
+      @if (summary.availableBalance < summary.total) {
+        <p class="error" role="alert">
+          Nemas dovoljno EC za ovu kupovinu. Korpa i novcanik ostaju nepromenjeni.
+        </p>
+      }
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <div class="actions">
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending() || !canPay()"
+          (click)="confirm()"
+        >
+          {{ pending() ? 'Kupovina je u toku...' : 'Potvrdi i plati' }}
+        </button>
+        <button class="button" type="button" [disabled]="pending()" (click)="reload()">
+          Osvezi prikaz
+        </button>
+      </div>
+    </section>
+  }
+</div>
