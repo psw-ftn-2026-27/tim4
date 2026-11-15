@@ -12,6 +12,7 @@ using Payment.Infrastructure.Persistence;
 using Payment.Infrastructure.Persistence.Wallets;
 using Shared.Infrastructure;
 using Payment.Application.Purchases;
+using Payment.Application.PurchaseAccess;
 using Payment.Application.ShoppingCart;
 using Payment.Application.ShoppingCarts;
 using Payment.Domain.Purchases;
@@ -44,6 +45,7 @@ public static class PaymentModuleExtensions
         services.AddScoped<Purchasing>();
         services.AddScoped<ShoppingCartService>();
         services.AddScoped<ShoppingCartQueries>();
+        services.AddScoped<PurchaseAccessQueries>();
 
         return services;
     }

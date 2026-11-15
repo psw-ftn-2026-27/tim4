@@ -11,6 +11,7 @@ internal static class PurchaseSeed
     public static readonly Cart CompletedCart;
     public static readonly Wallet CompletedWallet;
     public static readonly Purchase Completed;
+    public static readonly Purchase CompletedFree;
     public static readonly Purchase[] All;
 
     static PurchaseSeed()
@@ -22,6 +23,9 @@ internal static class PurchaseSeed
         CompletedWallet = new Wallet(Buyer);
         CompletedWallet.Credit(100, WellKnownUsers.Administrator, now.AddHours(-1));
         Completed = new Purchasing().Complete(CompletedCart, CompletedWallet, checkout, [], now);
-        All = [Completed];
+        CompletedCart.Add(ProductSeed.FreeOffer);
+        var freeCheckout = CompletedCart.PrepareCheckout([ProductSeed.FreeOffer]);
+        CompletedFree = new Purchasing().Complete(CompletedCart, CompletedWallet, freeCheckout, [Completed], now);
+        All = [Completed, CompletedFree];
     }
 }

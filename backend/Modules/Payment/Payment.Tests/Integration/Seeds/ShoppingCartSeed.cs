@@ -11,6 +11,7 @@ internal static class ShoppingCartSeed
     public static readonly Cart TooExpensive;
     public static readonly Cart Free;
     public static readonly Cart MultipleItems;
+    public static readonly Cart Unprepared;
     public static readonly Cart[] All;
 
     static ShoppingCartSeed()
@@ -28,6 +29,8 @@ internal static class ShoppingCartSeed
         MultipleItems.Add(ProductSeed.CartOffer);
         MultipleItems.Add(ProductSeed.ExistingOffer);
         MultipleItems.PrepareCheckout([ProductSeed.CartOffer, ProductSeed.ExistingOffer]);
-        All = [Ready, TooExpensive, Free, MultipleItems, PurchaseSeed.CompletedCart];
+        Unprepared = new Cart(Guid.Parse("20000000-0000-0000-0000-000000000006"));
+        Unprepared.Add(ProductSeed.ExpensiveOffer);
+        All = [Ready, TooExpensive, Free, MultipleItems, Unprepared, PurchaseSeed.CompletedCart];
     }
 }
