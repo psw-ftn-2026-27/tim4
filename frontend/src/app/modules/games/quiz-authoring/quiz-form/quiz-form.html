@@ -1,8 +1,16 @@
 <form class="stack" (submit)="submit($event)">
   <div class="field">
     <label for="name">Naziv</label>
-    <input id="name" type="text" [formField]="quizForm().name" />
-    @if (quizForm().name().touched()) {
+    <input
+      id="name"
+      type="text"
+      [formField]="quizForm().name"
+      [attr.aria-invalid]="
+        (quizForm().name().dirty() || quizForm().name().touched()) &&
+        quizForm().name().errors().length > 0
+      "
+    />
+    @if (quizForm().name().dirty() || quizForm().name().touched()) {
       @for (message of quizForm().name().errors(); track $index) {
         <p class="error">{{ message.message }}</p>
       }
@@ -11,8 +19,16 @@
 
   <div class="field">
     <label for="instructions">Uputstva</label>
-    <textarea id="instructions" rows="4" [formField]="quizForm().instructions"></textarea>
-    @if (quizForm().instructions().touched()) {
+    <textarea
+      id="instructions"
+      rows="4"
+      [formField]="quizForm().instructions"
+      [attr.aria-invalid]="
+        (quizForm().instructions().dirty() || quizForm().instructions().touched()) &&
+        quizForm().instructions().errors().length > 0
+      "
+    ></textarea>
+    @if (quizForm().instructions().dirty() || quizForm().instructions().touched()) {
       @for (message of quizForm().instructions().errors(); track $index) {
         <p class="error">{{ message.message }}</p>
       }
@@ -32,7 +48,11 @@
 
       <div class="field">
         <label [for]="'question-xp-' + questionIndex">XP nagrada</label>
-        <input [id]="'question-xp-' + questionIndex" type="number" [formField]="question.xpReward" />
+        <input
+          [id]="'question-xp-' + questionIndex"
+          type="number"
+          [formField]="question.xpReward"
+        />
       </div>
 
       <p class="meta">Ponuđeni odgovori</p>
@@ -59,7 +79,9 @@
       }
 
       <div class="actions">
-        <button class="button" type="button" (click)="addOption(questionIndex)">Dodaj odgovor</button>
+        <button class="button" type="button" (click)="addOption(questionIndex)">
+          Dodaj odgovor
+        </button>
         <button class="button" type="button" (click)="removeQuestion(questionIndex)">
           Ukloni pitanje
         </button>
@@ -75,11 +97,5 @@
     <p class="error">{{ error() }}</p>
   }
 
-  <button
-    class="button button--primary"
-    type="submit"
-    [disabled]="!quizForm()().valid() || pending()"
-  >
-    Sačuvaj
-  </button>
+  <button class="button button--primary" type="submit" [disabled]="pending()">Sačuvaj</button>
 </form>

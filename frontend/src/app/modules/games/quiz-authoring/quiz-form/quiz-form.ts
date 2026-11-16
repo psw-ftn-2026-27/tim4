@@ -19,6 +19,10 @@ export class QuizForm {
 
   protected submit(event: Event): void {
     event.preventDefault();
+    if (!this.quizForm()().valid()) {
+      this.quizForm()().markAsTouched();
+      return;
+    }
     this.save.emit();
   }
 

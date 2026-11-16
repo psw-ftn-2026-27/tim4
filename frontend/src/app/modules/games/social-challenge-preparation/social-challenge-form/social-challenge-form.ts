@@ -68,6 +68,10 @@ export class SocialChallengeForm implements OnInit {
 
   protected submit(event: Event): void {
     event.preventDefault();
+    if (!this.fields().valid()) {
+      this.fields().markAsTouched();
+      return;
+    }
     const { name, start, end, requiredParticipants, rangeInMeters, xpReward, completionMessage } =
       this.model();
     if (

@@ -10,7 +10,22 @@
   } @else {
     @for (section of sections(); track section.status) {
       <section class="stack">
-        <h2>{{ section.status }}</h2>
+        <h2>
+          @switch (section.status) {
+            @case ('Draft') {
+              <span class="badge badge--draft">✎ Nacrt (draft)</span>
+            }
+            @case ('Published') {
+              <span class="badge badge--published">● Objavljen (published)</span>
+            }
+            @case ('Retired') {
+              <span class="badge badge--retired">⊘ Povučen (retired)</span>
+            }
+            @case ('Archived') {
+              <span class="badge badge--archived">▣ Arhiviran (archived)</span>
+            }
+          }
+        </h2>
 
         <table class="table">
           <thead>
