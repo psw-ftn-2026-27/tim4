@@ -58,7 +58,7 @@ public class KeyPointAuthoringCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var assertContext = Factory.CreateContext<ExplorationDbContext>();
-        assertContext.Tours.Single(t => t.Id == tour.Id).KeyPoints.Should().BeEmpty();
+        assertContext.Tours.Single(t => t.Id == tour.Id).KeyPoints.Should().HaveCount(tour.KeyPoints.Count);
     }
 
     [Fact]

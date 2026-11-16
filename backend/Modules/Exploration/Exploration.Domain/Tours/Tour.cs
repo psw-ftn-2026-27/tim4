@@ -6,6 +6,7 @@ namespace Exploration.Domain.Tours;
 public sealed class Tour : AggregateRoot
 {
     private const int MinimumDescriptionLengthForPublishing = 100;
+    private const int MinimumKeyPointsForPublishing = 2;
 
     private readonly List<TransportTime> _transportTimes = [];
     private readonly List<KeyPoint> _keyPoints = [];
@@ -120,6 +121,10 @@ public sealed class Tour : AggregateRoot
         if (_transportTimes.Count == 0)
         {
             throw new DomainException("A tour can be published only with at least one transport time.");
+        }
+        if (_keyPoints.Count < MinimumKeyPointsForPublishing)
+        {
+            throw new DomainException($"A tour can be published only with at least {MinimumKeyPointsForPublishing} key points.");
         }
 
         Status = TourStatus.Published;

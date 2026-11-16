@@ -80,6 +80,7 @@ public class TourTests
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Bicycle, 45);
+        AddKeyPoints(tour, 2);
 
         tour.Publish(FreePricing);
 
@@ -92,6 +93,7 @@ public class TourTests
     {
         var tour = CreateTour("Kratak opis.");
         tour.AddTransportTime(TransportMode.Walking, 120);
+        AddKeyPoints(tour, 2);
 
         var publishing = () => tour.Publish(FreePricing);
 
@@ -102,6 +104,21 @@ public class TourTests
     public void Tour_without_a_transport_time_cannot_be_published()
     {
         var tour = CreateTour(LongDescription);
+        AddKeyPoints(tour, 2);
+
+        var publishing = () => tour.Publish(FreePricing);
+
+        publishing.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void Tour_with_fewer_than_two_key_points_cannot_be_published(int keyPointCount)
+    {
+        var tour = CreateTour(LongDescription);
+        tour.AddTransportTime(TransportMode.Walking, 120);
+        AddKeyPoints(tour, keyPointCount);
 
         var publishing = () => tour.Publish(FreePricing);
 
@@ -113,6 +130,7 @@ public class TourTests
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Car, 30);
+        AddKeyPoints(tour, 2);
         tour.Publish(FreePricing);
 
         var publishing = () => tour.Publish(FreePricing);
@@ -272,6 +290,14 @@ public class TourTests
         addition.Should().Throw<DomainException>();
     }
 
+    private static void AddKeyPoints(Tour tour, int count)
+    {
+        for (var index = 0; index < count; index++)
+        {
+            tour.AddKeyPoint(CreateKeyPoint($"Tačka {index + 1}"), index);
+        }
+    }
+
     private static KeyPoint CreateKeyPoint(string name) =>
         new(name, "Opis tačke.", "/images/tacka.jpg", null, 45.2551, 19.8452, true);
 
@@ -279,6 +305,7 @@ public class TourTests
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Walking, 60);
+        AddKeyPoints(tour, 2);
         tour.Publish(FreePricing);
         return tour;
     }
