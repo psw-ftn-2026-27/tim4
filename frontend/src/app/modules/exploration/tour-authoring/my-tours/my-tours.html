@@ -29,7 +29,17 @@
             <td>{{ tour.name }}</td>
             <td>{{ tour.difficulty }}</td>
             <td>
-              {{ tour.status }}
+              @switch (tour.status) {
+                @case ('Draft') {
+                  <span class="badge badge--draft">✎ U pripremi</span>
+                }
+                @case ('Published') {
+                  <span class="badge badge--published">● Objavljena</span>
+                }
+                @case ('Archived') {
+                  <span class="badge badge--archived">▣ Arhivirana</span>
+                }
+              }
               @if (tour.archivedAt) {
                 · {{ formatTime(tour.archivedAt) }}
               }
@@ -43,12 +53,7 @@
               }
             </td>
             <td class="actions">
-              <button
-                class="button"
-                type="button"
-                [disabled]="pending()"
-                (click)="select(tour.id)"
-              >
+              <button class="button" type="button" [disabled]="pending()" (click)="select(tour.id)">
                 Add time
               </button>
               @switch (tour.status) {
@@ -109,21 +114,31 @@
 
       <div class="field">
         <label for="minutes">Minutes</label>
-        <input id="minutes" type="number" [formField]="form.minutes" />
-        @if (form.minutes().touched()) {
-          @for (message of form.minutes().errors(); track $index) {
-            <p class="error">{{ message.message }}</p>
+        <input
+          id="minutes"
+          type="number"
+          [formField]="form.minutes"
+          [attr.aria-invalid]="
+            (form.minutes().dirty() ||
+              form.minutes().touched() ||
+              form.minutes().errors()[0]?.kind === 'parse') &&
+            form.minutes().errors().length > 0
+          "
+        />
+        @if (
+          form.minutes().dirty() ||
+          form.minutes().touched() ||
+          form.minutes().errors()[0]?.kind === 'parse'
+        ) {
+          @for (message of form.minutes().errors().slice(0, 1); track $index) {
+            <p class="error">
+              {{ message.kind === 'parse' ? 'Enter a number.' : message.message }}
+            </p>
           }
         }
       </div>
 
-      <button
-        class="button button--primary"
-        type="submit"
-        [disabled]="!form().valid() || pending()"
-      >
-        Save
-      </button>
+      <button class="button button--primary" type="submit" [disabled]="pending()">Save</button>
     </form>
   }
 
@@ -133,12 +148,19 @@
 
       <div class="field">
         <label for="pricing-type">Pricing</label>
-        <select id="pricing-type" [formField]="publishForm.pricingType">
+        <select
+          id="pricing-type"
+          [formField]="publishForm.pricingType"
+          [attr.aria-invalid]="
+            (publishForm.pricingType().dirty() || publishForm.pricingType().touched()) &&
+            publishForm.pricingType().errors().length > 0
+          "
+        >
           <option value=""></option>
           <option value="Free">Free</option>
           <option value="Paid">Paid</option>
         </select>
-        @if (publishForm.pricingType().touched()) {
+        @if (publishForm.pricingType().dirty() || publishForm.pricingType().touched()) {
           @for (message of publishForm.pricingType().errors(); track $index) {
             <p class="error">{{ message.message }}</p>
           }
@@ -153,13 +175,7 @@
       }
 
       <div class="actions">
-        <button
-          class="button button--primary"
-          type="submit"
-          [disabled]="!publishForm().valid() || pending()"
-        >
-          Publish
-        </button>
+        <button class="button button--primary" type="submit" [disabled]="pending()">Publish</button>
         <button class="button" type="button" [disabled]="pending()" (click)="cancelPublish()">
           Cancel
         </button>
