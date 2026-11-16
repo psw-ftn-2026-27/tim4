@@ -13,6 +13,19 @@
   gap: var(--space-2);
 }
 
+.state-sample {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-right: var(--space-3);
+}
+
+.progress-samples {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 24rem;
+}
+
 .form-sample {
   display: grid;
   gap: var(--space-3);
