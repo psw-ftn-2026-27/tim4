@@ -207,8 +207,9 @@ There is no validation layer at the API. Request binding does type-shape checkin
 nothing more; the domain is the sole authority on what valid means. Invariants are
 enforced in aggregate constructors and methods, which throw `DomainException` (or
 `NotFoundException` where a referenced thing does not exist). One platform-owned
-middleware in `Host.Api` maps `DomainException` to 400, `NotFoundException` to 404, and
-anything else to a logged 500, all as ProblemDetails. Services and controllers contain no
+middleware in `Host.Api` maps `DomainException` to 400, `NotFoundException` to 404, a
+write conflict (`DbUpdateConcurrencyException`, or a unique-constraint violation on save)
+to 409, and anything else to a logged 500, all as ProblemDetails. Services and controllers contain no
 try/catch and no validation code.
 
 ## Image upload

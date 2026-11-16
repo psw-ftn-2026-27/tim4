@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Shared.Domain.Exceptions;
 
 namespace Host.Api;
@@ -29,6 +31,14 @@ public sealed class ExceptionHandlingMiddleware
             await Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: exception.Message)
                 .ExecuteAsync(context);
         }
+        catch (DbUpdateException exception) when (IsWriteConflict(exception))
+        {
+            // Two requests changed the same row (optimistic concurrency) or inserted the same unique key.
+            _logger.LogWarning(exception, "Write conflict for {Method} {Path}", context.Request.Method, context.Request.Path);
+            await Results.Problem(statusCode: StatusCodes.Status409Conflict,
+                    title: "The data was changed by another request. Reload and try again.")
+                .ExecuteAsync(context);
+        }
         catch (BadHttpRequestException exception)
         {
             // Raised by Kestrel, e.g. 413 when a request body is larger than the limit in Program.cs.
@@ -42,4 +52,8 @@ public sealed class ExceptionHandlingMiddleware
                 .ExecuteAsync(context);
         }
     }
+
+    private static bool IsWriteConflict(DbUpdateException exception) =>
+        exception is DbUpdateConcurrencyException
+        || exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 }
