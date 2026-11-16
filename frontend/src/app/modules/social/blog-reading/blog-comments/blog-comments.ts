@@ -33,6 +33,10 @@ export class BlogComments {
 
   protected submitComment(event: Event): void {
     event.preventDefault();
+    if (!this.form().valid()) {
+      this.form().markAsTouched();
+      return;
+    }
     this.addComment.emit(this.form.text().value());
     this.form().reset({ text: '' });
   }
@@ -44,6 +48,10 @@ export class BlogComments {
 
   protected saveEdit(event: Event, commentId: string): void {
     event.preventDefault();
+    if (!this.editForm().valid()) {
+      this.editForm().markAsTouched();
+      return;
+    }
     this.editComment.emit({ commentId, text: this.editForm.text().value() });
     this.editingCommentId.set(null);
   }
