@@ -14,9 +14,14 @@ internal static class TourSeed
     public static readonly Tour PublishedVineyardsByBicycleEasy;
     public static readonly Tour PublishedWineAndHeritageWalk;
     public static readonly Tour ArchivedOldTownWalk;
+    public static readonly Tour DraftWithKeyPoints;
 
     static TourSeed()
     {
+        DraftWithKeyPoints = new(WellKnownUsers.Explorer, "Od stanice do tvrđave", "Kratak opis ture sa ključnim tačkama.", TourDifficulty.Easy, ["grad"], new RecommendedGroupSize(1, 10));
+        DraftWithKeyPoints.AddKeyPoint(new KeyPoint("Železnička stanica", "Polazna tačka ture.", "/images/seed-stanica.jpg", null, 45.2655, 19.8293, true), 0);
+        DraftWithKeyPoints.AddKeyPoint(new KeyPoint("Trg slobode", "Srce grada.", "/images/seed-trg.jpg", "Ispod spomenika je stara kapsula.", 45.2551, 19.8452, false), 1.9);
+
         PublishableRiverside = new(WellKnownUsers.Explorer, "Staza uz Dunav", "Staza kreće od Ribarskog ostrva, prati obalu Dunava pored gradske plaže Štrand i završava se kod Mosta slobode, uz više mesta za predah.", TourDifficulty.Easy, ["priroda"], new RecommendedGroupSize(1, 10));
         PublishableRiverside.AddTransportTime(TransportMode.Walking, 90);
 
@@ -42,5 +47,5 @@ internal static class TourSeed
         ArchivedOldTownWalk.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk, ArchivedOldTownWalk];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk, ArchivedOldTownWalk, DraftWithKeyPoints];
 }

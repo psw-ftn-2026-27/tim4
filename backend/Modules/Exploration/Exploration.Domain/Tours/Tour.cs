@@ -91,7 +91,7 @@ public sealed class Tour : AggregateRoot
             throw new DomainException("A key point is required.");
         }
 
-        FindKeyPoint(keyPointId).ChangeTo(changes);
+        GetKeyPoint(keyPointId).ChangeTo(changes);
         LengthInKm = lengthInKm;
     }
 
@@ -99,7 +99,7 @@ public sealed class Tour : AggregateRoot
     {
         EnsureKeyPointsCanChange(lengthInKm);
 
-        _keyPoints.Remove(FindKeyPoint(keyPointId));
+        _keyPoints.Remove(GetKeyPoint(keyPointId));
         LengthInKm = lengthInKm;
     }
 
@@ -160,7 +160,7 @@ public sealed class Tour : AggregateRoot
         }
     }
 
-    private KeyPoint FindKeyPoint(Guid keyPointId) =>
+    public KeyPoint GetKeyPoint(Guid keyPointId) =>
         _keyPoints.SingleOrDefault(keyPoint => keyPoint.Id == keyPointId)
         ?? throw new NotFoundException("The key point does not exist.");
 }

@@ -22,6 +22,28 @@ export interface TourDto {
   recommendedGroupSizeMin: number;
   recommendedGroupSizeMax: number;
   transportTimes: TransportTimeDto[];
+  lengthInKm: number;
+}
+
+export interface KeyPointDto {
+  id: string;
+  name: string;
+  description: string;
+  imageAddress: string;
+  secret: string | null;
+  latitude: number;
+  longitude: number;
+  isVisibleWithoutPurchase: boolean;
+}
+
+export interface KeyPointDetailsDto {
+  name: string;
+  description: string;
+  secret: string | null;
+  latitude: number;
+  longitude: number;
+  isVisibleWithoutPurchase: boolean;
+  tourLengthInKm: number;
 }
 
 export interface CreateTourDto {

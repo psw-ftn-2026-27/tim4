@@ -1,3 +1,4 @@
+using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
@@ -32,6 +33,29 @@ internal sealed class TourReadRepository : ITourReadRepository
             .ToListAsync();
 
         return new PageResult<TourDto>(items, totalCount);
+    }
+
+    public async Task<List<KeyPointDto>?> GetKeyPointsOfAuthoredTourAsync(Guid tourId, Guid authorId)
+    {
+        var tour = await _dbContext.Tours
+            .Where(tour => tour.Id == tourId && tour.AuthorId == authorId)
+            .Select(tour => new
+            {
+                KeyPoints = tour.KeyPoints
+                    .Select(keyPoint => new KeyPointDto(
+                        keyPoint.Id,
+                        keyPoint.Name,
+                        keyPoint.Description,
+                        keyPoint.ImageAddress,
+                        keyPoint.Secret,
+                        keyPoint.Latitude,
+                        keyPoint.Longitude,
+                        keyPoint.IsVisibleWithoutPurchase))
+                    .ToList()
+            })
+            .SingleOrDefaultAsync();
+
+        return tour?.KeyPoints;
     }
 
     private static IQueryable<Tour> Filter(IQueryable<Tour> tours, PublishedTourSearchDto search)
@@ -95,6 +119,7 @@ internal sealed class TourReadRepository : ITourReadRepository
                 tour.RecommendedGroupSize.Max,
                 tour.TransportTimes
                     .Select(time => new TransportTimeDto(time.Transport, time.Minutes))
-                    .ToList()));
+                    .ToList(),
+                tour.LengthInKm));
     }
 }
