@@ -60,7 +60,7 @@
     @for (tour of tours; track tour.id) {
       <article class="card tour-card">
         <h3>{{ tour.name }}</h3>
-        <p>{{ tour.excerpt }}</p>
+        <p class="tour-card__excerpt">{{ tour.excerpt }}</p>
         <p>
           @switch (tour.difficulty) {
             @case ('Easy') {

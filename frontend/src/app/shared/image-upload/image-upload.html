@@ -8,7 +8,7 @@
   (drop)="onDrop($event)"
 >
   @if (dragging()) {
-    <span>⇩ Pustite sliku da je dodate</span>
+    <span>↓ Pustite sliku da je dodate</span>
     <span class="meta">JPG ili PNG, najviše 5 MB</span>
   } @else if (file()) {
     @if (preview()) {
@@ -17,7 +17,7 @@
     <span>✓ {{ file()?.name }} ({{ sizeText(file()?.size ?? 0) }})</span>
     <span class="meta">Kliknite da zamenite sliku</span>
   } @else {
-    <span>⇪ Prevucite sliku ovde ili kliknite da izaberete</span>
+    <span>↑ Prevucite sliku ovde ili kliknite da izaberete</span>
     @if (error()) {
       <span class="error">⚠ {{ error() }}</span>
     } @else {

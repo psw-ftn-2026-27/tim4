@@ -192,7 +192,8 @@
     <h3>Oznake težine</h3>
     <p class="meta">
       <code>.badge--easy</code>, <code>.badge--moderate</code> i <code>.badge--hard</code> za težinu
-      ture ili izazova. Stepen se čita iz teksta (Lako, Srednje, Teško), a boja ga samo prati.
+      ture ili izazova. Tačkice ispred teksta crta klasa, pa u šablon pišite samo stepen (Lako,
+      Srednje, Teško), bez znakova za tačkice.
     </p>
     <div class="row">
       <span class="badge badge--easy">Lako</span>
@@ -221,7 +222,7 @@
       <div class="stack">
         <p class="meta">Prazno</p>
         <label class="upload" for="upload-empty">
-          <span>⇪ Prevucite sliku ovde ili kliknite da izaberete</span>
+          <span>↑ Prevucite sliku ovde ili kliknite da izaberete</span>
           <span class="meta">JPG ili PNG, najviše 5 MB</span>
           <input id="upload-empty" type="file" accept="image/jpeg,image/png" />
         </label>
@@ -229,7 +230,7 @@
       <div class="stack">
         <p class="meta">Prevlačenje</p>
         <label class="upload upload--dragover" for="upload-dragover">
-          <span>⇩ Pustite sliku da je dodate</span>
+          <span>↓ Pustite sliku da je dodate</span>
           <span class="meta">JPG ili PNG, najviše 5 MB</span>
           <input id="upload-dragover" type="file" accept="image/jpeg,image/png" />
         </label>
@@ -250,7 +251,7 @@
       <div class="stack">
         <p class="meta">Greška validacije</p>
         <label class="upload upload--error" for="upload-error">
-          <span>⇪ Prevucite sliku ovde ili kliknite da izaberete</span>
+          <span>↑ Prevucite sliku ovde ili kliknite da izaberete</span>
           <span class="error">⚠ mapa.gif nije podržan format. Dozvoljeni su JPG i PNG.</span>
           <input id="upload-error" type="file" accept="image/jpeg,image/png" aria-invalid="true" />
         </label>

@@ -38,6 +38,17 @@
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
 }
 
+// The states stand side by side here, so each field stretches to the tallest one.
+// In a real form the field grows when a preview appears, and that is intended.
+.upload-states > .stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-states .upload {
+  flex: 1;
+}
+
 .preview-sky {
   fill: var(--color-accent-soft);
 }

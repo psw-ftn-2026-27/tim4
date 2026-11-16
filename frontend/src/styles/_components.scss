@@ -53,6 +53,22 @@
   padding: var(--space-2);
 }
 
+// The browser's own select is one pixel shorter than an input and puts its arrow against
+// the border, so the select draws its arrow itself and takes the input's height.
+.field select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - var(--space-4)) 50%,
+    calc(100% - var(--space-3)) 50%;
+  background-repeat: no-repeat;
+  background-size: var(--space-1) var(--space-1);
+  height: calc(1.5em + 2 * var(--space-2) + 2px);
+  padding-right: var(--space-6);
+}
+
 input[type='checkbox'],
 input[type='radio'] {
   accent-color: var(--color-accent);
@@ -176,9 +192,35 @@ input[type='radio'] {
   color: var(--color-muted-text);
 }
 
+// Difficulty: three dots before the text, filled up to the level. The dots are drawn here,
+// not typed as characters, so they are the same size on every system; the template writes
+// only the level as text (Lako, Srednje, Teško).
+.badge--easy::before,
+.badge--moderate::before,
+.badge--hard::before {
+  background-position:
+    0 50%,
+    50% 50%,
+    100% 50%;
+  background-repeat: no-repeat;
+  background-size: 0.8em 0.8em;
+  content: '';
+  display: inline-block;
+  height: 0.8em;
+  margin-right: var(--space-1);
+  width: 2.8em;
+}
+
 .badge--easy {
   background: var(--color-difficulty-easy-bg);
   color: var(--color-difficulty-easy-text);
+}
+
+.badge--easy::before {
+  background-image:
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, transparent 68%, currentColor 72% 92%, transparent),
+    radial-gradient(circle closest-side, transparent 68%, currentColor 72% 92%, transparent);
 }
 
 .badge--moderate {
@@ -186,9 +228,23 @@ input[type='radio'] {
   color: var(--color-difficulty-moderate-text);
 }
 
+.badge--moderate::before {
+  background-image:
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, transparent 68%, currentColor 72% 92%, transparent);
+}
+
 .badge--hard {
   background: var(--color-difficulty-hard-bg);
   color: var(--color-difficulty-hard-text);
+}
+
+.badge--hard::before {
+  background-image:
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, currentColor 92%, transparent);
 }
 
 .badge--ec {
@@ -254,6 +310,7 @@ input[type='radio'] {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  justify-content: center;
   padding: var(--space-4);
   position: relative;
   text-align: center;
