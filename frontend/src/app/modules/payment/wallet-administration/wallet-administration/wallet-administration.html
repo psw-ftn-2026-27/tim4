@@ -1,21 +1,21 @@
 <div class="stack">
-  <p><a routerLink="/payment">Moj novcanik</a></p>
-  <h1>Novcanici korisnika</h1>
+  <p><a routerLink="/payment">Moj novčanik</a></p>
+  <h1>Novčanici korisnika</h1>
 
   @if (!isAdministrator()) {
     <p class="error">Ova stranica je dostupna samo administratorima.</p>
   } @else {
     <div class="administration-layout">
       <section class="stack" aria-labelledby="wallet-users-title">
-        <h2 id="wallet-users-title">Istrazivaci</h2>
+        <h2 id="wallet-users-title">Istraživači</h2>
         @if (users.isLoading()) {
-          <p role="status">Ucitavanje korisnika...</p>
+          <p role="status">Učitavanje korisnika...</p>
         } @else if (users.error()) {
-          <p class="error" role="alert">Nije moguce ucitati korisnike.</p>
-          <button class="button" type="button" (click)="retry()">Pokusaj ponovo</button>
+          <p class="error" role="alert">Nije moguće učitati korisnike.</p>
+          <button class="button" type="button" (click)="retry()">Pokušaj ponovo</button>
         } @else if (users.value(); as result) {
           @if (result.totalCount === 0) {
-            <p>Nema registrovanih istrazivaca.</p>
+            <p>Nema registrovanih istraživača.</p>
           } @else {
             <div class="table-wrap">
               <table class="table">
@@ -65,7 +65,7 @@
                 [disabled]="page() >= pageCount() || pending()"
                 (click)="changePage(1)"
               >
-                Sledeca
+                Sledeća
               </button>
             </nav>
           }
@@ -86,10 +86,22 @@
                 type="number"
                 step="1"
                 [formField]="paymentForm.amount"
+                [attr.aria-invalid]="
+                  (paymentForm.amount().dirty() ||
+                    paymentForm.amount().touched() ||
+                    paymentForm.amount().errors()[0]?.kind === 'parse') &&
+                  paymentForm.amount().errors().length > 0
+                "
               />
-              @if (paymentForm.amount().touched()) {
-                @for (message of paymentForm.amount().errors(); track $index) {
-                  <p class="error">{{ message.message }}</p>
+              @if (
+                paymentForm.amount().dirty() ||
+                paymentForm.amount().touched() ||
+                paymentForm.amount().errors()[0]?.kind === 'parse'
+              ) {
+                @for (message of paymentForm.amount().errors().slice(0, 1); track $index) {
+                  <p class="error">
+                    {{ message.kind === 'parse' ? 'Unesi broj.' : message.message }}
+                  </p>
                 }
               }
             </div>
@@ -99,11 +111,7 @@
             @if (success()) {
               <p role="status">{{ success() }}</p>
             }
-            <button
-              class="button button--primary"
-              type="submit"
-              [disabled]="pending() || !paymentForm().valid()"
-            >
+            <button class="button button--primary" type="submit" [disabled]="pending()">
               {{ pending() ? 'Uplata je u toku...' : 'Uplati' }}
             </button>
           </form>
@@ -117,13 +125,13 @@
       <section class="stack" aria-labelledby="wallet-user-history-title">
         <h2 id="wallet-user-history-title">Transakcije: {{ user.email }}</h2>
         @if (transactions.isLoading()) {
-          <p role="status">Ucitavanje transakcija...</p>
+          <p role="status">Učitavanje transakcija...</p>
         } @else if (transactions.error()) {
-          <p class="error" role="alert">Nije moguce ucitati transakcije.</p>
-          <button class="button" type="button" (click)="retry()">Pokusaj ponovo</button>
+          <p class="error" role="alert">Nije moguće učitati transakcije.</p>
+          <button class="button" type="button" (click)="retry()">Pokušaj ponovo</button>
         } @else if (transactions.value(); as history) {
           @if (history.totalCount === 0) {
-            <p>Jos nema transakcija</p>
+            <p>Još nema transakcija</p>
           } @else {
             <app-wallet-transactions [transactions]="history.items" />
             <nav class="pagination" aria-label="Stranice transakcija korisnika">
@@ -142,7 +150,7 @@
                 [disabled]="historyPage() >= historyPageCount() || pending()"
                 (click)="changeHistoryPage(1)"
               >
-                Sledeca
+                Sledeća
               </button>
             </nav>
           }
