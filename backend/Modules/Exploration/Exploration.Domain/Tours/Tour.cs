@@ -8,6 +8,7 @@ public sealed class Tour : AggregateRoot
     private const int MinimumDescriptionLengthForPublishing = 100;
 
     private readonly List<TransportTime> _transportTimes = [];
+    private readonly List<KeyPoint> _keyPoints = [];
 
     public Guid AuthorId { get; private set; }
     public string Name { get; private set; }
@@ -19,6 +20,8 @@ public sealed class Tour : AggregateRoot
     public DateTime? ArchivedAt { get; private set; }
     public RecommendedGroupSize RecommendedGroupSize { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
+    public IReadOnlyList<KeyPoint> KeyPoints => _keyPoints;
+    public double LengthInKm { get; private set; }
 
     private Tour()
     {
@@ -68,6 +71,38 @@ public sealed class Tour : AggregateRoot
         _transportTimes.Add(new TransportTime(transport, minutes));
     }
 
+    public void AddKeyPoint(KeyPoint keyPoint, double lengthInKm)
+    {
+        EnsureKeyPointsCanChange(lengthInKm);
+        if (keyPoint is null)
+        {
+            throw new DomainException("A key point is required.");
+        }
+
+        _keyPoints.Add(keyPoint);
+        LengthInKm = lengthInKm;
+    }
+
+    public void UpdateKeyPoint(Guid keyPointId, KeyPoint changes, double lengthInKm)
+    {
+        EnsureKeyPointsCanChange(lengthInKm);
+        if (changes is null)
+        {
+            throw new DomainException("A key point is required.");
+        }
+
+        FindKeyPoint(keyPointId).ChangeTo(changes);
+        LengthInKm = lengthInKm;
+    }
+
+    public void RemoveKeyPoint(Guid keyPointId, double lengthInKm)
+    {
+        EnsureKeyPointsCanChange(lengthInKm);
+
+        _keyPoints.Remove(FindKeyPoint(keyPointId));
+        LengthInKm = lengthInKm;
+    }
+
     public void Publish(TourPricing pricing)
     {
         if (pricing is null)
@@ -112,4 +147,20 @@ public sealed class Tour : AggregateRoot
         Status = TourStatus.Published;
         ArchivedAt = null;
     }
+
+    private void EnsureKeyPointsCanChange(double lengthInKm)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be changed only while the tour is a draft.");
+        }
+        if (lengthInKm < 0)
+        {
+            throw new DomainException("A tour length cannot be negative.");
+        }
+    }
+
+    private KeyPoint FindKeyPoint(Guid keyPointId) =>
+        _keyPoints.SingleOrDefault(keyPoint => keyPoint.Id == keyPointId)
+        ?? throw new NotFoundException("The key point does not exist.");
 }

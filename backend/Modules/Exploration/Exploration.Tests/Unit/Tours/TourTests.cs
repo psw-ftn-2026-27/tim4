@@ -196,6 +196,85 @@ public class TourTests
         reactivation.Should().Throw<DomainException>();
     }
 
+    [Fact]
+    public void Adding_a_key_point_to_a_draft_appends_it_and_records_the_new_length()
+    {
+        var tour = CreateTour(LongDescription);
+        tour.AddKeyPoint(CreateKeyPoint("Železnička stanica"), 0);
+        var keyPoint = CreateKeyPoint("Trg slobode");
+
+        tour.AddKeyPoint(keyPoint, 2.4);
+
+        tour.KeyPoints.Should().HaveCount(2);
+        tour.KeyPoints[^1].Should().Be(keyPoint);
+        tour.LengthInKm.Should().Be(2.4);
+    }
+
+    [Fact]
+    public void Updating_a_key_point_keeps_its_identity_and_position_and_records_the_new_length()
+    {
+        var tour = CreateTour(LongDescription);
+        var keyPoint = CreateKeyPoint("Trg slobode");
+        tour.AddKeyPoint(keyPoint, 0);
+        tour.AddKeyPoint(CreateKeyPoint("Petrovaradinska tvrđava"), 2.4);
+
+        tour.UpdateKeyPoint(keyPoint.Id, new KeyPoint("Dunavski park", "Novi opis.", "/images/park.jpg", "Tajna parka.", 45.2541, 19.8510, false), 1.9);
+
+        tour.KeyPoints[0].Id.Should().Be(keyPoint.Id);
+        tour.KeyPoints[0].Name.Should().Be("Dunavski park");
+        tour.KeyPoints[0].Secret.Should().Be("Tajna parka.");
+        tour.KeyPoints[0].IsVisibleWithoutPurchase.Should().BeFalse();
+        tour.LengthInKm.Should().Be(1.9);
+    }
+
+    [Fact]
+    public void Removing_a_key_point_drops_it_and_records_the_new_length()
+    {
+        var tour = CreateTour(LongDescription);
+        var keyPoint = CreateKeyPoint("Trg slobode");
+        tour.AddKeyPoint(keyPoint, 0);
+        tour.AddKeyPoint(CreateKeyPoint("Petrovaradinska tvrđava"), 2.4);
+
+        tour.RemoveKeyPoint(keyPoint.Id, 0);
+
+        tour.KeyPoints.Should().NotContain(keyPoint);
+        tour.LengthInKm.Should().Be(0);
+    }
+
+    [Fact]
+    public void Changing_a_missing_key_point_is_rejected()
+    {
+        var tour = CreateTour(LongDescription);
+        tour.AddKeyPoint(CreateKeyPoint("Trg slobode"), 0);
+
+        var removal = () => tour.RemoveKeyPoint(Guid.NewGuid(), 0);
+
+        removal.Should().Throw<NotFoundException>();
+    }
+
+    [Fact]
+    public void Tour_length_cannot_be_negative()
+    {
+        var tour = CreateTour(LongDescription);
+
+        var addition = () => tour.AddKeyPoint(CreateKeyPoint("Trg slobode"), -1);
+
+        addition.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Key_points_of_a_published_tour_cannot_be_changed()
+    {
+        var tour = CreatePublishedTour();
+
+        var addition = () => tour.AddKeyPoint(CreateKeyPoint("Trg slobode"), 0);
+
+        addition.Should().Throw<DomainException>();
+    }
+
+    private static KeyPoint CreateKeyPoint(string name) =>
+        new(name, "Opis tačke.", "/images/tacka.jpg", null, 45.2551, 19.8452, true);
+
     private static Tour CreatePublishedTour()
     {
         var tour = CreateTour(LongDescription);

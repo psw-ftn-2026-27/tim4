@@ -65,6 +65,9 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<double>("LengthInKm")
+                        .HasColumnType("double precision");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -119,6 +122,44 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
                 {
+                    b.OwnsMany("Exploration.Domain.Tours.KeyPoint", "KeyPoints", b1 =>
+                        {
+                            b1.Property<Guid>("TourId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Description")
+                                .IsRequired();
+
+                            b1.Property<Guid>("Id");
+
+                            b1.Property<string>("ImageAddress")
+                                .IsRequired();
+
+                            b1.Property<bool>("IsVisibleWithoutPurchase");
+
+                            b1.Property<double>("Latitude");
+
+                            b1.Property<double>("Longitude");
+
+                            b1.Property<string>("Name")
+                                .IsRequired();
+
+                            b1.Property<string>("Secret");
+
+                            b1.HasKey("TourId", "__synthesizedOrdinal");
+
+                            b1.ToTable("Tours", "exploration");
+
+                            b1
+                                .ToJson("KeyPoints")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
                     b.OwnsOne("Exploration.Domain.Tours.RecommendedGroupSize", "RecommendedGroupSize", b1 =>
                         {
                             b1.Property<Guid>("TourId")
@@ -165,6 +206,8 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TourId");
                         });
+
+                    b.Navigation("KeyPoints");
 
                     b.Navigation("RecommendedGroupSize")
                         .IsRequired();
