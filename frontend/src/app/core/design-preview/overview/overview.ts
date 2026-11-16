@@ -129,10 +129,10 @@ const STATE_GROUPS: StateGroup[] = [
   {
     entity: 'Izazov',
     states: [
-      { label: '✎ Nacrt (draft)', modifier: 'badge--draft' },
-      { label: '● Objavljen (published)', modifier: 'badge--published' },
-      { label: '⊘ Povučen (retired)', modifier: 'badge--retired' },
-      { label: '▣ Arhiviran (archived)', modifier: 'badge--archived' },
+      { label: '✎ Nacrt', modifier: 'badge--draft' },
+      { label: '● Objavljen', modifier: 'badge--published' },
+      { label: '⊘ Povučen', modifier: 'badge--retired' },
+      { label: '▣ Arhiviran', modifier: 'badge--archived' },
     ],
   },
   {

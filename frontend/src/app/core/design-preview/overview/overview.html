@@ -168,16 +168,20 @@
 
     <h3>Napredak</h3>
     <p class="meta">
-      <code>.progress</code> za napredak „X od Y“, kao pređene ključne tačke ili pronađene lokacije;
-      broj se uvek ispisuje i tekstom. Širinu trake i mesto na ekranu određuje stil komponente.
+      <code>.progress</code> za napredak „X od Y“, kao pređene ključne tačke ili pronađene lokacije,
+      sa trakom <code>.progress__bar</code> i punjenjem <code>.progress__fill</code>; broj se uvek
+      ispisuje i tekstom. Širinu trake i mesto na ekranu određuje stil komponente.
     </p>
     <div class="progress-samples">
       @for (sample of progressSamples; track sample.label) {
         <div class="stack">
           <p class="meta">{{ sample.label }}</p>
           <p class="progress">
-            <span aria-hidden="true"
-              ><span [style.width]="(sample.done / sample.total) * 100 + '%'"></span
+            <span class="progress__bar" aria-hidden="true"
+              ><span
+                class="progress__fill"
+                [style.width]="(sample.done / sample.total) * 100 + '%'"
+              ></span
             ></span>
             {{ sample.done }} od {{ sample.total }}
           </p>
