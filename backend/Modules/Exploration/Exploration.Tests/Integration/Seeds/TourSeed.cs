@@ -29,8 +29,8 @@ internal static class TourSeed
 
         PublishedVineyards = new(WellKnownUsers.Explorer, "Vinogradi Sremskih Karlovaca", "Tura vodi kroz vinograde na obroncima Fruške gore, uz obilazak dva porodična podruma i degustaciju bermeta u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "priroda"], new RecommendedGroupSize(1, 10));
         PublishedVineyards.AddTransportTime(TransportMode.Bicycle, 60);
-        PublishedVineyards.AddKeyPoint(new KeyPoint("Porodični podrum", "Prvi podrum na turi.", "/images/seed-publishedvineyards-1.jpg", null, 45.201, 19.935, true), 0);
-        PublishedVineyards.AddKeyPoint(new KeyPoint("Degustacija bermeta", "Završetak u Sremskim Karlovcima.", "/images/seed-publishedvineyards-2.jpg", null, 45.203, 19.933, true), 0.3);
+        PublishedVineyards.AddKeyPoint(new KeyPoint("Porodični podrum", "Prvi podrum na turi.", "/images/seed-publishedvineyards-1.jpg", "Podrum je star dva veka.", 45.201, 19.935, true), 0);
+        PublishedVineyards.AddKeyPoint(new KeyPoint("Degustacija bermeta", "Završetak u Sremskim Karlovcima.", "/images/seed-publishedvineyards-2.jpg", "Recept bermeta čuva jedna porodica.", 45.203, 19.933, false), 0.3);
         PublishedVineyards.Publish(new TourPricing(TourPricingType.Free, null));
 
         PublishedMonasteries = new(WellKnownUsers.Explorer, "Fruškogorski manastiri", "Tura obilazi tri fruškogorska manastira: Krušedol, Grgeteg i Novo Hopovo, sa pauzom za ručak u podnožju nacionalnog parka.", TourDifficulty.Hard, ["istorija"], new RecommendedGroupSize(1, 10));

@@ -35,6 +35,35 @@ internal sealed class TourReadRepository : ITourReadRepository
         return new PageResult<TourDto>(items, totalCount);
     }
 
+    public Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId)
+    {
+        return _dbContext.Tours
+            .Where(tour => tour.Id == tourId && tour.Status == TourStatus.Published)
+            .Select(tour => new TourDetailsDto(
+                tour.Id,
+                tour.AuthorId,
+                tour.Name,
+                tour.Description,
+                tour.Difficulty,
+                tour.Tags,
+                tour.LengthInKm,
+                tour.TransportTimes
+                    .Select(time => new TransportTimeDto(time.Transport, time.Minutes))
+                    .ToList(),
+                tour.KeyPoints
+                    .Select(keyPoint => new TourKeyPointDto(
+                        keyPoint.Id,
+                        keyPoint.Name,
+                        keyPoint.Description,
+                        keyPoint.ImageAddress,
+                        keyPoint.Secret,
+                        keyPoint.Latitude,
+                        keyPoint.Longitude,
+                        keyPoint.IsVisibleWithoutPurchase))
+                    .ToList()))
+            .SingleOrDefaultAsync();
+    }
+
     public async Task<List<KeyPointDto>?> GetKeyPointsOfAuthoredTourAsync(Guid tourId, Guid authorId)
     {
         var tour = await _dbContext.Tours

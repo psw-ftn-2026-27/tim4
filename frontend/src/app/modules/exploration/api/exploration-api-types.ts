@@ -36,6 +36,29 @@ export interface KeyPointDto {
   isVisibleWithoutPurchase: boolean;
 }
 
+export interface TourKeyPointDto {
+  id: string;
+  name: string;
+  description: string;
+  imageAddress: string;
+  secret: string | null;
+  latitude: number;
+  longitude: number;
+  isVisibleWithoutPurchase: boolean;
+}
+
+export interface TourDetailsDto {
+  id: string;
+  authorId: string;
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+  lengthInKm: number;
+  transportTimes: TransportTimeDto[];
+  keyPoints: TourKeyPointDto[];
+}
+
 export interface KeyPointDetailsDto {
   name: string;
   description: string;
