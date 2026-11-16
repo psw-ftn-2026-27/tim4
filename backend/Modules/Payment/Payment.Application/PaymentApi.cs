@@ -9,15 +9,15 @@ namespace Payment.Application;
 public sealed class PaymentApi : IPaymentApi
 {
     private readonly ProductOfferingService _productOffering;
-    private readonly CartCheckoutService _shoppingCart;
+    private readonly CartCheckoutService _cartCheckout;
     private readonly PurchaseAccessQueries _purchaseAccess;
     private readonly ProductPricingQueries _productPricing;
 
-    public PaymentApi(ProductOfferingService productOffering, CartCheckoutService shoppingCart,
+    public PaymentApi(ProductOfferingService productOffering, CartCheckoutService cartCheckout,
         PurchaseAccessQueries purchaseAccess, ProductPricingQueries productPricing)
     {
         _productOffering = productOffering;
-        _shoppingCart = shoppingCart;
+        _cartCheckout = cartCheckout;
         _purchaseAccess = purchaseAccess;
         _productPricing = productPricing;
     }
@@ -26,7 +26,7 @@ public sealed class PaymentApi : IPaymentApi
         new CreateProductDto(request.EntityId, request.Name, request.OwnerId, request.Price));
 
     public Task AddToCartAsync(Guid userId, Guid entityId) =>
-        _shoppingCart.AddToCartAsync(userId, new AddToCartDto(entityId));
+        _cartCheckout.AddToCartAsync(userId, new AddToCartDto(entityId));
 
     public Task UpdateProductPriceAsync(Guid entityId, Guid ownerId, long price) =>
         _productOffering.UpdateProductPriceAsync(entityId, ownerId, price);

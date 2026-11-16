@@ -56,8 +56,6 @@ public sealed class Wallet : AggregateRoot
             new WalletTransaction(purchaseId, payment.EntityId, payment.Amount, submittedAt)).ToList();
         var total = transactions.Sum(transaction => (decimal)transaction.Amount);
         if (total > Balance) throw new DomainException("Nema dovoljno EC za kupovinu.");
-        if (_transactions.Any(transaction => transaction.PurchaseId == purchaseId))
-            throw new DomainException("Ova kupovina je već završena.");
         Balance -= (long)total;
         _transactions.AddRange(transactions);
         Version = Guid.NewGuid();

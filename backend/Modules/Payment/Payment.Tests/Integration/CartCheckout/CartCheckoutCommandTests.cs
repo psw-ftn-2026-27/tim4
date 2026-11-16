@@ -17,6 +17,20 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
     public CartCheckoutCommandTests(PaymentApiFactory factory) : base(factory) { }
 
     [Fact]
+    public async Task A_missing_cart_cannot_be_prepared_and_is_not_created()
+    {
+        var userId = Guid.NewGuid();
+        var client = Factory.CreateClientFor(userId, "explorer");
+
+        var response = await client.PostAsync("/api/payment/cart/checkouts", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        (await context.ShoppingCarts.AnyAsync(cart => cart.UserId == userId)).Should().BeFalse();
+        (await context.Purchases.AnyAsync(purchase => purchase.UserId == userId)).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Missing_content_cannot_be_added_and_leaves_the_prepared_cart_unchanged()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
@@ -255,7 +269,7 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
 
         responses.Count(response => response.StatusCode == HttpStatusCode.OK).Should().Be(1);
         responses.Should().ContainSingle(response => response.StatusCode == HttpStatusCode.BadRequest
-            || response.StatusCode == HttpStatusCode.InternalServerError);
+            || response.StatusCode == HttpStatusCode.Conflict);
         using var context = Factory.CreateContext<PaymentDbContext>();
         var wallet = await context.Wallets.Include(wallet => wallet.Transactions)
             .SingleAsync(wallet => wallet.UserId == seededCart.UserId);
@@ -280,7 +294,7 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
             administrator.PostAsJsonAsync($"/api/payment/wallet/users/{WellKnownUsers.Explorer}/payments", new CreditWalletDto(50)));
 
         responses.Should().OnlyContain(response => response.IsSuccessStatusCode
-            || response.StatusCode == HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.InternalServerError);
+            || response.StatusCode == HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.Conflict);
         responses.Should().Contain(response => response.IsSuccessStatusCode);
         var charged = responses[0].IsSuccessStatusCode;
         var credited = responses[1].IsSuccessStatusCode;
