@@ -9,8 +9,10 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import * as L from 'leaflet';
-import { pathLengthKm } from './path-length';
+import { RouteSegment, routedPath } from './routed-path';
 
 export interface MapLocation {
   latitude: number;
@@ -31,6 +33,15 @@ const SINGLE_LOCATION_ZOOM = 15;
 const SELECTED_PIN_RADIUS = 14;
 const SELECTED_PANE = 'selected';
 
+// The public OSRM server of the OpenStreetMap community, walking profile: free and without a key.
+const ROUTING_URL = 'https://routing.openstreetmap.de/routed-foot/route/v1/foot';
+
+// The part of the routing service's answer the map reads. Coordinates come as [longitude, latitude].
+interface RoutingResponse {
+  code: string;
+  routes?: { distance: number; geometry: { coordinates: [number, number][] } }[];
+}
+
 // Leaflet's default pin finds its images through its own CSS, which breaks once the app is
 // bundled. angular.json copies the images to "leaflet/", and every pin uses this icon.
 const PIN_ICON = L.icon({
@@ -44,8 +55,8 @@ const PIN_ICON = L.icon({
 });
 
 // The one exception to the Angular subset (see README.md): ElementRef, afterNextRender,
-// effect() and DestroyRef drive Leaflet, which lives outside the component tree. Pages use
-// only the inputs and the output.
+// effect() and DestroyRef drive Leaflet, which lives outside the component tree, and HttpClient
+// asks the routing service for the path. Pages use only the inputs and the outputs.
 @Component({
   selector: 'app-location-map',
   styleUrl: './location-map.scss',
@@ -60,7 +71,8 @@ export class LocationMap {
   // The selected pin. The page owns it: it sets this input from what selectedChange sends.
   readonly selected = input<MapCoordinates | null>(null);
 
-  // The length of the path through the locations, in kilometres, sent whenever the inputs change.
+  // The length of the path along the roads, in kilometres, sent once the routes of all
+  // segments have arrived after the locations change.
   readonly pathLengthChange = output<number>();
   // The coordinates of every click on the map, sent only while the map is selectable.
   readonly selectedChange = output<MapCoordinates>();
@@ -68,6 +80,13 @@ export class LocationMap {
   readonly locationClick = output<number>();
 
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly http = inject(HttpClient);
+
+  // The lines of the path along the roads; null while their routes are being fetched.
+  private readonly route = signal<MapCoordinates[][] | null>(null);
+
+  // Counts the route requests, so the answer to an older list of locations is thrown away.
+  private routeRequest = 0;
 
   // Set once the map's element exists, so the effect below waits for it.
   private readonly map = signal<L.Map | undefined>(undefined);
@@ -109,8 +128,12 @@ export class LocationMap {
       if (map === undefined) {
         return;
       }
-      this.draw(map, this.locations(), this.showPath());
-      this.pathLengthChange.emit(pathLengthKm(this.locations()));
+      this.draw(map, this.locations(), this.showPath(), this.route());
+    });
+
+    // Only a change of the locations asks for the routes again; toggling showPath does not.
+    effect(() => {
+      void this.fetchRoute(this.locations());
     });
 
     // The selected pin follows the selected input: a click only emits, and the page sets it.
@@ -121,10 +144,47 @@ export class LocationMap {
       this.drawSelected(this.selected());
     });
 
-    inject(DestroyRef).onDestroy(() => this.map()?.remove());
+    inject(DestroyRef).onDestroy(() => {
+      // Any answer still on its way belongs to a map that no longer exists.
+      this.routeRequest++;
+      this.map()?.remove();
+    });
   }
 
-  private draw(map: L.Map, locations: MapLocation[], showPath: boolean): void {
+  // Hides the line, asks for the route of every segment, and then draws it and sends its length.
+  private async fetchRoute(locations: MapLocation[]): Promise<void> {
+    const request = ++this.routeRequest;
+    this.route.set(null);
+    const path = await routedPath(locations, (from, to) => this.fetchSegment(from, to));
+    if (request !== this.routeRequest) {
+      return;
+    }
+    this.route.set(path.segments);
+    this.pathLengthChange.emit(path.lengthKm);
+  }
+
+  // The walking route between two locations, or null when the service finds none.
+  private async fetchSegment(from: MapLocation, to: MapLocation): Promise<RouteSegment | null> {
+    const url =
+      `${ROUTING_URL}/${from.longitude},${from.latitude};${to.longitude},${to.latitude}` +
+      '?overview=full&geometries=geojson';
+    const response = await firstValueFrom(this.http.get<RoutingResponse>(url));
+    const route = response.routes?.[0];
+    if (response.code !== 'Ok' || route === undefined) {
+      return null;
+    }
+    return {
+      points: route.geometry.coordinates.map(([longitude, latitude]) => ({ latitude, longitude })),
+      lengthKm: route.distance / 1000,
+    };
+  }
+
+  private draw(
+    map: L.Map,
+    locations: MapLocation[],
+    showPath: boolean,
+    route: MapCoordinates[][] | null,
+  ): void {
     this.layers.clearLayers();
 
     const points = locations.map((location): L.LatLngTuple => [
@@ -143,8 +203,13 @@ export class LocationMap {
         .addTo(this.layers);
     });
 
-    if (showPath && points.length > 1) {
-      L.polyline(points).addTo(this.layers);
+    // One line per segment, so a segment without a route stays a straight line on its own.
+    if (showPath && route !== null) {
+      route.forEach((segment) => {
+        L.polyline(segment.map((point): L.LatLngTuple => [point.latitude, point.longitude])).addTo(
+          this.layers,
+        );
+      });
     }
 
     if (points.length === 0) {
