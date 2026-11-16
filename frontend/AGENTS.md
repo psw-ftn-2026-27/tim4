@@ -119,7 +119,10 @@ construct means adding a lesson, so treat it as a platform decision.
   `firstValueFrom` in the group's service for writes. Functional interceptors
   (`HttpInterceptorFn`, `withInterceptors`) in `core/`.
 - Forms: Signal Forms (`form()`, `FormField`, validators from
-  `@angular/forms/signals`). No Reactive Forms, no template-driven forms.
+  `@angular/forms/signals`). No Reactive Forms, no template-driven forms. Platform
+  exception: a field shows its error (message and `aria-invalid`) once it is `dirty()` or
+  `touched()`, and a form's submit method calls `markAsTouched()` on an invalid form before
+  returning without sending; the forms lesson does not cover these two yet.
 - Routing: `router-outlet`, `routerLink`, `loadChildren`, route parameters bound as
   signal inputs via `withComponentInputBinding`; `inject(Router)` only for navigation
   after a command.
