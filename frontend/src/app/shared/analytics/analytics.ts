@@ -52,6 +52,16 @@ export class Analytics {
     this.deleteCookies();
   }
 
+  // The × on the banner. Closing it before any choice counts as declining; once the
+  // visitor has chosen, it only hides the banner and the choice stays as it was.
+  dismiss(): void {
+    if (this.consent.choice() === 'undecided') {
+      this.reject();
+    } else {
+      this.consent.close();
+    }
+  }
+
   track<N extends AnalyticsEventName>(name: N, params: AnalyticsEvents[N]): void {
     if (!canSend(this.consent.choice(), this.measurementId)) {
       return;

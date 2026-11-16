@@ -40,8 +40,8 @@
     <button
       class="consent-close"
       type="button"
-      aria-label="Close and decline"
-      (click)="analytics.reject()"
+      [attr.aria-label]="consent.choice() === 'undecided' ? 'Close and decline' : 'Close'"
+      (click)="analytics.dismiss()"
     >
       ×
     </button>

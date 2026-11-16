@@ -28,7 +28,9 @@ export class TourAuthoring {
 
 Servis sam proverava saglasnost i dodaje ulogu korisnika (`guest`, `explorer` ili
 `administrator`), pa poziv nema `if` i ne prosleđuje ulogu. Pregledi stranica se beleže
-sami, pri svakoj promeni rute, i za njih ne treba ništa da se doda.
+sami, pri svakoj promeni rute, i za njih ne treba ništa da se doda. Autor ture nije
+posebna uloga: ture pravi istraživač, pa `tour_created` i `tour_published` stižu sa
+ulogom `explorer`.
 
 ## Katalog događaja
 

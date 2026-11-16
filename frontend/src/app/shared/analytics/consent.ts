@@ -10,12 +10,17 @@ export class Consent {
   private readonly stored = signal<ConsentChoice>(readChoice(localStorage.getItem(CHOICE_KEY)));
   private readonly settingsOpen = signal(false);
 
-  readonly choice = computed(() => this.stored());
+  readonly choice = this.stored.asReadonly();
   readonly bannerOpen = computed(() => this.stored() === 'undecided' || this.settingsOpen());
 
   remember(choice: 'accepted' | 'rejected'): void {
     this.stored.set(choice);
     localStorage.setItem(CHOICE_KEY, choice);
+    this.settingsOpen.set(false);
+  }
+
+  // Hides the banner opened from Cookie settings, without changing the choice.
+  close(): void {
     this.settingsOpen.set(false);
   }
 
