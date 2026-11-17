@@ -139,6 +139,8 @@ construct means adding a lesson, so treat it as a platform decision.
   `Router.events` once, to record a page view on every `NavigationEnd`, and drives the
   official Google Analytics snippet through `window`. Modules use only its `track()`
   method and never see the Observable.
+- The app shell's navigation bar (`app.html`) is the third: it may use `routerLinkActive`,
+  with `routerLinkActiveOptions`, to highlight the current section. Modules do not use it.
 
 ## Styling
 
