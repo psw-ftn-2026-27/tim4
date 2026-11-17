@@ -133,7 +133,8 @@ construct means adding a lesson, so treat it as a platform decision.
 - No RxJS in student code. `Observable` appears only as the return type of `HttpClient`
   writes, immediately awaited. No NgRx, no facades.
 - The one exception to this subset is `shared/map`, which may use `inject(ElementRef)`,
-  `afterNextRender`, `effect()` and `DestroyRef` to drive Leaflet; modules use only its
+  `afterNextRender`, `effect()` and `DestroyRef` to drive Leaflet, and `HttpClient` with
+  `firstValueFrom` to ask the external routing service for the path; modules use only its
   inputs and outputs (see `src/app/shared/map/README.md`).
 - `shared/analytics` is the second exception: its `Analytics` service subscribes to
   `Router.events` once, to record a page view on every `NavigationEnd`, and drives the

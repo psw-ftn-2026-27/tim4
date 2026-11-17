@@ -30,20 +30,34 @@ const TOUR_KEY_POINTS: MapLocation[] = [
 export class MapView {
   protected readonly locations = signal<MapLocation[]>(CITY_CHALLENGES);
   protected readonly showPath = signal(false);
-  protected readonly pathLength = signal(0);
+  // null while the map is fetching the routes, until it sends the length along the roads.
+  protected readonly pathLength = signal<number | null>(null);
+  protected readonly pathLengthText = computed(() => {
+    const length = this.pathLength();
+    return length === null ? 'računa se…' : `${length.toFixed(2)} km`;
+  });
 
   protected showChallenges(): void {
-    this.locations.set(CITY_CHALLENGES);
+    this.setLocations(CITY_CHALLENGES);
     this.showPath.set(false);
   }
 
   protected showTour(): void {
-    this.locations.set(TOUR_KEY_POINTS);
+    this.setLocations(TOUR_KEY_POINTS);
     this.showPath.set(true);
   }
 
   protected showEmpty(): void {
-    this.locations.set([]);
+    this.setLocations([]);
+  }
+
+  // The map sends a new length only when the locations really change, so only then is the
+  // length cleared until it arrives.
+  private setLocations(locations: MapLocation[]): void {
+    if (locations !== this.locations()) {
+      this.locations.set(locations);
+      this.pathLength.set(null);
+    }
   }
 
   protected togglePath(): void {

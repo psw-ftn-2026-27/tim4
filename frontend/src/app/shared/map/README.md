@@ -3,31 +3,53 @@
 `LocationMap` (`app-location-map`) je prikazna komponenta platforme koja prikazuje listu
 lokacija na mapi. Svaka lokacija je jedan pin, a klik na pin prikazuje njen naziv pored
 pina. Svi pinovi su uvek u vidnom polju. Kada je putanja uključena, pinovi su povezani
-linijom redom kojim su predati, a komponenta šalje dužinu putanje u kilometrima. Kada je
+rutom koja prati pešačke puteve, redom kojim su predati, a komponenta šalje dužinu putanje u
+kilometrima. Kada je
 izbor uključen, korisnik klikom na mapu bira jednu lokaciju, a stranica dobija njene
 koordinate.
 
-Mapa koristi biblioteku Leaflet i podlogu OpenStreetMap, besplatno i bez ključa. Timovi
-modula ne uče Leaflet: koriste samo ulaze i izlaze opisane ispod.
+Mapa koristi biblioteku Leaflet i podlogu OpenStreetMap, besplatno i bez ključa. Rute traži od
+javnog OSRM servera zajednice OpenStreetMap (`https://routing.openstreetmap.de/routed-foot`),
+takođe besplatno i bez ključa: komponenta tom spoljnom servisu šalje koordinate svake dve
+uzastopne lokacije. Presretač iz `core/auth` dodaje token samo zahtevima ka `/api/`, pa token
+prijavljenog korisnika ne odlazi tom servisu. Timovi modula ne uče Leaflet ni servis za
+rutiranje: koriste samo ulaze i izlaze opisane ispod.
 
 Živi primer je stranica `/design-preview/map` u stilskom vodiču (`core/design-preview/map-view/`).
 
 ## Ulazi i izlazi
 
-| Ime                | Vrsta                       | Značenje                                                            |
-| ------------------ | --------------------------- | ------------------------------------------------------------------- |
-| `locations`        | ulaz, obavezan              | `MapLocation[]`: `latitude`, `longitude` i `name` svake lokacije    |
-| `showPath`         | ulaz, podrazumevano `false` | da li linija spaja lokacije redom kojim su predate                  |
-| `pathLengthChange` | izlaz, `number`             | dužina putanje u kilometrima, šalje se pri svakoj promeni ulaza     |
-| `selectable`       | ulaz, podrazumevano `false` | da li klik na mapu bira lokaciju                                    |
-| `selected`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: izabrani pin, ako postoji                 |
-| `selectedChange`   | izlaz, `MapCoordinates`     | koordinate mesta na koje je korisnik kliknuo, dok je izbor uključen |
-| `locationClick`    | izlaz, `number`             | pozicija u `locations` pina na koji je korisnik kliknuo             |
+| Ime                | Vrsta                       | Značenje                                                                               |
+| ------------------ | --------------------------- | -------------------------------------------------------------------------------------- |
+| `locations`        | ulaz, obavezan              | `MapLocation[]`: `latitude`, `longitude` i `name` svake lokacije                       |
+| `showPath`         | ulaz, podrazumevano `false` | da li ruta spaja lokacije redom kojim su predate                                       |
+| `pathLengthChange` | izlaz, `number`             | dužina putanje u km, šalje se dok je `showPath` uključen, kada stignu rute svih delova |
+| `selectable`       | ulaz, podrazumevano `false` | da li klik na mapu bira lokaciju                                                       |
+| `selected`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: izabrani pin, ako postoji                                    |
+| `selectedChange`   | izlaz, `MapCoordinates`     | koordinate mesta na koje je korisnik kliknuo, dok je izbor uključen                    |
+| `locationClick`    | izlaz, `number`             | pozicija u `locations` pina na koji je korisnik kliknuo                                |
 
-Dužina putanje je zbir pravolinijskih razdaljina između uzastopnih lokacija; poslednja
-lokacija nije spojena sa prvom, a za manje od dve lokacije dužina je 0 km. Komponenta
-uvek šalje dužinu lokacija onim redom kojim su predate, i kada je `showPath` isključen;
-stranica sama odlučuje da li je prikazuje.
+Dužina putanje je zbir dužina pešačkih ruta po putevima između uzastopnih lokacija;
+poslednja lokacija nije spojena sa prvom. Za svaki deo putanje (dve uzastopne lokacije)
+komponenta šalje po jedan zahtev servisu za rutiranje. Deo za koji servis ne odgovori ili ne
+nađe rutu crta se pravom linijom i ulazi u dužinu pravolinijskom razdaljinom; ostali delovi
+prate puteve, a posebne poruke nema. Zahtev koji ne dobije odgovor za 5 sekundi smatra se
+neuspelim, pa servis koji visi ne ostavlja stranicu zauvek na "računa se…". Po jedan zahtev
+po delu, a ne jedan za celu putanju, je svesna odluka: pad servisa za jedan deo menja pravom
+linijom samo taj deo. Za manje od dve lokacije dužina je 0 km i servis se ne
+pita.
+
+Rute se traže samo dok je `showPath` uključen, i to jednom za svaku listu lokacija: dok ne
+stignu svi delovi, na mapi su samo pinovi, bez linije, a `pathLengthChange` se šalje tek kada
+su stigli svi. Linija je u svom sloju, pa njeno iscrtavanje ne pomera vidno polje koje je
+korisnik u međuvremenu namestio. Odgovor za stariju listu lokacija se odbacuje. Isključivanje i
+ponovno uključivanje `showPath` za istu listu ne traži rute ponovo i ne menja dužinu. Dok je
+`showPath` isključen, komponenta ne pita servis za rutiranje i ne šalje dužinu; stranica koja
+želi dužinu uključuje putanju.
+
+Stranica koja prikazuje dužinu čuva je kao `number | null` i vraća je na `null` kada menja
+lokacije; dok je `null`, prikazuje da se dužina računa. Ako predaje istu listu kao i ranije,
+komponenta ne šalje novu dužinu, pa je ne treba ni brisati.
 
 Prazna lista prikazuje mapu Novog Sada bez pinova, bez greške.
 
@@ -61,7 +83,12 @@ export class TourMap {
     { latitude: 45.2551, longitude: 19.8452, name: '2. Trg slobode' },
     { latitude: 45.2517, longitude: 19.8618, name: '3. Petrovaradinska tvrđava' },
   ]);
-  protected readonly pathLength = signal(0);
+  // null dok mapa ne pošalje dužinu po putevima.
+  protected readonly pathLength = signal<number | null>(null);
+  protected readonly pathLengthText = computed(() => {
+    const length = this.pathLength();
+    return length === null ? 'računa se…' : `${length.toFixed(2)} km`;
+  });
 }
 ```
 
@@ -71,7 +98,7 @@ export class TourMap {
   [showPath]="true"
   (pathLengthChange)="pathLength.set($event)"
 />
-<p>Dužina putanje: {{ pathLength().toFixed(2) }} km</p>
+<p>Dužina putanje: {{ pathLengthText() }}</p>
 ```
 
 ## Upotreba: izbor lokacije u formi
@@ -130,7 +157,10 @@ je posao stranice modula.
 
 Ova komponenta je jedini izuzetak od Angular podskupa iz `frontend/AGENTS.md`: da bi
 upravljala Leaflet mapom, koja živi van stabla komponenti, koristi `inject(ElementRef)`,
-`afterNextRender`, `effect()` i `DestroyRef`. Izuzetak je zatvoren u `shared/map`. Timovi
+`afterNextRender`, `effect()` i `DestroyRef`, a rute čita kroz `HttpClient` i `firstValueFrom`
+iz komponente, ne kroz `httpResource` stranice. Sabiranje delova putanje je obična funkcija
+`routedPath` u `routed-path.ts`, koja se testira bez Angular-a. Izuzetak je zatvoren u
+`shared/map`. Timovi
 modula koriste samo njene ulaze i izlaze i ne pišu ove konstrukcije u svojim modulima.
 Izmena komponente je platformska odluka.
 
