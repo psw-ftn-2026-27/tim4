@@ -85,3 +85,9 @@
 .preview-sun {
   fill: var(--color-ec-bg);
 }
+
+// A framed page example (header, back link, navigation) is only as wide as a narrow page,
+// so it reads as an example and not as a heading of the style guide.
+.sample-frame {
+  max-width: var(--page-narrow-width);
+}

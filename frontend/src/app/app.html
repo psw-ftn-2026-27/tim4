@@ -34,7 +34,6 @@
           <a routerLink="/exploration/mine" routerLinkActive="nav-active" (click)="closeMenu()"
             >Moje ture</a
           >
-          <a routerLink="/games" routerLinkActive="nav-active" (click)="closeMenu()">Izazovi</a>
           <a
             routerLink="/payment"
             routerLinkActive="nav-active"
@@ -46,6 +45,12 @@
         @case ('administrator') {
           <a routerLink="/games/challenges" routerLinkActive="nav-active" (click)="closeMenu()"
             >Izazovi za administraciju</a
+          >
+          <a
+            routerLink="/games/social-challenges"
+            routerLinkActive="nav-active"
+            (click)="closeMenu()"
+            >Društveni izazovi</a
           >
           <a
             routerLink="/payment/administration"

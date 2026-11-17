@@ -162,6 +162,19 @@ input[type='radio'] {
   text-align: left;
 }
 
+// A column holding a date, an amount, a count or a badge: never wraps and is as narrow as
+// its content (width 0 shrinks it to that). Put it on the th and on every td of the column.
+// Text columns take the rest of the width and wrap.
+.table .col-fit {
+  white-space: nowrap;
+  width: 0;
+}
+
+// A button inside a table cell never wraps its label.
+.table .button {
+  white-space: nowrap;
+}
+
 // A table row that no longer counts, such as a reversed payment.
 .table .row--muted {
   background: var(--color-muted-bg);
@@ -176,6 +189,65 @@ input[type='radio'] {
   height: calc(var(--control-height) + 2 * var(--space-2) + 1px);
   white-space: nowrap;
   width: 0;
+}
+
+// A table with actions, on a narrow screen: each row becomes a card, the header row is
+// hidden, each cell shows its column name from its data-label attribute, and the actions
+// sit side by side at the bottom of the card, so nothing scrolls sideways. A sticky actions
+// column cannot work, because the actions are several cells under one th with colspan.
+// 48rem is the navigation bar's breakpoint (app.scss); a media query cannot read a custom
+// property, so the value is written here.
+@media (max-width: 48rem) {
+  .table--cards,
+  .table--cards tbody,
+  .table--cards tr,
+  .table--cards td {
+    display: block;
+  }
+
+  .table--cards thead {
+    display: none;
+  }
+
+  .table--cards tr {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+  }
+
+  .table--cards tr + tr {
+    margin-top: var(--space-3);
+  }
+
+  // .col-fit is named as well, so its width 0 from above does not apply to a card.
+  .table--cards td,
+  .table--cards .col-fit {
+    border-bottom: none;
+    padding: var(--space-1) 0;
+    white-space: normal;
+    width: auto;
+  }
+
+  .table--cards td[data-label]::before {
+    color: var(--color-text-muted);
+    content: attr(data-label);
+    display: block;
+    font-size: var(--font-size-sm);
+  }
+
+  .table--cards .col-actions {
+    display: inline-block;
+    height: auto;
+    width: auto;
+    margin-right: var(--space-2);
+    margin-top: var(--space-2);
+  }
+
+  // An action the state does not allow leaves no gap in the card.
+  .table--cards .col-actions:empty {
+    display: none;
+  }
 }
 
 // Pagination: "Prethodna", "Strana X od Y", "Sledeća". Shown only when there is more

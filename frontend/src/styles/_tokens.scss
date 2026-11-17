@@ -55,6 +55,9 @@
 
   --radius: 0.5rem;
 
+  // The width of a page whose content is one form (.page--narrow in _layout.scss).
+  --page-narrow-width: 36rem;
+
   // One height for buttons, inputs and selects: a line of text, the padding and the border.
   --control-height: calc(1.5em + 2 * var(--space-2) + 2px);
 

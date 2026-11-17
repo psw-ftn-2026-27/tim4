@@ -180,13 +180,20 @@ preview disagree, fix the preview.
 
 - Language: every text a PR adds or changes is Serbian, Latin script, with diacritics
   (č, ć, š, ž, đ). Existing English text the PR does not touch is not a reason to reject it.
-  Sentences and messages address the user formally ("Pokušajte ponovo kasnije.",
-  "Prijavite se da vidite svoje ture."); a button's label is a short verb ("Sačuvaj",
-  "Pokušaj ponovo").
+  Sentences and messages address the user formally with "vi" ("Pokušajte ponovo kasnije.",
+  "Prijavite se da vidite svoje ture."); a button's label is always the short form, never
+  "vi" ("Sačuvaj", not "Sačuvajte"; "Pokušaj ponovo", not "Pokušajte ponovo"), so one
+  element never mixes the two.
 - Page header: `.page-header` holds the `h1` and, right after it, the page's one primary action
   (example: `/design-preview`, Zaglavlje stranice).
 - Back link: a page with a parent has `.back-link` above its header, "← Moje ture"
   (example: `/design-preview`, Link nazad).
+- Navigation: the top bar is the only navigation; a page never adds its own links to sections
+  in the bar, only its `.back-link` and its one primary action in `.page-header`
+  (example: `/design-preview`, Navigacija).
+- Page width: two widths only. A page whose content is one form (login, create, preferences)
+  is `.page--narrow`; lists, tables and maps use the default full width
+  (example: `/design-preview`, Širina stranice).
 - Control height: buttons, inputs and selects share `--control-height`, already set by
   `.button` and `.field`; never set it again (example: `/design-preview`, Visina kontrola).
 - Values in a component's `.scss`: no hex colours and no pixel or rem values for spacing,
@@ -197,8 +204,13 @@ preview disagree, fix the preview.
   (example: `/design-preview`, Dugmad).
 - Form actions: the buttons of a form or a filter sit in `.form-actions` under the fields,
   never as another cell of the field grid (example: `/design-preview`, Dugmad forme).
+- Tables: a column holding a date, an amount, a count or a badge is `.col-fit` on its `th` and
+  every `td` (never wraps, as narrow as its content); text columns take the rest and wrap; a
+  button in a cell never wraps its label (example: `/design-preview`, Tabela).
 - Table actions: the last column, one `td.col-actions` per action under one `th` with
-  `colspan`; an action the state does not allow leaves its cell empty, never a sentence
+  `colspan`; an action the state does not allow leaves its cell empty, never a sentence.
+  A table with actions is `.table--cards` with a `data-label` on every data cell, so below
+  48rem each row becomes a card with its actions at the bottom and nothing scrolls sideways
   (example: `/design-preview`, Kolona „Radnje“).
 - Pagination: `.pagination` with "Prethodna", "Strana X od Y", "Sledeća", shown only when
   there is more than one page (example: `/design-preview`, Paginacija).

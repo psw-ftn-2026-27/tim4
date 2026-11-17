@@ -11,22 +11,22 @@
       arhiviran (archived).
     </p>
     <div class="table-wrap">
-      <table class="table">
+      <table class="table table--cards">
         <thead>
           <tr>
             <th scope="col">Naziv</th>
             <th scope="col">Vrsta</th>
-            <th scope="col">Stanje</th>
-            <th scope="col">Nagrada</th>
+            <th scope="col" class="col-fit">Stanje</th>
+            <th scope="col" class="col-fit">Nagrada</th>
             <th scope="col" class="col-actions" colspan="2">Radnje</th>
           </tr>
         </thead>
         <tbody>
           @for (challenge of challenges; track challenge.id) {
             <tr>
-              <td>{{ challenge.name }}</td>
-              <td>{{ challenge.kind }}</td>
-              <td>
+              <td data-label="Naziv">{{ challenge.name }}</td>
+              <td data-label="Vrsta">{{ challenge.kind }}</td>
+              <td class="col-fit" data-label="Stanje">
                 @switch (challenge.status) {
                   @case ('Draft') {
                     <span class="badge badge--draft">✎ Nacrt</span>
@@ -42,7 +42,7 @@
                   }
                 }
               </td>
-              <td>
+              <td class="col-fit" data-label="Nagrada">
                 <span class="badge badge--xp">★ {{ challenge.xp }} XP</span>
               </td>
               <td class="col-actions">

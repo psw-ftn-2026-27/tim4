@@ -59,9 +59,11 @@
       <code>.page-header</code> drži naslov <code>h1</code> i odmah pored njega jednu glavnu radnju
       stranice, u istom redu. Stranica bez glavne radnje ima samo naslov.
     </p>
-    <div class="page-header">
-      <h1>Moje ture</h1>
-      <button class="button button--primary" type="button">Nova tura</button>
+    <div class="card sample-frame">
+      <div class="page-header">
+        <h1>Moje ture</h1>
+        <button class="button button--primary" type="button">Nova tura</button>
+      </div>
     </div>
 
     <h3>Link nazad</h3>
@@ -69,11 +71,44 @@
       <code>.back-link</code> je običan link ka roditeljskoj stranici, iznad zaglavlja stranice.
       Tekst počinje strelicom i imenom stranice na koju vodi.
     </p>
-    <div>
+    <div class="card stack sample-frame">
       <a class="back-link" routerLink="/design-preview">← Pregled teme</a>
       <div class="page-header">
         <h1>Fruškogorske staze</h1>
       </div>
+    </div>
+
+    <h3>Navigacija</h3>
+    <p class="meta">
+      Delovi aplikacije su u traci za navigaciju, pa stranica ne dodaje svoje linkove ka njima.
+      Stranica dodaje samo link nazad (<code>.back-link</code>) i svoju jednu glavnu radnju u
+      <code>.page-header</code>, kao u primeru.
+    </p>
+    <div class="card stack sample-frame">
+      <a class="back-link" routerLink="/design-preview">← Moje ture</a>
+      <div class="page-header">
+        <h1>Fruškogorske staze</h1>
+        <button class="button button--primary" type="button">Nova tačka</button>
+      </div>
+    </div>
+
+    <h3>Širina stranice</h3>
+    <p class="meta">
+      Stranica čiji je sadržaj jedna forma (prijava, kreiranje, preference) dodaje
+      <code>.page--narrow</code> na svoj spoljni element, pa je široka najviše
+      <code>--page-narrow-width</code>. Spiskovi, tabele i mape koriste celu širinu prozora; treće
+      širine nema.
+    </p>
+    <div>
+      <form class="card stack page--narrow">
+        <div class="field">
+          <label for="sample-narrow-name">Naziv ture</label>
+          <input id="sample-narrow-name" type="text" value="Petrovaradinska tvrđava" />
+        </div>
+        <div class="form-actions">
+          <button class="button button--primary" type="button">Sačuvaj</button>
+        </div>
+      </form>
     </div>
 
     <h3>Dugmad</h3>
@@ -210,26 +245,28 @@
 
     <h3>Tabela</h3>
     <p class="meta">
-      <code>.table</code> za spisak podataka u kolonama, uvek unutar <code>.table-wrap</code>, da
-      široka tabela skroluje na uskom ekranu; <code>.row--muted</code> za red koji se više ne
-      računa.
+      <code>.table</code> za spisak podataka u kolonama, uvek unutar <code>.table-wrap</code>;
+      <code>.row--muted</code> za red koji se više ne računa. Kolona sa datumom, iznosom, brojem ili
+      oznakom dobija <code>.col-fit</code> na <code>th</code> i na svakom <code>td</code>: ne
+      prelama se i uska je koliko i njen sadržaj. Kolone sa tekstom zauzimaju ostatak i prelamaju
+      se, a dugme u ćeliji nikad ne prelama svoj tekst.
     </p>
     <div class="table-wrap">
       <table class="table">
         <thead>
           <tr>
             <th scope="col">Korisnik</th>
-            <th scope="col">Stanje</th>
+            <th scope="col" class="col-fit">Stanje</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>ana.petrovic</td>
-            <td><span class="badge badge--ec">◎ 120 EC</span></td>
+            <td class="col-fit"><span class="badge badge--ec">◎ 120 EC</span></td>
           </tr>
           <tr class="row--muted">
             <td>Uplata 40 EC</td>
-            <td><span class="badge badge--muted">↶ Stornirano</span></td>
+            <td class="col-fit"><span class="badge badge--muted">↶ Stornirano</span></td>
           </tr>
         </tbody>
       </table>
@@ -239,21 +276,26 @@
     <p class="meta">
       <code>.col-actions</code> je poslednja kolona tabele, sa jednom ćelijom po radnji, pa svaka
       radnja ima stalno mesto u svakom redu. Radnja koju stanje ne dozvoljava ostavlja praznu
-      ćeliju, ne rečenicu, i red zadržava visinu.
+      ćeliju, ne rečenicu, i red zadržava visinu. Tabela sa radnjama dobija
+      <code>.table--cards</code>: na ekranu užem od 48rem, isto kao traka za navigaciju, svaki red
+      postaje kartica, svaka ćelija prikazuje ime kolone iz atributa <code>data-label</code>, a
+      radnje stoje na dnu kartice. Suzite prozor da vidite kartice.
     </p>
     <div class="table-wrap">
-      <table class="table">
+      <table class="table table--cards">
         <thead>
           <tr>
             <th scope="col">Izazov</th>
-            <th scope="col">Stanje</th>
+            <th scope="col" class="col-fit">Stanje</th>
             <th scope="col" class="col-actions" colspan="2">Radnje</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Tvrđava noću</td>
-            <td><span class="badge badge--draft">✎ Nacrt</span></td>
+            <td data-label="Izazov">Tvrđava noću</td>
+            <td class="col-fit" data-label="Stanje">
+              <span class="badge badge--draft">✎ Nacrt</span>
+            </td>
             <td class="col-actions">
               <button class="button" type="button">Izmeni</button>
             </td>
@@ -262,16 +304,20 @@
             </td>
           </tr>
           <tr>
-            <td>Mostovi na Dunavu</td>
-            <td><span class="badge badge--archived">▣ Arhiviran</span></td>
+            <td data-label="Izazov">Mostovi na Dunavu</td>
+            <td class="col-fit" data-label="Stanje">
+              <span class="badge badge--archived">▣ Arhiviran</span>
+            </td>
             <td class="col-actions"></td>
             <td class="col-actions">
               <button class="button button--danger" type="button">Obriši</button>
             </td>
           </tr>
           <tr>
-            <td>Istorija Novog Sada</td>
-            <td><span class="badge badge--published">● Objavljen</span></td>
+            <td data-label="Izazov">Istorija Novog Sada</td>
+            <td class="col-fit" data-label="Stanje">
+              <span class="badge badge--published">● Objavljen</span>
+            </td>
             <td class="col-actions"></td>
             <td class="col-actions"></td>
           </tr>

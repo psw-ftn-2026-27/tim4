@@ -45,19 +45,19 @@
     <h2>Stanje ture</h2>
     <p class="meta">Svako stanje nudi samo radnju koja iz njega vodi dalje.</p>
     <div class="table-wrap">
-      <table class="table">
+      <table class="table table--cards">
         <thead>
           <tr>
             <th scope="col">Tura</th>
-            <th scope="col">Stanje</th>
-            <th scope="col">Radnja</th>
+            <th scope="col" class="col-fit">Stanje</th>
+            <th scope="col" class="col-actions">Radnje</th>
           </tr>
         </thead>
         <tbody>
           @for (tour of tours; track tour.id) {
             <tr>
-              <td>{{ tour.name }}</td>
-              <td>
+              <td data-label="Tura">{{ tour.name }}</td>
+              <td class="col-fit" data-label="Stanje">
                 @switch (tour.status) {
                   @case ('Draft') {
                     <span class="badge badge--draft">✎ U pripremi</span>
@@ -71,7 +71,7 @@
                   }
                 }
               </td>
-              <td>
+              <td class="col-actions">
                 @switch (tour.status) {
                   @case ('Draft') {
                     <button class="button button--primary" type="button">Objavi</button>

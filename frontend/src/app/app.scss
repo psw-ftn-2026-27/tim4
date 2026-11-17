@@ -1,3 +1,15 @@
+// The shell fills at least the window height and the main area takes the spare room,
+// so the footer stays at the bottom of a short page.
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
 header {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);

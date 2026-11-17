@@ -12,14 +12,14 @@
           <thead>
             <tr>
               <th scope="col">Korisnik</th>
-              <th scope="col">Stanje</th>
+              <th scope="col" class="col-fit">Stanje</th>
             </tr>
           </thead>
           <tbody>
             @for (user of users; track user.username) {
               <tr>
                 <td>{{ user.username }}</td>
-                <td>
+                <td class="col-fit">
                   <span class="badge badge--ec">◎ {{ user.balance }} EC</span>
                 </td>
               </tr>
@@ -55,25 +55,27 @@
       Storno je ponuđen samo za uplatu mlađu od 24h čiji storno ne bi doveo do negativnog stanja.
     </p>
     <div class="table-wrap">
-      <table class="table">
+      <table class="table table--cards">
         <thead>
           <tr>
             <th scope="col">Korisnik</th>
             <th scope="col">Vrsta</th>
-            <th scope="col">Iznos</th>
-            <th scope="col">Pre</th>
-            <th scope="col">Status</th>
+            <th scope="col" class="col-fit">Iznos</th>
+            <th scope="col" class="col-fit">Pre</th>
+            <th scope="col" class="col-fit">Status</th>
             <th scope="col" class="col-actions">Radnje</th>
           </tr>
         </thead>
         <tbody>
           @for (transaction of transactions; track transaction.id) {
             <tr [class.row--muted]="transaction.reversed">
-              <td>{{ transaction.username }}</td>
-              <td>{{ transaction.kind }}</td>
-              <td>{{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount }} EC</td>
-              <td>{{ transaction.hoursAgo }} h</td>
-              <td>
+              <td data-label="Korisnik">{{ transaction.username }}</td>
+              <td data-label="Vrsta">{{ transaction.kind }}</td>
+              <td class="col-fit" data-label="Iznos">
+                {{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount }} EC
+              </td>
+              <td class="col-fit" data-label="Pre">{{ transaction.hoursAgo }} h</td>
+              <td class="col-fit" data-label="Status">
                 @if (transaction.reversed) {
                   <span class="badge badge--muted">↶ Stornirano</span>
                 } @else {
