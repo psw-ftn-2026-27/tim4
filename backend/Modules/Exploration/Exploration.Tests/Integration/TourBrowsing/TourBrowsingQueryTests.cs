@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using Exploration.Application.Tours;
+using Exploration.Application.TourBrowsing;
 using Exploration.Domain.Tours;
 using Exploration.Tests.Integration.Seeds;
 using FluentAssertions;
@@ -18,11 +18,11 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published", JsonOptions);
 
-        tours!.Items.Should().OnlyContain(tour => tour.Status == TourStatus.Published);
-        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
-        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.FortressWalk.Id);
+        tours!.Items.Should().OnlyContain(tour => tour.Tour.Status == TourStatus.Published);
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.FortressWalk.Id);
         tours.TotalCount.Should().Be(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
     }
 
@@ -31,9 +31,9 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?pageSize=100", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?pageSize=100", JsonOptions);
 
-        tours!.Items.Should().NotContain(tour => tour.Id == TourSeed.ArchivedOldTownWalk.Id);
+        tours!.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.ArchivedOldTownWalk.Id);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?page=2&pageSize=1", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?page=2&pageSize=1", JsonOptions);
 
         tours!.Items.Should().ContainSingle();
         tours.TotalCount.Should().Be(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
@@ -52,11 +52,11 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?name=vinograd&difficulties=Moderate&tags=priroda&transport=Bicycle", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?name=vinograd&difficulties=Moderate&tags=priroda&transport=Bicycle", JsonOptions);
 
-        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
-        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
-        tours.Items.Should().OnlyContain(tour => tour.Difficulty == TourDifficulty.Moderate);
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().OnlyContain(tour => tour.Tour.Difficulty == TourDifficulty.Moderate);
     }
 
     [Fact]
@@ -64,12 +64,12 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficulties=Easy&difficulties=Hard", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?difficulties=Easy&difficulties=Hard", JsonOptions);
 
-        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
-        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
-        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
-        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
     }
 
     [Fact]
@@ -77,11 +77,11 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?tags=istorija&tags=grad", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?tags=istorija&tags=grad", JsonOptions);
 
-        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
-        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
-        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
     }
 
     [Fact]
@@ -89,9 +89,9 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?tags=ISTORIJA", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?tags=ISTORIJA", JsonOptions);
 
-        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
     }
 
     [Fact]
@@ -99,9 +99,9 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?name=MANASTIRI", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?name=MANASTIRI", JsonOptions);
 
-        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
     }
 
     [Fact]
@@ -109,10 +109,10 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?transport=Car", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?transport=Car", JsonOptions);
 
-        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
-        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
     }
 
     [Fact]
@@ -120,10 +120,68 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?sortByDifficulty=Descending&pageSize=100", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?sort=DifficultyDescending&pageSize=100", JsonOptions);
 
-        tours!.Items.Select(tour => tour.Difficulty).Should().BeInDescendingOrder();
-        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
-        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours!.Items.Select(tour => tour.Tour.Difficulty).Should().BeInDescendingOrder();
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+    }
+
+    [Fact]
+    public async Task Price_range_finds_tours_priced_within_it_and_no_tour_without_a_price()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?priceFrom=20&priceTo=50&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id && tour.Price == TourProductSeed.VineyardsFor30.Price);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+        tours.Items.Should().OnlyContain(tour => tour.Price >= 20 && tour.Price <= 50);
+    }
+
+    [Fact]
+    public async Task Free_tour_is_found_by_a_range_starting_at_zero()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?priceFrom=0&priceTo=10&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id && tour.Price == 0);
+    }
+
+    [Fact]
+    public async Task Descending_price_sort_lists_tours_without_a_price_last()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?sort=PriceDescending&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+        tours.Items.TakeWhile(tour => tour.Price is not null).Select(tour => tour.Price).Should().BeInDescendingOrder();
+        tours.Items.SkipWhile(tour => tour.Price is not null).Should().OnlyContain(tour => tour.Price == null);
+    }
+
+    [Fact]
+    public async Task Range_with_bounds_in_reverse_order_finds_the_tours_between_them()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?priceFrom=50&priceTo=20&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+    }
+
+    [Fact]
+    public async Task Second_page_of_the_price_sort_continues_the_order_of_the_first()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?sort=PriceAscending&page=2&pageSize=1", JsonOptions);
+
+        tours!.Items.Should().ContainSingle(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.TotalCount.Should().Be(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
     }
 }

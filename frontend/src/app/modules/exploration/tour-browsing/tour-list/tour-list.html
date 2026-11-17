@@ -66,11 +66,23 @@
       </div>
 
       <div class="field">
+        <label for="price-from-filter">Cena od (EC)</label>
+        <input id="price-from-filter" type="number" step="1" [formField]="form.priceFrom" />
+      </div>
+
+      <div class="field">
+        <label for="price-to-filter">Cena do (EC)</label>
+        <input id="price-to-filter" type="number" step="1" [formField]="form.priceTo" />
+      </div>
+
+      <div class="field">
         <label for="sort">Sort</label>
-        <select id="sort" [formField]="form.sortByDifficulty">
+        <select id="sort" [formField]="form.sort" (change)="sortChanged()">
           <option value="">Newest first</option>
-          <option value="Ascending">Difficulty, easiest first</option>
-          <option value="Descending">Difficulty, hardest first</option>
+          <option value="DifficultyAscending">Difficulty, easiest first</option>
+          <option value="DifficultyDescending">Difficulty, hardest first</option>
+          <option value="PriceAscending">Cena, rastuće</option>
+          <option value="PriceDescending">Cena, opadajuće</option>
         </select>
       </div>
     </div>
@@ -90,8 +102,8 @@
       <p>No tours match the given criteria.</p>
     } @else {
       <div class="grid">
-        @for (tour of page.items; track tour.id) {
-          <app-tour-card [tour]="tour" />
+        @for (item of page.items; track item.tour.id) {
+          <app-tour-card [tour]="item.tour" [price]="item.price" />
         }
       </div>
     }
