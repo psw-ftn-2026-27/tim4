@@ -209,9 +209,9 @@ preview disagree, fix the preview.
   button in a cell never wraps its label (example: `/design-preview`, Tabela).
 - Table actions: the last column, one `td.col-actions` per action under one `th` with
   `colspan`; an action the state does not allow leaves its cell empty, never a sentence.
-  A table with actions is `.table--cards` with a `data-label` on every data cell, so below
-  48rem each row becomes a card with its actions at the bottom and nothing scrolls sideways
-  (example: `/design-preview`, Kolona „Radnje“).
+  Phone support is not required. A table with actions may add `.table--cards` with a
+  `data-label` on every data cell, so below 48rem each row becomes a card with its actions
+  at the bottom and nothing scrolls sideways (example: `/design-preview`, Kolona „Radnje“).
 - Pagination: `.pagination` with "Prethodna", "Strana X od Y", "Sledeća", shown only when
   there is more than one page (example: `/design-preview`, Paginacija).
 - Page states: a page that loads data shows exactly one of five, each a `.state`: loading
