@@ -4,10 +4,6 @@
   grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
 }
 
-.filters__submit {
-  align-self: end;
-}
-
 .tour-card {
   display: flex;
   flex-direction: column;

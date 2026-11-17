@@ -55,6 +55,9 @@
 
   --radius: 0.5rem;
 
+  // One height for buttons, inputs and selects: a line of text, the padding and the border.
+  --control-height: calc(1.5em + 2 * var(--space-2) + 2px);
+
   --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --font-size-sm: 0.875rem;

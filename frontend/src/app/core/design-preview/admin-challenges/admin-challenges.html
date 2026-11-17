@@ -1,6 +1,8 @@
 <div class="stack">
-  <p><a routerLink="/design-preview">← Nazad na pregled</a></p>
-  <h1>Izazovi i kvizovi</h1>
+  <a class="back-link" routerLink="/design-preview">← Nazad na pregled</a>
+  <div class="page-header">
+    <h1>Izazovi i kvizovi</h1>
+  </div>
 
   <section class="stack">
     <h2>Svi izazovi</h2>
@@ -16,7 +18,7 @@
             <th scope="col">Vrsta</th>
             <th scope="col">Stanje</th>
             <th scope="col">Nagrada</th>
-            <th scope="col">Radnje</th>
+            <th scope="col" class="col-actions" colspan="2">Radnje</th>
           </tr>
         </thead>
         <tbody>
@@ -43,18 +45,15 @@
               <td>
                 <span class="badge badge--xp">★ {{ challenge.xp }} XP</span>
               </td>
-              <td>
-                <div class="actions">
-                  @if (canEdit(challenge)) {
-                    <button class="button" type="button">Izmeni</button>
-                  }
-                  @if (canDelete(challenge)) {
-                    <button class="button button--danger" type="button">Obriši</button>
-                  }
-                  @if (!canEdit(challenge) && !canDelete(challenge)) {
-                    <span class="meta">Nema dozvoljenih radnji u ovom stanju</span>
-                  }
-                </div>
+              <td class="col-actions">
+                @if (canEdit(challenge)) {
+                  <button class="button" type="button">Izmeni</button>
+                }
+              </td>
+              <td class="col-actions">
+                @if (canDelete(challenge)) {
+                  <button class="button button--danger" type="button">Obriši</button>
+                }
               </td>
             </tr>
           }
@@ -98,7 +97,9 @@
         <label for="social-message">Izlazna poruka</label>
         <textarea id="social-message" rows="3">Bravo! Zajedno ste dočekali zalazak sunca.</textarea>
       </div>
-      <button class="button button--primary" type="button">Sačuvaj</button>
+      <div class="form-actions">
+        <button class="button button--primary" type="button">Sačuvaj</button>
+      </div>
     </form>
 
     <form class="card stack">
@@ -146,7 +147,9 @@ Odgovorite na sva pitanja dok ste na tvrđavi.</textarea>
           }
         </fieldset>
       }
-      <button class="button button--primary" type="button">Sačuvaj</button>
+      <div class="form-actions">
+        <button class="button button--primary" type="button">Sačuvaj</button>
+      </div>
     </form>
   </div>
 </div>

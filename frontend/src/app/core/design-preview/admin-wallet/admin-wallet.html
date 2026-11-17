@@ -1,6 +1,8 @@
 <div class="stack">
-  <p><a routerLink="/design-preview">← Nazad na pregled</a></p>
-  <h1>Novčanici korisnika</h1>
+  <a class="back-link" routerLink="/design-preview">← Nazad na pregled</a>
+  <div class="page-header">
+    <h1>Novčanici korisnika</h1>
+  </div>
 
   <div class="layout">
     <section class="stack">
@@ -41,7 +43,9 @@
         <label for="top-up-amount">Iznos (EC)</label>
         <input id="top-up-amount" type="number" min="1" value="50" />
       </div>
-      <button class="button button--primary" type="button">Uplati</button>
+      <div class="form-actions">
+        <button class="button button--primary" type="button">Uplati</button>
+      </div>
     </form>
   </div>
 
@@ -58,7 +62,8 @@
             <th scope="col">Vrsta</th>
             <th scope="col">Iznos</th>
             <th scope="col">Pre</th>
-            <th scope="col">Storno</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="col-actions">Radnje</th>
           </tr>
         </thead>
         <tbody>
@@ -71,9 +76,12 @@
               <td>
                 @if (transaction.reversed) {
                   <span class="badge badge--muted">↶ Stornirano</span>
-                } @else if (stornoBlockedReason(transaction)) {
-                  <span class="meta">Nije dostupno: {{ stornoBlockedReason(transaction) }}</span>
                 } @else {
+                  <span class="badge badge--success">✓ Izvršeno</span>
+                }
+              </td>
+              <td class="col-actions">
+                @if (canReverse(transaction)) {
                   <button class="button" type="button">↶ Storniraj</button>
                 }
               </td>
@@ -82,5 +90,10 @@
         </tbody>
       </table>
     </div>
+    <nav class="pagination" aria-label="Strane">
+      <button class="button" type="button">Prethodna</button>
+      <span>Strana 2 od 3</span>
+      <button class="button" type="button">Sledeća</button>
+    </nav>
   </section>
 </div>
