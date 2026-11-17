@@ -37,6 +37,10 @@ frontend/src/
                              mirror the server, no client-only fields          [platform]
       map/                   LocationMap (Leaflet): pins, path, picking a location;
                              see its README, example at /design-preview/map    [platform]
+      analytics/             Analytics (Google Analytics 4): consent, page views,
+                             the event catalog; see "Analytics" below          [platform]
+  environments/              environment.ts (production), environment.development.ts
+                             (ng serve and tests): the GA measurement ID       [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -131,6 +135,10 @@ construct means adding a lesson, so treat it as a platform decision.
 - The one exception to this subset is `shared/map`, which may use `inject(ElementRef)`,
   `afterNextRender`, `effect()` and `DestroyRef` to drive Leaflet; modules use only its
   inputs and outputs (see `src/app/shared/map/README.md`).
+- `shared/analytics` is the second exception: its `Analytics` service subscribes to
+  `Router.events` once, to record a page view on every `NavigationEnd`, and drives the
+  official Google Analytics snippet through `window`. Modules use only its `track()`
+  method and never see the Observable.
 
 ## Styling
 
@@ -184,6 +192,17 @@ an image:
 
 The server returns the image address (`/images/<guid>.jpg`), which the DTO carries as a
 `string` and the template shows with `<img [src]>`.
+
+## Analytics
+
+`shared/analytics/` is the one way to record usage in Google Analytics 4. Nothing is
+sent until the visitor accepts on the banner in the app shell, and nothing is ever sent
+locally or in tests, because those environments have no measurement ID. To record an
+event, the group's service calls `analytics.track('<name>', { ... })` right after the
+command's `await` succeeds, never from a component and never from an `effect()`. The
+name must be in the catalog `events.ts`; a new event is requested from the platform
+team. Which features record events is the module team's decision. See
+`src/app/shared/analytics/README.md`.
 
 ## Conventions
 

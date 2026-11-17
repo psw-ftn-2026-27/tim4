@@ -60,6 +60,10 @@ export class MyTours {
 
   protected async publish(event: Event): Promise<void> {
     event.preventDefault();
+    if (!this.publishForm().valid()) {
+      this.publishForm().markAsTouched();
+      return;
+    }
     const tour = this.publishingTour();
     const pricingType = this.publishForm.pricingType().value();
     if (tour === null || pricingType === '') {
@@ -119,6 +123,10 @@ export class MyTours {
 
   protected async addTransportTime(event: Event): Promise<void> {
     event.preventDefault();
+    if (!this.form().valid()) {
+      this.form().markAsTouched();
+      return;
+    }
     const tourId = this.selectedTourId();
     if (tourId === null) {
       return;
