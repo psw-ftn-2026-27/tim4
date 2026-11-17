@@ -19,12 +19,6 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   hard: 'Teško',
 };
 
-const DIFFICULTY_ICONS: Record<Difficulty, string> = {
-  easy: '●○○',
-  moderate: '●●○',
-  hard: '●●●',
-};
-
 @Component({
   imports: [RouterLink],
   selector: 'app-example-tours',
@@ -33,7 +27,6 @@ const DIFFICULTY_ICONS: Record<Difficulty, string> = {
 })
 export class ExampleTours {
   protected readonly difficultyLabels = DIFFICULTY_LABELS;
-  protected readonly difficultyIcons = DIFFICULTY_ICONS;
 
   protected readonly tours: ExampleTour[] = [
     {

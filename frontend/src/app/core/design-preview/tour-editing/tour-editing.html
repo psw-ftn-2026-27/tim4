@@ -1,6 +1,8 @@
 <div class="stack">
-  <p><a routerLink="/design-preview">← Nazad na pregled</a></p>
-  <h1>Uređivanje ture</h1>
+  <a class="back-link" routerLink="/design-preview">← Nazad na pregled</a>
+  <div class="page-header">
+    <h1>Uređivanje ture</h1>
+  </div>
 
   <form class="card stack edit-form">
     <h2>Fruškogorske staze</h2>
@@ -34,26 +36,28 @@
       </div>
     </fieldset>
 
-    <button class="button button--primary" type="button">Sačuvaj</button>
+    <div class="form-actions">
+      <button class="button button--primary" type="button">Sačuvaj</button>
+    </div>
   </form>
 
   <section class="stack">
     <h2>Stanje ture</h2>
     <p class="meta">Svako stanje nudi samo radnju koja iz njega vodi dalje.</p>
     <div class="table-wrap">
-      <table class="table">
+      <table class="table table--cards">
         <thead>
           <tr>
             <th scope="col">Tura</th>
-            <th scope="col">Stanje</th>
-            <th scope="col">Radnja</th>
+            <th scope="col" class="col-fit">Stanje</th>
+            <th scope="col" class="col-actions">Radnje</th>
           </tr>
         </thead>
         <tbody>
           @for (tour of tours; track tour.id) {
             <tr>
-              <td>{{ tour.name }}</td>
-              <td>
+              <td data-label="Tura">{{ tour.name }}</td>
+              <td class="col-fit" data-label="Stanje">
                 @switch (tour.status) {
                   @case ('Draft') {
                     <span class="badge badge--draft">✎ U pripremi</span>
@@ -67,7 +71,7 @@
                   }
                 }
               </td>
-              <td>
+              <td class="col-actions">
                 @switch (tour.status) {
                   @case ('Draft') {
                     <button class="button button--primary" type="button">Objavi</button>

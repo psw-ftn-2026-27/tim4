@@ -7,6 +7,10 @@
 
   <section class="stack">
     <h2>Paleta</h2>
+    <p class="meta">
+      Koristite samo ova imena boja, nikad vrednost boje napisanu u stilu komponente. Novu boju
+      dodaje platformski tim u <code>_tokens.scss</code>.
+    </p>
     <p>
       Paleta se oslanja na zemljane tonove i boje starih mapa kako bi podstakla osećaj fizičke
       avanture i istraživanja prirode. Svetla pergament pozadina asocira na mapu koja čeka da bude
@@ -45,19 +49,86 @@
 
   <section class="stack">
     <h2>UI elementi</h2>
+    <p class="meta">
+      Globalne klase koje koristi više modula; pre nego što napišete svoj stil, potražite ovde klasu
+      koja odgovara. Raspored ekrana koji pripada jednom modulu ide u stil te komponente, ne ovde.
+    </p>
+
+    <h3>Zaglavlje stranice</h3>
+    <p class="meta">
+      <code>.page-header</code> drži naslov <code>h1</code> i odmah pored njega jednu glavnu radnju
+      stranice, u istom redu. Stranica bez glavne radnje ima samo naslov.
+    </p>
+    <div class="card sample-frame">
+      <div class="page-header">
+        <h1>Moje ture</h1>
+        <button class="button button--primary" type="button">Nova tura</button>
+      </div>
+    </div>
+
+    <h3>Link nazad</h3>
+    <p class="meta">
+      <code>.back-link</code> je običan link ka roditeljskoj stranici, iznad zaglavlja stranice.
+      Tekst počinje strelicom i imenom stranice na koju vodi.
+    </p>
+    <div class="card stack sample-frame">
+      <a class="back-link" routerLink="/design-preview">← Pregled teme</a>
+      <div class="page-header">
+        <h1>Fruškogorske staze</h1>
+      </div>
+    </div>
+
+    <h3>Navigacija</h3>
+    <p class="meta">
+      Delovi aplikacije su u traci za navigaciju, pa stranica ne dodaje svoje linkove ka njima.
+      Stranica dodaje samo link nazad (<code>.back-link</code>) i svoju jednu glavnu radnju u
+      <code>.page-header</code>, kao u primeru.
+    </p>
+    <div class="card stack sample-frame">
+      <a class="back-link" routerLink="/design-preview">← Moje ture</a>
+      <div class="page-header">
+        <h1>Fruškogorske staze</h1>
+        <button class="button button--primary" type="button">Nova tačka</button>
+      </div>
+    </div>
+
+    <h3>Širina stranice</h3>
+    <p class="meta">
+      Stranica čiji je sadržaj jedna forma (prijava, kreiranje, preference) dodaje
+      <code>.page--narrow</code> na svoj spoljni element, pa je široka najviše
+      <code>--page-narrow-width</code>. Uska stranica stoji uz levu ivicu, u liniji sa trakom, i
+      nikad se ne centrira, ni prijava ni registracija. Spiskovi, tabele i mape koriste celu širinu
+      prozora; treće širine nema.
+    </p>
+    <div>
+      <form class="card stack page--narrow">
+        <div class="field">
+          <label for="sample-narrow-name">Naziv ture</label>
+          <input id="sample-narrow-name" type="text" value="Petrovaradinska tvrđava" />
+        </div>
+        <div class="form-actions">
+          <button class="button button--primary" type="button">Sačuvaj</button>
+        </div>
+      </form>
+    </div>
 
     <h3>Dugmad</h3>
+    <p class="meta">
+      <code>.button--primary</code> za glavnu radnju, <code>.button</code> za sporednu,
+      <code>.button--danger</code> samo za radnju koja se ne može poništiti.
+    </p>
     <div class="row">
       <button class="button button--primary" type="button">Sačuvaj</button>
       <button class="button" type="button">Otkaži</button>
       <button class="button button--danger" type="button">Obriši</button>
     </div>
-    <p class="meta">
-      <code>.button--primary</code> za glavnu radnju, <code>.button</code> za sporednu,
-      <code>.button--danger</code> samo za radnju koja se ne može poništiti.
-    </p>
 
     <h3>Polja forme</h3>
+    <p class="meta">
+      <code>.field</code> za polje, <code>.field-group</code> za grupu povezanih polja,
+      <code>.field-pair</code> za dva polja u redu, <code>.choice</code> za checkbox ili radio sa
+      tekstom. Raspored polja na celoj formi ide u stil komponente te forme.
+    </p>
     <div class="form-sample">
       <div class="field">
         <label for="sample-name">Naziv ture</label>
@@ -86,44 +157,197 @@
         </label>
       </fieldset>
     </div>
+
+    <h3>Visina kontrola</h3>
     <p class="meta">
-      <code>.field</code> za polje, <code>.field-group</code> za grupu povezanih polja,
-      <code>.field-pair</code> za dva polja u redu, <code>.choice</code> za checkbox ili radio sa
-      tekstom.
+      Dugme, polje i select imaju istu visinu, <code>--control-height</code> iz
+      <code>_tokens.scss</code>. Klase <code>.button</code> i <code>.field</code> je već
+      postavljaju, pa visinu kontrole ne pišite u stilu komponente.
     </p>
+    <div class="controls-sample">
+      <div class="field">
+        <label for="sample-control-input">Naslov</label>
+        <input id="sample-control-input" type="search" placeholder="npr. Fruška gora" />
+      </div>
+      <div class="field">
+        <label for="sample-control-select">Težina</label>
+        <select id="sample-control-select">
+          <option>Sve</option>
+          <option>Lako</option>
+        </select>
+      </div>
+      <button class="button button--primary" type="button">Pretraži</button>
+    </div>
+
+    <h3>Dugmad forme</h3>
+    <p class="meta">
+      <code>.form-actions</code> je poseban red ispod polja forme ili filtera, koji počinje ispod
+      prvog polja: sporedna radnja prva, glavna poslednja. Dugme nikad ne stoji kao još jedno polje
+      u mreži.
+    </p>
+    <form class="card form-sample">
+      <div class="field">
+        <label for="sample-actions-name">Naziv ture</label>
+        <input id="sample-actions-name" type="text" value="Petrovaradinska tvrđava" />
+      </div>
+      <div class="form-actions">
+        <button class="button" type="button">Otkaži</button>
+        <button class="button button--primary" type="button">Sačuvaj</button>
+      </div>
+    </form>
 
     <h3>Poruke</h3>
+    <p class="meta">
+      <code>.notice--success</code> posle uspele radnje, <code>.notice--muted</code> za obaveštenje
+      bez akcije, <code>.error</code> za grešku polja ili servera. Tekst uvek počinje ikonom ili
+      rečju.
+    </p>
     <p class="notice notice--success">✓ Tura je sačuvana.</p>
     <p class="notice notice--muted">↶ Uplata je stornirana.</p>
     <p class="error">⚠ Uplata nije uspela. Pokušajte ponovo.</p>
 
+    <h3>Stanja stranice</h3>
+    <p class="meta">
+      Stranica koja učitava podatke prikazuje tačno jedno od ovih pet stanja: <code>.state</code> za
+      učitavanje (sa <code>role="status"</code>), prazno, „prijavite se“ i „nemate pristup“, a
+      <code>.state--error</code> uz <code>.state</code> i <code>role="alert"</code> za grešku.
+    </p>
+    <div class="state-samples">
+      <div class="stack">
+        <p class="meta">Učitavanje</p>
+        <div class="state" role="status">Učitavanje tura…</div>
+      </div>
+      <div class="stack">
+        <p class="meta">Prazno</p>
+        <div class="state">
+          Još nema tura.
+          <button class="button button--primary" type="button">Nova tura</button>
+        </div>
+      </div>
+      <div class="stack">
+        <p class="meta">Greška</p>
+        <div class="state state--error" role="alert">
+          ⚠ Ture nisu učitane.
+          <button class="button" type="button">Pokušaj ponovo</button>
+        </div>
+      </div>
+      <div class="stack">
+        <p class="meta">Prijavite se</p>
+        <div class="state">
+          Prijavite se da vidite svoje ture.
+          <a routerLink="/login">Prijava</a>
+        </div>
+      </div>
+      <div class="stack">
+        <p class="meta">Nemate pristup</p>
+        <div class="state">Ova stranica je dostupna administratoru.</div>
+      </div>
+    </div>
+
     <h3>Tabela</h3>
     <p class="meta">
-      <code>.table</code> uvek unutar <code>.table-wrap</code>, da široka tabela skroluje na uskom
-      ekranu.
+      <code>.table</code> za spisak podataka u kolonama, uvek unutar <code>.table-wrap</code>;
+      <code>.row--muted</code> za red koji se više ne računa. Kolona sa datumom, iznosom, brojem ili
+      oznakom dobija <code>.col-fit</code> na <code>th</code> i na svakom <code>td</code>: ne
+      prelama se i uska je koliko i njen sadržaj. Kolone sa tekstom zauzimaju ostatak i prelamaju
+      se, a dugme u ćeliji nikad ne prelama svoj tekst.
     </p>
     <div class="table-wrap">
       <table class="table">
         <thead>
           <tr>
             <th scope="col">Korisnik</th>
-            <th scope="col">Stanje</th>
+            <th scope="col" class="col-fit">Stanje</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>ana.petrovic</td>
-            <td><span class="badge badge--ec">◎ 120 EC</span></td>
+            <td class="col-fit"><span class="badge badge--ec">◎ 120 EC</span></td>
           </tr>
           <tr class="row--muted">
             <td>Uplata 40 EC</td>
-            <td><span class="badge badge--muted">↶ Stornirano</span></td>
+            <td class="col-fit"><span class="badge badge--muted">↶ Stornirano</span></td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <h3>Kolona „Radnje“</h3>
+    <p class="meta">
+      <code>.col-actions</code> je poslednja kolona tabele, sa jednom ćelijom po radnji, pa svaka
+      radnja ima stalno mesto u svakom redu. Radnja koju stanje ne dozvoljava ostavlja praznu
+      ćeliju, ne rečenicu, i red zadržava visinu. Podrška za telefon nije obavezna, ali tabela sa
+      radnjama može da dobije <code>.table--cards</code>: na ekranu užem od 48rem, isto kao traka za
+      navigaciju, svaki red postaje kartica, svaka ćelija prikazuje ime kolone iz atributa
+      <code>data-label</code>, a radnje stoje na dnu kartice. Suzite prozor da vidite kartice.
+    </p>
+    <div class="table-wrap">
+      <table class="table table--cards">
+        <thead>
+          <tr>
+            <th scope="col">Izazov</th>
+            <th scope="col" class="col-fit">Stanje</th>
+            <th scope="col" class="col-actions" colspan="2">Radnje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Izazov">Tvrđava noću</td>
+            <td class="col-fit" data-label="Stanje">
+              <span class="badge badge--draft">✎ Nacrt</span>
+            </td>
+            <td class="col-actions">
+              <button class="button" type="button">Izmeni</button>
+            </td>
+            <td class="col-actions">
+              <button class="button button--danger" type="button">Obriši</button>
+            </td>
+          </tr>
+          <tr>
+            <td data-label="Izazov">Mostovi na Dunavu</td>
+            <td class="col-fit" data-label="Stanje">
+              <span class="badge badge--archived">▣ Arhiviran</span>
+            </td>
+            <td class="col-actions"></td>
+            <td class="col-actions">
+              <button class="button button--danger" type="button">Obriši</button>
+            </td>
+          </tr>
+          <tr>
+            <td data-label="Izazov">Istorija Novog Sada</td>
+            <td class="col-fit" data-label="Stanje">
+              <span class="badge badge--published">● Objavljen</span>
+            </td>
+            <td class="col-actions"></td>
+            <td class="col-actions"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Paginacija</h3>
+    <p class="meta">
+      <code>.pagination</code> ispod spiska, uvek u obliku „Prethodna“, „Strana X od Y“, „Sledeća“.
+      Prikazuje se samo kad postoji više od jedne strane. Na prvoj i poslednjoj strani dugme koje ne
+      vodi nigde je onemogućeno (<code>disabled</code>).
+    </p>
+    <nav class="pagination" aria-label="Strane">
+      <button class="button" type="button">Prethodna</button>
+      <span>Strana 2 od 3</span>
+      <button class="button" type="button">Sledeća</button>
+    </nav>
+    <nav class="pagination" aria-label="Strane, prva strana">
+      <button class="button" type="button" disabled>Prethodna</button>
+      <span>Strana 1 od 3</span>
+      <button class="button" type="button">Sledeća</button>
+    </nav>
+
     <h3>Kartice</h3>
+    <p class="meta">
+      <code>.card</code> za uokviren sadržaj, kao jedna tura u spisku. Raspored kartica na ekranu
+      ide u stil komponente.
+    </p>
     <div class="grid">
       <div class="card">
         <h3>Obična kartica</h3>
@@ -131,29 +355,63 @@
       </div>
     </div>
 
-    <h3>Oznake stanja ture</h3>
-    <div class="row">
-      <span class="badge badge--draft">✎ U pripremi</span>
-      <span class="badge badge--published">● Objavljena</span>
-      <span class="badge badge--archived">▣ Arhivirana</span>
-    </div>
+    <h3>Oznake stanja</h3>
+    <p class="meta">
+      Stanje entiteta uvek prikažite oznakom iz ove sekcije, sa ikonom i tekstom, nikad sirovom
+      vrednošću sa servera. Pišite <code>.badge</code> zajedno sa modifikatorom navedenim uz stanje.
+    </p>
+    @for (group of stateGroups; track group.entity) {
+      <h4>{{ group.entity }}</h4>
+      <div class="row">
+        @for (state of group.states; track state.label) {
+          <span class="state-sample">
+            <span class="badge" [class]="state.modifier">{{ state.label }}</span>
+            <code>.{{ state.modifier }}</code>
+          </span>
+        }
+      </div>
+    }
 
-    <h3>Oznake stanja izazova</h3>
-    <div class="row">
-      <span class="badge badge--draft">✎ Nacrt (draft)</span>
-      <span class="badge badge--published">● Objavljen (published)</span>
-      <span class="badge badge--retired">⊘ Povučen (retired)</span>
-      <span class="badge badge--archived">▣ Arhiviran (archived)</span>
+    <h3>Napredak</h3>
+    <p class="meta">
+      <code>.progress</code> za napredak „X od Y“, kao pređene ključne tačke ili pronađene lokacije,
+      sa trakom <code>.progress__bar</code> i punjenjem <code>.progress__fill</code>; broj se uvek
+      ispisuje i tekstom. Širinu trake i mesto na ekranu određuje stil komponente.
+    </p>
+    <div class="progress-samples">
+      @for (sample of progressSamples; track sample.label) {
+        <div class="stack">
+          <p class="meta">{{ sample.label }}</p>
+          <p class="progress">
+            <span class="progress__bar" aria-hidden="true"
+              ><span
+                class="progress__fill"
+                [style.width]="(sample.done / sample.total) * 100 + '%'"
+              ></span
+            ></span>
+            {{ sample.done }} od {{ sample.total }}
+          </p>
+        </div>
+      }
     </div>
 
     <h3>Oznake težine</h3>
+    <p class="meta">
+      <code>.badge--easy</code>, <code>.badge--moderate</code> i <code>.badge--hard</code> za težinu
+      ture ili izazova. Tačkice ispred teksta crta klasa, pa u šablon pišite samo stepen (Lako,
+      Srednje, Teško), bez znakova za tačkice.
+    </p>
     <div class="row">
-      <span class="badge badge--easy">●○○ Lako</span>
-      <span class="badge badge--moderate">●●○ Srednje</span>
-      <span class="badge badge--hard">●●● Teško</span>
+      <span class="badge badge--easy">Lako</span>
+      <span class="badge badge--moderate">Srednje</span>
+      <span class="badge badge--hard">Teško</span>
     </div>
 
     <h3>EC i XP</h3>
+    <p class="meta">
+      <code>.badge--ec</code> za iznos u EC, <code>.badge--xp</code> za nagradu u XP,
+      <code>.badge--success</code> za potvrdu ishoda, kao tačan odgovor.
+    </p>
     <div class="row">
       <span class="badge badge--ec">◎ 50 EC</span>
       <span class="badge badge--xp">★ 120 XP</span>
@@ -161,12 +419,16 @@
     </div>
 
     <h3>Polje za upload slike</h3>
-    <p class="meta">Ograničenja su ilustrativna: JPG ili PNG, najviše 5 MB.</p>
+    <p class="meta">
+      Klase <code>.upload</code> koristi samo <code>app-image-upload</code> iz
+      <code>shared/image-upload</code>; ekran postavlja tu komponentu, a ne piše polje sam.
+      Ograničenja su ilustrativna: JPG ili PNG, najviše 5 MB.
+    </p>
     <div class="upload-states">
       <div class="stack">
         <p class="meta">Prazno</p>
         <label class="upload" for="upload-empty">
-          <span>⇪ Prevucite sliku ovde ili kliknite da izaberete</span>
+          <span>↑ Prevucite sliku ovde ili kliknite da izaberete</span>
           <span class="meta">JPG ili PNG, najviše 5 MB</span>
           <input id="upload-empty" type="file" accept="image/jpeg,image/png" />
         </label>
@@ -174,7 +436,7 @@
       <div class="stack">
         <p class="meta">Prevlačenje</p>
         <label class="upload upload--dragover" for="upload-dragover">
-          <span>⇩ Pustite sliku da je dodate</span>
+          <span>↓ Pustite sliku da je dodate</span>
           <span class="meta">JPG ili PNG, najviše 5 MB</span>
           <input id="upload-dragover" type="file" accept="image/jpeg,image/png" />
         </label>
@@ -195,7 +457,7 @@
       <div class="stack">
         <p class="meta">Greška validacije</p>
         <label class="upload upload--error" for="upload-error">
-          <span>⇪ Prevucite sliku ovde ili kliknite da izaberete</span>
+          <span>↑ Prevucite sliku ovde ili kliknite da izaberete</span>
           <span class="error">⚠ mapa.gif nije podržan format. Dozvoljeni su JPG i PNG.</span>
           <input id="upload-error" type="file" accept="image/jpeg,image/png" aria-invalid="true" />
         </label>
@@ -205,6 +467,10 @@
 
   <section class="stack">
     <h2>Skice ekrana</h2>
+    <p class="meta">
+      Statične skice ekrana sa izmišljenim podacima, za poređenje sa ekranom koji pravite. Ništa iz
+      njih ne uvozite u modul; raspored skice prenesite u stil svoje komponente.
+    </p>
     <ul>
       @for (sketch of sketches; track sketch.path) {
         <li>

@@ -40,18 +40,12 @@ export class AdminWallet {
   protected readonly users = USERS;
   protected readonly transactions = TRANSACTIONS;
 
-  // Returns why storno is not offered, or null when it is.
-  protected stornoBlockedReason(transaction: AdminTransaction): string | null {
-    if (transaction.kind !== 'Uplata') {
-      return 'Storno važi samo za uplate.';
-    }
-    if (transaction.hoursAgo >= 24) {
-      return 'Uplata je starija od 24h.';
+  // Storno is offered only for a top-up younger than 24h that would not make the balance negative.
+  protected canReverse(transaction: AdminTransaction): boolean {
+    if (transaction.reversed || transaction.kind !== 'Uplata' || transaction.hoursAgo >= 24) {
+      return false;
     }
     const balance = this.users.find((user) => user.username === transaction.username)?.balance ?? 0;
-    if (balance - transaction.amount < 0) {
-      return `Stanje bi postalo negativno (${balance} − ${transaction.amount} EC).`;
-    }
-    return null;
+    return balance - transaction.amount >= 0;
   }
 }

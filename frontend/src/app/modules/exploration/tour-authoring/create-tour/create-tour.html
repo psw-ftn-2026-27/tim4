@@ -4,8 +4,15 @@
   <form class="stack" (submit)="submit($event)">
     <div class="field">
       <label for="name">Name</label>
-      <input id="name" type="text" [formField]="form.name" />
-      @if (form.name().touched()) {
+      <input
+        id="name"
+        type="text"
+        [formField]="form.name"
+        [attr.aria-invalid]="
+          (form.name().dirty() || form.name().touched()) && form.name().errors().length > 0
+        "
+      />
+      @if (form.name().dirty() || form.name().touched()) {
         @for (message of form.name().errors(); track $index) {
           <p class="error">{{ message.message }}</p>
         }
@@ -14,8 +21,16 @@
 
     <div class="field">
       <label for="description">Description</label>
-      <textarea id="description" rows="4" [formField]="form.description"></textarea>
-      @if (form.description().touched()) {
+      <textarea
+        id="description"
+        rows="4"
+        [formField]="form.description"
+        [attr.aria-invalid]="
+          (form.description().dirty() || form.description().touched()) &&
+          form.description().errors().length > 0
+        "
+      ></textarea>
+      @if (form.description().dirty() || form.description().touched()) {
         @for (message of form.description().errors(); track $index) {
           <p class="error">{{ message.message }}</p>
         }
@@ -38,20 +53,48 @@
 
     <div class="field">
       <label for="group-size-min">Recommended group size, from</label>
-      <input id="group-size-min" type="number" [formField]="form.groupSizeMin" />
-      @if (form.groupSizeMin().touched()) {
-        @for (message of form.groupSizeMin().errors(); track $index) {
-          <p class="error">{{ message.message }}</p>
+      <input
+        id="group-size-min"
+        type="number"
+        [formField]="form.groupSizeMin"
+        [attr.aria-invalid]="
+          (form.groupSizeMin().dirty() ||
+            form.groupSizeMin().touched() ||
+            form.groupSizeMin().errors()[0]?.kind === 'parse') &&
+          form.groupSizeMin().errors().length > 0
+        "
+      />
+      @if (
+        form.groupSizeMin().dirty() ||
+        form.groupSizeMin().touched() ||
+        form.groupSizeMin().errors()[0]?.kind === 'parse'
+      ) {
+        @for (message of form.groupSizeMin().errors().slice(0, 1); track $index) {
+          <p class="error">{{ message.kind === 'parse' ? 'Enter a number.' : message.message }}</p>
         }
       }
     </div>
 
     <div class="field">
       <label for="group-size-max">Recommended group size, to</label>
-      <input id="group-size-max" type="number" [formField]="form.groupSizeMax" />
-      @if (form.groupSizeMax().touched()) {
-        @for (message of form.groupSizeMax().errors(); track $index) {
-          <p class="error">{{ message.message }}</p>
+      <input
+        id="group-size-max"
+        type="number"
+        [formField]="form.groupSizeMax"
+        [attr.aria-invalid]="
+          (form.groupSizeMax().dirty() ||
+            form.groupSizeMax().touched() ||
+            form.groupSizeMax().errors()[0]?.kind === 'parse') &&
+          form.groupSizeMax().errors().length > 0
+        "
+      />
+      @if (
+        form.groupSizeMax().dirty() ||
+        form.groupSizeMax().touched() ||
+        form.groupSizeMax().errors()[0]?.kind === 'parse'
+      ) {
+        @for (message of form.groupSizeMax().errors().slice(0, 1); track $index) {
+          <p class="error">{{ message.kind === 'parse' ? 'Enter a number.' : message.message }}</p>
         }
       }
     </div>
@@ -60,8 +103,6 @@
       <p class="error">{{ error() }}</p>
     }
 
-    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
-      Create
-    </button>
+    <button class="button button--primary" type="submit" [disabled]="pending()">Create</button>
   </form>
 </div>
