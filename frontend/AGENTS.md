@@ -33,12 +33,16 @@ frontend/src/
     shared/
       util/                  serverMessage                                     [platform]
       image-upload/          image field for a form, see "Image upload" below  [platform]
-      api/                   shared types (PageResult, ProblemDetails),
+      api/                   shared types (PageResult, ProblemDetails,
+                             CoordinatesDto),
                              mirror the server, no client-only fields          [platform]
       map/                   LocationMap (Leaflet): pins, path, picking a location;
                              see its README, example at /design-preview/map    [platform]
       analytics/             Analytics (Google Analytics 4): consent, page views,
                              the event catalog; see "Analytics" below          [platform]
+      position/              PositionSimulation: the command that sets the tourist's
+                             position; see its README, example at
+                             /design-preview/map                               [platform]
   environments/              environment.ts (production), environment.development.ts
                              (ng serve and tests): the GA measurement ID       [platform]
     modules/
@@ -168,7 +172,9 @@ the palette with its role names, every global class, and static sketches of scre
 with mock data. It is reached only by typing the URL, never linked from the app's
 navigation. Before writing a style, look there for a class that already fits. When a
 global class is added to `_components.scss`, show it on the overview page in the same
-change. The sketches never call the server and are never imported by a module.
+change. The sketches never call the server and are never imported by a module. The single
+exception is the "Simulator pozicije" section on `/design-preview/map`, which reads and
+sets the signed-in tourist's position through `shared/position`.
 
 An entity's state is always shown with a state badge from the style guide (`.badge` with
 the modifier `/design-preview` lists for that state), never as its raw value.

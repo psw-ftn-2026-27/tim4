@@ -12,6 +12,8 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Payment.Api;
 using Payment.Infrastructure;
+using Positions.Api;
+using Positions.Infrastructure;
 using Scalar.AspNetCore;
 using Shared.Infrastructure.Images;
 using Social.Api;
@@ -30,7 +32,8 @@ builder.Services.AddControllers()
     .AddExplorationControllers()
     .AddGamesControllers()
     .AddSocialControllers()
-    .AddPaymentControllers();
+    .AddPaymentControllers()
+    .AddPositionsControllers();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -50,7 +53,8 @@ builder.Services
     .AddExplorationModule(builder.Configuration)
     .AddGamesModule(builder.Configuration)
     .AddSocialModule(builder.Configuration)
-    .AddPaymentModule(builder.Configuration);
+    .AddPaymentModule(builder.Configuration)
+    .AddPositionsModule(builder.Configuration);
 
 var imageFolder = Path.Combine(builder.Environment.ContentRootPath, builder.Configuration["ImageStorage:Folder"]!);
 var imageRequestPath = builder.Configuration["ImageStorage:RequestPath"]!;

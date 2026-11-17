@@ -71,3 +71,41 @@
     <p>Lokacija nije izabrana</p>
   }
 </section>
+
+<section class="stack">
+  <h2>Simulator pozicije</h2>
+
+  @if (!auth.isLoggedIn()) {
+    <div class="state">
+      Prijavite se da postavite svoju poziciju.
+      <a routerLink="/login">Prijava</a>
+    </div>
+  } @else if (!isExplorer()) {
+    <div class="state">Simulator pozicije je dostupan turistima.</div>
+  } @else if (position.status() === 'loading') {
+    <!-- Only the first load replaces the map; a reload after a click keeps it on the screen. -->
+    <div class="state" role="status">Učitavanje pozicije…</div>
+  } @else if (position.error()) {
+    <div class="state state--error" role="alert">
+      ⚠ Pozicija nije učitana.
+      <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else {
+    <app-location-map
+      [locations]="[]"
+      [selectable]="true"
+      [position]="position.value() ?? null"
+      (selectedChange)="setPosition($event)"
+    />
+
+    @if (position.value(); as saved) {
+      <p>Vaša pozicija: {{ saved.latitude.toFixed(5) }}, {{ saved.longitude.toFixed(5) }}</p>
+    } @else {
+      <p>Pozicija nije postavljena — kliknite na mapu da označite gde se nalazite</p>
+    }
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+  }
+</section>
