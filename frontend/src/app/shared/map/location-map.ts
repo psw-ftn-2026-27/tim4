@@ -35,6 +35,8 @@ const SELECTED_PANE = 'selected';
 
 // The public OSRM server of the OpenStreetMap community, walking profile: free and without a key.
 const ROUTING_URL = 'https://routing.openstreetmap.de/routed-foot/route/v1/foot';
+// How long one segment waits for the routing service before it is drawn as a straight line.
+const ROUTING_TIMEOUT_MS = 5000;
 
 // The part of the routing service's answer the map reads. Coordinates come as [longitude, latitude].
 interface RoutingResponse {
@@ -88,11 +90,17 @@ export class LocationMap {
   // Counts the route requests, so the answer to an older list of locations is thrown away.
   private routeRequest = 0;
 
+  // The list of locations the current routes belong to; null when there are none.
+  private routedLocations: MapLocation[] | null = null;
+
   // Set once the map's element exists, so the effect below waits for it.
   private readonly map = signal<L.Map | undefined>(undefined);
 
-  // Holds the pins and the line, so one call clears them before they are drawn again.
+  // Holds the pins, so one call clears them before they are drawn again.
   private readonly layers = L.layerGroup();
+
+  // Holds the line apart from the pins, so routes that arrive later never refit the view.
+  private readonly pathLayer = L.layerGroup();
 
   // Holds the selected pin apart from the other pins, so moving it never refits the view.
   private readonly selectedLayer = L.layerGroup();
@@ -109,6 +117,7 @@ export class LocationMap {
         maxZoom: 19,
       }).addTo(map);
       this.layers.addTo(map);
+      this.pathLayer.addTo(map);
       // The selected pin gets its own pane above the other pins, so a pin on the same place
       // never hides it (Leaflet's pin pane has z-index 600).
       map.createPane(SELECTED_PANE).style.zIndex = '650';
@@ -122,18 +131,40 @@ export class LocationMap {
       this.map.set(map);
     });
 
-    // Leaflet is outside the component tree, so an effect redraws it when an input changes.
+    // Leaflet is outside the component tree, so an effect redraws the pins and fits the view
+    // when the locations change.
     effect(() => {
       const map = this.map();
       if (map === undefined) {
         return;
       }
-      this.draw(map, this.locations(), this.showPath(), this.route());
+      this.draw(map, this.locations());
     });
 
-    // Only a change of the locations asks for the routes again; toggling showPath does not.
+    // The line follows showPath and the routes, without touching the pins or the view.
     effect(() => {
-      void this.fetchRoute(this.locations());
+      if (this.map() === undefined) {
+        return;
+      }
+      this.drawPath(this.showPath(), this.route());
+    });
+
+    // Routes are asked for only while the path is shown, and only once per list of locations,
+    // so toggling showPath back on reuses the routes it already has.
+    effect(() => {
+      const locations = this.locations();
+      if (locations === this.routedLocations) {
+        return;
+      }
+      if (this.showPath()) {
+        this.routedLocations = locations;
+        void this.fetchRoute(locations);
+      } else {
+        // New locations while the path is hidden: drop the old routes and any answer on its way.
+        this.routeRequest++;
+        this.routedLocations = null;
+        this.route.set(null);
+      }
     });
 
     // The selected pin follows the selected input: a click only emits, and the page sets it.
@@ -168,7 +199,11 @@ export class LocationMap {
     const url =
       `${ROUTING_URL}/${from.longitude},${from.latitude};${to.longitude},${to.latitude}` +
       '?overview=full&geometries=geojson';
-    const response = await firstValueFrom(this.http.get<RoutingResponse>(url));
+    // A service that never answers would leave the length "računa se…" forever, so after the
+    // timeout the request fails and the segment becomes a straight line.
+    const response = await firstValueFrom(
+      this.http.get<RoutingResponse>(url, { timeout: ROUTING_TIMEOUT_MS }),
+    );
     const route = response.routes?.[0];
     if (response.code !== 'Ok' || route === undefined) {
       return null;
@@ -179,12 +214,7 @@ export class LocationMap {
     };
   }
 
-  private draw(
-    map: L.Map,
-    locations: MapLocation[],
-    showPath: boolean,
-    route: MapCoordinates[][] | null,
-  ): void {
+  private draw(map: L.Map, locations: MapLocation[]): void {
     this.layers.clearLayers();
 
     const points = locations.map((location): L.LatLngTuple => [
@@ -203,15 +233,6 @@ export class LocationMap {
         .addTo(this.layers);
     });
 
-    // One line per segment, so a segment without a route stays a straight line on its own.
-    if (showPath && route !== null) {
-      route.forEach((segment) => {
-        L.polyline(segment.map((point): L.LatLngTuple => [point.latitude, point.longitude])).addTo(
-          this.layers,
-        );
-      });
-    }
-
     if (points.length === 0) {
       map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
     } else if (points.length === 1) {
@@ -219,6 +240,19 @@ export class LocationMap {
     } else {
       map.fitBounds(L.latLngBounds(points), { padding: [32, 32] });
     }
+  }
+
+  // One line per segment, so a segment without a route stays a straight line on its own.
+  private drawPath(showPath: boolean, route: MapCoordinates[][] | null): void {
+    this.pathLayer.clearLayers();
+    if (!showPath || route === null) {
+      return;
+    }
+    route.forEach((segment) => {
+      L.polyline(segment.map((point): L.LatLngTuple => [point.latitude, point.longitude])).addTo(
+        this.pathLayer,
+      );
+    });
   }
 
   // A circle instead of a pin, so the selected place looks different from the other locations.

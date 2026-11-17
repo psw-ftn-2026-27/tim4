@@ -34,6 +34,24 @@ describe('routedPath', () => {
     expect(path.lengthKm).toBeCloseTo(pathLengthKm([FIRST, SECOND]) + 250, 6);
   });
 
+  it('counts a segment whose request fails with its straight-line distance, and the others with their route lengths', async () => {
+    // No network, an HTTP error or a timeout all make the request throw.
+    const fetchSegment = async (from: MapLocation, to: MapLocation) => {
+      if (from === FIRST) {
+        throw new Error('routing service unavailable');
+      }
+      return route(from, to, 250);
+    };
+
+    const path = await routedPath([FIRST, SECOND, THIRD], fetchSegment);
+
+    expect(path.lengthKm).toBeCloseTo(pathLengthKm([FIRST, SECOND]) + 250, 6);
+    expect(path.segments[0]).toEqual([
+      { latitude: FIRST.latitude, longitude: FIRST.longitude },
+      { latitude: SECOND.latitude, longitude: SECOND.longitude },
+    ]);
+  });
+
   it('is 0 km for no locations and for a single location, without asking the routing service', async () => {
     const fetchSegment = vi.fn(async (from: MapLocation, to: MapLocation) => route(from, to, 1));
 

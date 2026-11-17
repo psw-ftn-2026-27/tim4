@@ -19,28 +19,33 @@ rutiranje: koriste samo ulaze i izlaze opisane ispod.
 
 ## Ulazi i izlazi
 
-| Ime                | Vrsta                       | Značenje                                                            |
-| ------------------ | --------------------------- | ------------------------------------------------------------------- |
-| `locations`        | ulaz, obavezan              | `MapLocation[]`: `latitude`, `longitude` i `name` svake lokacije    |
-| `showPath`         | ulaz, podrazumevano `false` | da li ruta spaja lokacije redom kojim su predate                    |
-| `pathLengthChange` | izlaz, `number`             | dužina putanje u kilometrima, šalje se kada stignu rute svih delova |
-| `selectable`       | ulaz, podrazumevano `false` | da li klik na mapu bira lokaciju                                    |
-| `selected`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: izabrani pin, ako postoji                 |
-| `selectedChange`   | izlaz, `MapCoordinates`     | koordinate mesta na koje je korisnik kliknuo, dok je izbor uključen |
-| `locationClick`    | izlaz, `number`             | pozicija u `locations` pina na koji je korisnik kliknuo             |
+| Ime                | Vrsta                       | Značenje                                                                               |
+| ------------------ | --------------------------- | -------------------------------------------------------------------------------------- |
+| `locations`        | ulaz, obavezan              | `MapLocation[]`: `latitude`, `longitude` i `name` svake lokacije                       |
+| `showPath`         | ulaz, podrazumevano `false` | da li ruta spaja lokacije redom kojim su predate                                       |
+| `pathLengthChange` | izlaz, `number`             | dužina putanje u km, šalje se dok je `showPath` uključen, kada stignu rute svih delova |
+| `selectable`       | ulaz, podrazumevano `false` | da li klik na mapu bira lokaciju                                                       |
+| `selected`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: izabrani pin, ako postoji                                    |
+| `selectedChange`   | izlaz, `MapCoordinates`     | koordinate mesta na koje je korisnik kliknuo, dok je izbor uključen                    |
+| `locationClick`    | izlaz, `number`             | pozicija u `locations` pina na koji je korisnik kliknuo                                |
 
 Dužina putanje je zbir dužina pešačkih ruta po putevima između uzastopnih lokacija;
 poslednja lokacija nije spojena sa prvom. Za svaki deo putanje (dve uzastopne lokacije)
 komponenta šalje po jedan zahtev servisu za rutiranje. Deo za koji servis ne odgovori ili ne
 nađe rutu crta se pravom linijom i ulazi u dužinu pravolinijskom razdaljinom; ostali delovi
-prate puteve, a posebne poruke nema. Za manje od dve lokacije dužina je 0 km i servis se ne
+prate puteve, a posebne poruke nema. Zahtev koji ne dobije odgovor za 5 sekundi smatra se
+neuspelim, pa servis koji visi ne ostavlja stranicu zauvek na "računa se…". Po jedan zahtev
+po delu, a ne jedan za celu putanju, je svesna odluka: pad servisa za jedan deo menja pravom
+linijom samo taj deo. Za manje od dve lokacije dužina je 0 km i servis se ne
 pita.
 
-Pri svakoj promeni `locations` komponenta ponovo traži rute: dok ne stignu svi delovi, na mapi
-su samo pinovi, bez linije, a `pathLengthChange` se šalje tek kada su stigli svi. Odgovor za
-stariju listu lokacija se odbacuje. Uključivanje i isključivanje `showPath` ne traži rute ponovo
-i ne menja dužinu. Komponenta uvek šalje dužinu lokacija onim redom kojim su predate, i kada je
-`showPath` isključen; stranica sama odlučuje da li je prikazuje.
+Rute se traže samo dok je `showPath` uključen, i to jednom za svaku listu lokacija: dok ne
+stignu svi delovi, na mapi su samo pinovi, bez linije, a `pathLengthChange` se šalje tek kada
+su stigli svi. Linija je u svom sloju, pa njeno iscrtavanje ne pomera vidno polje koje je
+korisnik u međuvremenu namestio. Odgovor za stariju listu lokacija se odbacuje. Isključivanje i
+ponovno uključivanje `showPath` za istu listu ne traži rute ponovo i ne menja dužinu. Dok je
+`showPath` isključen, komponenta ne pita servis za rutiranje i ne šalje dužinu; stranica koja
+želi dužinu uključuje putanju.
 
 Stranica koja prikazuje dužinu čuva je kao `number | null` i vraća je na `null` kada menja
 lokacije; dok je `null`, prikazuje da se dužina računa. Ako predaje istu listu kao i ranije,
