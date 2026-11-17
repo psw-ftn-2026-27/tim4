@@ -8,6 +8,7 @@ internal static class WalletSeed
     public static readonly Wallet ExplorerWithPayments;
     public static readonly Wallet SecondExplorerWithPayment;
     public static readonly Wallet EmptyAdministratorWallet;
+    public static readonly Wallet MultiItemWallet;
     public static readonly Wallet[] All;
 
     static WalletSeed()
@@ -27,6 +28,8 @@ internal static class WalletSeed
         SecondExplorerWithPayment.ReversePayment(SecondExplorerWithPayment.Transactions[2].Id,
             WellKnownUsers.Administrator, SecondExplorerWithPayment.Transactions[2].SubmittedAt.AddHours(1));
         EmptyAdministratorWallet = new Wallet(WellKnownUsers.Administrator);
-        All = [ExplorerWithPayments, SecondExplorerWithPayment, EmptyAdministratorWallet];
+        MultiItemWallet = new Wallet(ShoppingCartSeed.MultiBuyer);
+        MultiItemWallet.Credit(100, WellKnownUsers.Administrator, now);
+        All = [ExplorerWithPayments, SecondExplorerWithPayment, EmptyAdministratorWallet, PurchaseSeed.CompletedWallet, MultiItemWallet];
     }
 }

@@ -1,0 +1,50 @@
+<div class="stack">
+  @if (!isExplorer()) {
+    <h1>Detalji kupovine</h1>
+    <p class="error" role="alert">Detalji kupovine su dostupni prijavljenom kupcu.</p>
+    @if (!auth.isLoggedIn()) {
+      <p><a routerLink="/login">Prijavi se</a></p>
+    }
+  } @else if (purchase.isLoading()) {
+    <h1>Detalji kupovine</h1>
+    <p role="status">Ucitavanje detalja kupovine...</p>
+  } @else if (purchase.error()) {
+    <h1>Detalji kupovine</h1>
+    <p class="error" role="alert">{{ loadError() }}</p>
+    <button class="button" type="button" (click)="purchase.reload()">Pokusaj ponovo</button>
+  } @else if (purchase.value(); as receipt) {
+    <h1>Uspesna kupovina</h1>
+    <p class="notice notice--success" role="status">
+      Kupovina je zavrsena. Potvrda je sacuvana za svaku kupljenu stavku.
+    </p>
+    <p>Vreme kupovine: {{ formatTime(receipt.purchasedAt) }}</p>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Kupljeni proizvod</th>
+            <th scope="col">Placena cena</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of receipt.items; track item.id) {
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>
+                <span class="badge badge--ec">{{ item.price }} EC</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="total">
+      Ukupno placeno: <strong>{{ receipt.total }} EC</strong>
+    </p>
+  }
+
+  <div class="actions">
+    <a class="button button--primary" routerLink="/payment">Idi na novcanik</a>
+    <a routerLink="/exploration">Nastavi pregled tura</a>
+  </div>
+</div>

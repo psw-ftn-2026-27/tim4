@@ -33,7 +33,7 @@ public sealed class WalletAdministrationQueries
     {
         if (!await _identityApi.ExplorerExistsAsync(userId))
         {
-            throw new NotFoundException("The explorer does not exist.");
+            throw new NotFoundException("Korisnik sa ulogom istraživača ne postoji.");
         }
 
         page = Math.Max(page, 1);
