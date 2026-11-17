@@ -159,9 +159,9 @@ public sealed class Tour : AggregateRoot
         {
             throw new DomainException("Key points can be changed only while the tour is a draft.");
         }
-        if (lengthInKm < 0)
+        if (!double.IsFinite(lengthInKm) || lengthInKm < 0)
         {
-            throw new DomainException("A tour length cannot be negative.");
+            throw new DomainException("A tour length must be a finite number that is not negative.");
         }
     }
 

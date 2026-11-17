@@ -270,12 +270,16 @@ public class TourTests
         removal.Should().Throw<NotFoundException>();
     }
 
-    [Fact]
-    public void Tour_length_cannot_be_negative()
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity)]
+    public void Tour_length_must_be_a_finite_number_that_is_not_negative(double lengthInKm)
     {
         var tour = CreateTour(LongDescription);
 
-        var addition = () => tour.AddKeyPoint(CreateKeyPoint("Trg slobode"), -1);
+        var addition = () => tour.AddKeyPoint(CreateKeyPoint("Trg slobode"), lengthInKm);
 
         addition.Should().Throw<DomainException>();
     }

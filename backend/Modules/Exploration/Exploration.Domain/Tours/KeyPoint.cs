@@ -36,11 +36,11 @@ public sealed class KeyPoint : Entity
         {
             throw new DomainException("A key point requires an image.");
         }
-        if (latitude < -90 || latitude > 90)
+        if (!double.IsFinite(latitude) || latitude < -90 || latitude > 90)
         {
             throw new DomainException("A key point latitude must be between -90 and 90 degrees.");
         }
-        if (longitude < -180 || longitude > 180)
+        if (!double.IsFinite(longitude) || longitude < -180 || longitude > 180)
         {
             throw new DomainException("A key point longitude must be between -180 and 180 degrees.");
         }
