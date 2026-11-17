@@ -139,6 +139,8 @@ construct means adding a lesson, so treat it as a platform decision.
   `Router.events` once, to record a page view on every `NavigationEnd`, and drives the
   official Google Analytics snippet through `window`. Modules use only its `track()`
   method and never see the Observable.
+- The app shell's navigation bar (`app.html`) is the third: it may use `routerLinkActive`,
+  with `routerLinkActiveOptions`, to highlight the current section. Modules do not use it.
 
 ## Styling
 
@@ -169,6 +171,58 @@ change. The sketches never call the server and are never imported by a module.
 
 An entity's state is always shown with a state badge from the style guide (`.badge` with
 the modifier `/design-preview` lists for that state), never as its raw value.
+
+## UI rules
+
+These rules keep screens from different modules looking like one application. Each names
+its class and the `/design-preview` section, by heading, that shows it; when a rule and the
+preview disagree, fix the preview.
+
+- Language: every text a PR adds or changes is Serbian, Latin script, with diacritics
+  (č, ć, š, ž, đ). Existing English text the PR does not touch is not a reason to reject it.
+  Sentences and messages address the user formally with "vi" ("Pokušajte ponovo kasnije.",
+  "Prijavite se da vidite svoje ture."); a button's label is always the short form, never
+  "vi" ("Sačuvaj", not "Sačuvajte"; "Pokušaj ponovo", not "Pokušajte ponovo"), so one
+  element never mixes the two.
+- Page header: `.page-header` holds the `h1` and, right after it, the page's one primary action
+  (example: `/design-preview`, Zaglavlje stranice).
+- Back link: a page with a parent has `.back-link` above its header, "← Moje ture"
+  (example: `/design-preview`, Link nazad).
+- Navigation: the top bar is the only navigation; a page never adds its own links to sections
+  in the bar, only its `.back-link` and its one primary action in `.page-header`
+  (example: `/design-preview`, Navigacija).
+- Page width: two widths only. A page whose content is one form (login, create, preferences)
+  is `.page--narrow`; lists, tables and maps use the default full width. A narrow page sits
+  against the left edge, in line with the bar, and is never centred, login and registration
+  included (example: `/design-preview`, Širina stranice).
+- Control height: buttons, inputs and selects share `--control-height`, already set by
+  `.button` and `.field`; never set it again (example: `/design-preview`, Visina kontrola).
+- Values in a component's `.scss`: no hex colours and no pixel or rem values for spacing,
+  radius or font size; use a token. A `1px` border is the one allowed pixel value
+  (example: `/design-preview`, Paleta).
+- Buttons: one `.button--primary` per form or page area, `.button` for secondary actions,
+  `.button--danger` only for what cannot be undone; a button's text is a verb
+  (example: `/design-preview`, Dugmad).
+- Form actions: the buttons of a form or a filter sit in `.form-actions` under the fields,
+  never as another cell of the field grid (example: `/design-preview`, Dugmad forme).
+- Tables: a column holding a date, an amount, a count or a badge is `.col-fit` on its `th` and
+  every `td` (never wraps, as narrow as its content); text columns take the rest and wrap; a
+  button in a cell never wraps its label (example: `/design-preview`, Tabela).
+- Table actions: the last column, one `td.col-actions` per action under one `th` with
+  `colspan`; an action the state does not allow leaves its cell empty, never a sentence.
+  Phone support is not required. A table with actions may add `.table--cards` with a
+  `data-label` on every data cell, so below 48rem each row becomes a card with its actions
+  at the bottom and nothing scrolls sideways (example: `/design-preview`, Kolona „Radnje“).
+- Pagination: `.pagination` with "Prethodna", "Strana X od Y", "Sledeća", shown only when
+  there is more than one page (example: `/design-preview`, Paginacija).
+- Page states: a page that loads data shows exactly one of five, each a `.state`: loading
+  (`role="status"`), empty, not logged in, not allowed, and an error with `.state--error`,
+  `role="alert"` and "Pokušaj ponovo" (example: `/design-preview`, Stanja stranice).
+- State, difficulty, EC and XP are always badges: the state badge above,
+  `.badge--easy/--moderate/--hard`, `.badge--ec`, `.badge--xp` (examples: `/design-preview`,
+  Oznake stanja, Oznake težine, EC i XP).
+- A count in a flow ("2 od 5 tačaka") is `.progress`, bar and text
+  (example: `/design-preview`, Napredak).
 
 ## Image upload
 

@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Auth } from './core/auth/auth';
 import { Analytics } from './shared/analytics/analytics';
 import { Consent } from './shared/analytics/consent';
 
 @Component({
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',
@@ -15,4 +15,32 @@ export class App {
   protected readonly consent = inject(Consent);
   // Injected here so that page views are recorded from the first navigation on.
   protected readonly analytics = inject(Analytics);
+  private readonly router = inject(Router);
+
+  // Which of the three bar states to show. A user with both roles sees the administrator bar.
+  protected readonly role = computed(() => {
+    const user = this.auth.user();
+    if (user === null) {
+      return 'guest';
+    }
+    return user.roles.includes('administrator') ? 'administrator' : 'explorer';
+  });
+
+  // Whether the item list is open on a narrow screen; a wide screen always shows it.
+  protected readonly menuOpen = signal(false);
+
+  protected toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
+
+  protected closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
+  // After signing out the current page may need a signed-in user, so go to the home page.
+  protected async logout(): Promise<void> {
+    this.auth.logout();
+    this.closeMenu();
+    await this.router.navigateByUrl('/');
+  }
 }

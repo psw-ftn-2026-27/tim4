@@ -32,10 +32,46 @@
   max-width: 24rem;
 }
 
+// The controls stand on one line, aligned at the bottom, so their heights can be compared.
+.controls-sample {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.state-samples {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+// The states stand side by side here, so each box stretches to the tallest one.
+.state-samples > .stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.state-samples .state {
+  align-content: center;
+  flex: 1;
+}
+
 .upload-states {
   display: grid;
   gap: var(--space-3);
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+// The states stand side by side here, so each field stretches to the tallest one.
+// In a real form the field grows when a preview appears, and that is intended.
+.upload-states > .stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-states .upload {
+  flex: 1;
 }
 
 .preview-sky {
@@ -48,4 +84,10 @@
 
 .preview-sun {
   fill: var(--color-ec-bg);
+}
+
+// A framed page example (header, back link, navigation) is only as wide as a narrow page,
+// so it reads as an example and not as a heading of the style guide.
+.sample-frame {
+  max-width: var(--page-narrow-width);
 }

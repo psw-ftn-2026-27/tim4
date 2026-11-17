@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormField, email, form, minLength, required } from '@angular/forms/signals';
+import { FormField, email, form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { Analytics } from '../../../shared/analytics/analytics';
 import { serverMessage } from '../../../shared/util/server-message';
@@ -20,7 +20,6 @@ export class Login {
     required(path.email, { message: 'Email is required.' });
     email(path.email, { message: 'Enter a valid email address.' });
     required(path.password, { message: 'Password is required.' });
-    minLength(path.password, 6, { message: 'Password must be at least 6 characters.' });
   });
 
   protected readonly pending = signal(false);
