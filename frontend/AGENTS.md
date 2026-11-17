@@ -192,8 +192,9 @@ preview disagree, fix the preview.
   in the bar, only its `.back-link` and its one primary action in `.page-header`
   (example: `/design-preview`, Navigacija).
 - Page width: two widths only. A page whose content is one form (login, create, preferences)
-  is `.page--narrow`; lists, tables and maps use the default full width
-  (example: `/design-preview`, Širina stranice).
+  is `.page--narrow`; lists, tables and maps use the default full width. A narrow page sits
+  against the left edge, in line with the bar, and is never centred, login and registration
+  included (example: `/design-preview`, Širina stranice).
 - Control height: buttons, inputs and selects share `--control-height`, already set by
   `.button` and `.field`; never set it again (example: `/design-preview`, Visina kontrola).
 - Values in a component's `.scss`: no hex colours and no pixel or rem values for spacing,

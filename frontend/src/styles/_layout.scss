@@ -1,6 +1,7 @@
 // A page has one of two widths. By default it uses the whole window width, for lists,
 // tables and maps; only the side margin grows with the screen. A page whose content is
-// one form (login, create, preferences) adds .page--narrow to its outer element.
+// one form (login, create, preferences) adds .page--narrow to its outer element; it stays
+// against the left edge, in line with the bar, and is never centred.
 .container {
   padding-inline: max(var(--space-4), 3vw);
 }
