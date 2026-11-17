@@ -88,6 +88,10 @@ export class WalletAdministration {
 
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
+    if (!this.paymentForm().valid()) {
+      this.paymentForm().markAsTouched();
+      return;
+    }
     const user = this.selectedUser();
     if (!user || this.pending() || !this.paymentForm().valid()) return;
     this.pending.set(true);
@@ -99,9 +103,9 @@ export class WalletAdministration {
       this.historyPage.set(1);
       this.users.reload();
       this.transactions.reload();
-      this.success.set('Uplata je evidentirana. EC su odmah raspolozivi.');
+      this.success.set('Uplata je evidentirana. EC su odmah raspoloživi.');
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Uplatu nije moguce evidentirati. Pokusaj ponovo.'));
+      this.error.set(serverMessage(failure, 'Uplatu nije moguće evidentirati. Pokušaj ponovo.'));
     } finally {
       this.pending.set(false);
     }
