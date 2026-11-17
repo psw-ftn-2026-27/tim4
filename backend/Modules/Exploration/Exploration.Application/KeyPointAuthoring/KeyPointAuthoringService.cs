@@ -60,7 +60,7 @@ public sealed class KeyPointAuthoringService
     }
 
     private static KeyPoint CreateKeyPoint(KeyPointDetailsDto dto, string imageAddress) =>
-        new(dto.Name, dto.Description, imageAddress, dto.Secret, dto.Latitude, dto.Longitude, dto.IsVisibleWithoutPurchase);
+        new(dto.Name, dto.Description, imageAddress, dto.Secret, new Location(dto.Latitude, dto.Longitude), dto.IsVisibleWithoutPurchase);
 
     private async Task<Tour> GetOwnedTourAsync(Guid tourId, Guid authorId)
     {

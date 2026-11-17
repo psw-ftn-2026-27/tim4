@@ -139,10 +139,6 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
                             b1.Property<bool>("IsVisibleWithoutPurchase");
 
-                            b1.Property<double>("Latitude");
-
-                            b1.Property<double>("Longitude");
-
                             b1.Property<string>("Name")
                                 .IsRequired();
 
@@ -158,6 +154,27 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("TourId");
+
+                            b1.OwnsOne("Exploration.Domain.Tours.Location", "Location", b2 =>
+                                {
+                                    b2.Property<Guid>("KeyPointTourId");
+
+                                    b2.Property<int>("KeyPoint__synthesizedOrdinal");
+
+                                    b2.Property<double>("Latitude");
+
+                                    b2.Property<double>("Longitude");
+
+                                    b2.HasKey("KeyPointTourId", "KeyPoint__synthesizedOrdinal");
+
+                                    b2.ToTable("Tours", "exploration");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("KeyPointTourId", "KeyPoint__synthesizedOrdinal");
+                                });
+
+                            b1.Navigation("Location")
+                                .IsRequired();
                         });
 
                     b.OwnsOne("Exploration.Domain.Tours.RecommendedGroupSize", "RecommendedGroupSize", b1 =>

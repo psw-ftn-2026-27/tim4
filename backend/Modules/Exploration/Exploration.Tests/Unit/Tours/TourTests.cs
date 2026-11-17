@@ -236,7 +236,7 @@ public class TourTests
         tour.AddKeyPoint(keyPoint, 0);
         tour.AddKeyPoint(CreateKeyPoint("Petrovaradinska tvrđava"), 2.4);
 
-        tour.UpdateKeyPoint(keyPoint.Id, new KeyPoint("Dunavski park", "Novi opis.", "/images/park.jpg", "Tajna parka.", 45.2541, 19.8510, false), 1.9);
+        tour.UpdateKeyPoint(keyPoint.Id, new KeyPoint("Dunavski park", "Novi opis.", "/images/park.jpg", "Tajna parka.", new Location(45.2541, 19.8510), false), 1.9);
 
         tour.KeyPoints[0].Id.Should().Be(keyPoint.Id);
         tour.KeyPoints[0].Name.Should().Be("Dunavski park");
@@ -303,7 +303,7 @@ public class TourTests
     }
 
     private static KeyPoint CreateKeyPoint(string name) =>
-        new(name, "Opis tačke.", "/images/tacka.jpg", null, 45.2551, 19.8452, true);
+        new(name, "Opis tačke.", "/images/tacka.jpg", null, new Location(45.2551, 19.8452), true);
 
     private static Tour CreatePublishedTour()
     {

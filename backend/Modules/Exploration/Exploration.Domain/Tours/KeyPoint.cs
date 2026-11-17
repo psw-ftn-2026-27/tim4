@@ -9,8 +9,7 @@ public sealed class KeyPoint : Entity
     public string Description { get; private set; }
     public string ImageAddress { get; private set; }
     public string? Secret { get; private set; }
-    public double Latitude { get; private set; }
-    public double Longitude { get; private set; }
+    public Location Location { get; private set; }
     public bool IsVisibleWithoutPurchase { get; private set; }
 
     private KeyPoint()
@@ -18,10 +17,11 @@ public sealed class KeyPoint : Entity
         Name = null!;
         Description = null!;
         ImageAddress = null!;
+        Location = null!;
     }
 
     public KeyPoint(string name, string description, string imageAddress, string? secret,
-        double latitude, double longitude, bool isVisibleWithoutPurchase)
+        Location location, bool isVisibleWithoutPurchase)
         : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -36,21 +36,16 @@ public sealed class KeyPoint : Entity
         {
             throw new DomainException("A key point requires an image.");
         }
-        if (!double.IsFinite(latitude) || latitude < -90 || latitude > 90)
+        if (location is null)
         {
-            throw new DomainException("A key point latitude must be between -90 and 90 degrees.");
-        }
-        if (!double.IsFinite(longitude) || longitude < -180 || longitude > 180)
-        {
-            throw new DomainException("A key point longitude must be between -180 and 180 degrees.");
+            throw new DomainException("A key point requires a location.");
         }
 
         Name = name;
         Description = description;
         ImageAddress = imageAddress;
         Secret = string.IsNullOrWhiteSpace(secret) ? null : secret;
-        Latitude = latitude;
-        Longitude = longitude;
+        Location = location;
         IsVisibleWithoutPurchase = isVisibleWithoutPurchase;
     }
 
@@ -60,8 +55,7 @@ public sealed class KeyPoint : Entity
         Description = changes.Description;
         ImageAddress = changes.ImageAddress;
         Secret = changes.Secret;
-        Latitude = changes.Latitude;
-        Longitude = changes.Longitude;
+        Location = changes.Location;
         IsVisibleWithoutPurchase = changes.IsVisibleWithoutPurchase;
     }
 }

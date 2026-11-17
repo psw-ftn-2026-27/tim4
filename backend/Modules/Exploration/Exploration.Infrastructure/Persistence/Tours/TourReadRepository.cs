@@ -57,8 +57,8 @@ internal sealed class TourReadRepository : ITourReadRepository
                         keyPoint.Description,
                         keyPoint.ImageAddress,
                         keyPoint.Secret,
-                        keyPoint.Latitude,
-                        keyPoint.Longitude,
+                        keyPoint.Location.Latitude,
+                        keyPoint.Location.Longitude,
                         keyPoint.IsVisibleWithoutPurchase))
                     .ToList()))
             .SingleOrDefaultAsync();
@@ -77,8 +77,8 @@ internal sealed class TourReadRepository : ITourReadRepository
                         keyPoint.Description,
                         keyPoint.ImageAddress,
                         keyPoint.Secret,
-                        keyPoint.Latitude,
-                        keyPoint.Longitude,
+                        keyPoint.Location.Latitude,
+                        keyPoint.Location.Longitude,
                         keyPoint.IsVisibleWithoutPurchase))
                     .ToList()
             })
