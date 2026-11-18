@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Payment.Application.OwnerCoupons;
 using Payment.Application.Products;
 
 namespace Payment.Infrastructure.Persistence.Products;
@@ -27,4 +28,10 @@ internal sealed class ProductReadRepository : IProductReadRepository
 
         return prices;
     }
+
+    public Task<List<OwnerProductDto>> GetByOwnerAsync(Guid ownerId) => _context.Products
+        .Where(product => product.OwnerId == ownerId)
+        .OrderBy(product => product.Name).ThenBy(product => product.Id)
+        .Select(product => new OwnerProductDto(product.Id, product.Name))
+        .ToListAsync();
 }

@@ -71,3 +71,22 @@ export interface CompletedPurchaseDto {
   items: PurchasedItemDto[];
   total: number;
 }
+
+export interface OwnerCouponDto {
+  code: string;
+  discountPercent: number;
+  validUntil: string;
+  productName: string | null;
+  isValid: boolean;
+}
+
+export interface OwnerProductDto {
+  id: string;
+  name: string;
+}
+
+export interface CreateCouponDto {
+  discountPercent: number;
+  validUntil: string;
+  productId: string | null;
+}

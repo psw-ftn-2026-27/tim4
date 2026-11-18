@@ -19,6 +19,10 @@ using Payment.Application.ShoppingCarts;
 using Payment.Domain.Purchases;
 using Payment.Infrastructure.Persistence.Purchases;
 using Payment.Infrastructure.Persistence.ShoppingCarts;
+using Payment.Application.Coupons;
+using Payment.Application.OwnerCoupons;
+using Payment.Domain.Coupons;
+using Payment.Infrastructure.Persistence.Coupons;
 
 namespace Payment.Infrastructure;
 
@@ -49,6 +53,11 @@ public static class PaymentModuleExtensions
         services.AddScoped<CartCheckoutService>();
         services.AddScoped<CartCheckoutQueries>();
         services.AddScoped<PurchaseAccessQueries>();
+        services.AddScoped<ICouponRepository, CouponRepository>();
+        services.AddScoped<ICouponReadRepository, CouponReadRepository>();
+        services.AddScoped<CouponIssuing>();
+        services.AddScoped<OwnerCouponsService>();
+        services.AddScoped<OwnerCouponsQueries>();
 
         return services;
     }
