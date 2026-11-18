@@ -41,11 +41,6 @@ internal sealed class IdentityApi : IIdentityApi
     // so letter case does not matter and the lookup uses the existing email index.
     public Task<ExplorerSummary?> FindExplorerByEmailAsync(string email)
     {
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            return Task.FromResult<ExplorerSummary?>(null);
-        }
-
         var normalizedEmail = _lookupNormalizer.NormalizeEmail(email.Trim());
         return Explorers()
             .Where(user => user.NormalizedEmail == normalizedEmail)
@@ -53,14 +48,9 @@ internal sealed class IdentityApi : IIdentityApi
             .SingleOrDefaultAsync();
     }
 
-    public async Task<List<ExplorerSummary>> GetExplorersByIdsAsync(IReadOnlyCollection<Guid> userIds)
+    public Task<List<ExplorerSummary>> GetExplorersByIdsAsync(IReadOnlyCollection<Guid> userIds)
     {
-        if (userIds.Count == 0)
-        {
-            return [];
-        }
-
-        return await Explorers()
+        return Explorers()
             .Where(user => userIds.Contains(user.Id))
             .Select(user => new ExplorerSummary(user.Id, user.Email!))
             .ToListAsync();
