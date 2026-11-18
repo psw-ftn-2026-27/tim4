@@ -1,5 +1,6 @@
 using Identity.Contracts;
 using Identity.Core;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Infrastructure;
@@ -7,10 +8,12 @@ namespace Identity.Infrastructure;
 internal sealed class IdentityApi : IIdentityApi
 {
     private readonly IdentityModuleDbContext _dbContext;
+    private readonly ILookupNormalizer _lookupNormalizer;
 
-    public IdentityApi(IdentityModuleDbContext dbContext)
+    public IdentityApi(IdentityModuleDbContext dbContext, ILookupNormalizer lookupNormalizer)
     {
         _dbContext = dbContext;
+        _lookupNormalizer = lookupNormalizer;
     }
 
     public async Task<ExplorerPage> GetExplorersAsync(int page, int pageSize)
@@ -32,6 +35,35 @@ internal sealed class IdentityApi : IIdentityApi
     public Task<bool> ExplorerExistsAsync(Guid userId)
     {
         return Explorers().AnyAsync(user => user.Id == userId);
+    }
+
+    // Compares the column UserManager filled in at registration, with the same normalizer,
+    // so letter case does not matter and the lookup uses the existing email index.
+    public Task<ExplorerSummary?> FindExplorerByEmailAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Task.FromResult<ExplorerSummary?>(null);
+        }
+
+        var normalizedEmail = _lookupNormalizer.NormalizeEmail(email.Trim());
+        return Explorers()
+            .Where(user => user.NormalizedEmail == normalizedEmail)
+            .Select(user => new ExplorerSummary(user.Id, user.Email!))
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<List<ExplorerSummary>> GetExplorersByIdsAsync(IReadOnlyCollection<Guid> userIds)
+    {
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await Explorers()
+            .Where(user => userIds.Contains(user.Id))
+            .Select(user => new ExplorerSummary(user.Id, user.Email!))
+            .ToListAsync();
     }
 
     private IQueryable<ApplicationUser> Explorers()
