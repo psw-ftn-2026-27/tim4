@@ -153,6 +153,32 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Range_with_only_a_lower_bound_finds_tours_priced_at_or_above_it()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?priceFrom=25&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+    }
+
+    [Fact]
+    public async Task Range_with_only_an_upper_bound_finds_tours_priced_at_or_below_it()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?priceTo=25&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+    }
+
+    [Fact]
     public async Task Descending_price_sort_lists_tours_without_a_price_last()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
