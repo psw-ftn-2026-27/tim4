@@ -90,7 +90,7 @@
 
     <section class="stack" aria-labelledby="coupon-list-title">
       <h2 id="coupon-list-title">Spisak kupona</h2>
-      @if ((coupons.value() ?? []).length === 0) {
+      @if ((coupons.value()?.totalCount ?? 0) === 0) {
         <div class="state">Još nemate kupona.</div>
       } @else {
         <div class="table-wrap">
@@ -105,7 +105,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (coupon of coupons.value() ?? []; track coupon.code) {
+              @for (coupon of coupons.value()?.items ?? []; track coupon.code) {
                 <tr [class.row--muted]="!coupon.isValid">
                   <td>
                     <code>{{ coupon.code }}</code>
@@ -125,6 +125,20 @@
             </tbody>
           </table>
         </div>
+        <nav class="pagination" aria-label="Stranice spiska kupona">
+          <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
+            Prethodna
+          </button>
+          <p class="meta" aria-live="polite">Stranica {{ page() }} od {{ pageCount() }}</p>
+          <button
+            class="button"
+            type="button"
+            [disabled]="page() >= pageCount()"
+            (click)="nextPage()"
+          >
+            Sledeća
+          </button>
+        </nav>
       }
     </section>
   }

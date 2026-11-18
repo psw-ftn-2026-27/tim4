@@ -10,18 +10,20 @@ public sealed class Coupon : AggregateRoot
     public CouponCode Code { get; private set; }
     public int DiscountPercent { get; private set; }
     public DateOnly ValidUntil { get; private set; }
+    public DateTime CreatedAt { get; private set; }
 
     private Coupon()
     {
         Code = null!;
     }
 
-    internal Coupon(Guid ownerId, Guid? productId, int discountPercent, DateOnly validUntil, DateOnly today)
+    // Coupon dates follow UTC, like the rest of the backend: "today" is the UTC date of now.
+    internal Coupon(Guid ownerId, Guid? productId, int discountPercent, DateOnly validUntil, DateTime now)
         : base(Guid.NewGuid())
     {
         if (discountPercent < 1 || discountPercent > 100)
             throw new DomainException("Procenat popusta mora biti ceo broj od 1 do 100.");
-        if (validUntil < today)
+        if (validUntil < DateOnly.FromDateTime(now))
             throw new DomainException("Datum važenja kupona ne može biti u prošlosti.");
 
         OwnerId = ownerId;
@@ -29,5 +31,6 @@ public sealed class Coupon : AggregateRoot
         Code = CouponCode.Generate();
         DiscountPercent = discountPercent;
         ValidUntil = validUntil;
+        CreatedAt = now;
     }
 }

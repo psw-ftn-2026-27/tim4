@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
+import { PageResult } from '../../../../shared/api/page-result';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { OwnerCouponDto, OwnerProductDto } from '../../api/payment-api-types';
 import { OwnerCoupons } from '../owner-coupons';
@@ -16,12 +17,10 @@ interface CouponForm {
 // An empty productId is the "Svi moji proizvodi" option; it is sent as null.
 const EMPTY_COUPON: CouponForm = { discountPercent: null, validUntil: '', productId: '' };
 
-// Today's date in the yyyy-mm-dd format of a date input, so the two compare as strings.
+// Today's UTC date in the yyyy-mm-dd format of a date input, so the two compare as strings.
+// Coupon dates follow UTC on the server too, so the form and the "Važeći" label agree.
 function today(): string {
-  const date = new Date();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${date.getFullYear()}-${month}-${day}`;
+  return new Date().toISOString().slice(0, 10);
 }
 
 @Component({
@@ -37,8 +36,15 @@ export class MyCoupons {
   protected readonly isExplorer = computed(
     () => this.auth.user()?.roles.includes('explorer') ?? false,
   );
-  protected readonly coupons = httpResource<OwnerCouponDto[]>(() =>
-    this.isExplorer() ? '/api/payment/coupons' : undefined,
+  protected readonly page = signal(1);
+  protected readonly pageSize = 20;
+  protected readonly coupons = httpResource<PageResult<OwnerCouponDto>>(() =>
+    this.isExplorer()
+      ? `/api/payment/coupons?page=${this.page()}&pageSize=${this.pageSize}`
+      : undefined,
+  );
+  protected readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil((this.coupons.value()?.totalCount ?? 0) / this.pageSize)),
   );
   protected readonly products = httpResource<OwnerProductDto[]>(() =>
     this.isExplorer() ? '/api/payment/coupons/products' : undefined,
@@ -69,6 +75,18 @@ export class MyCoupons {
     return `${day}.${month}.${year}.`;
   }
 
+  protected previousPage(): void {
+    if (this.page() > 1) {
+      this.page.update((page) => page - 1);
+    }
+  }
+
+  protected nextPage(): void {
+    if (this.page() < this.pageCount()) {
+      this.page.update((page) => page + 1);
+    }
+  }
+
   protected reload(): void {
     this.coupons.reload();
     this.products.reload();
@@ -91,7 +109,12 @@ export class MyCoupons {
         productId: productId === '' ? null : productId,
       });
       this.couponForm().reset({ ...EMPTY_COUPON });
-      this.coupons.reload();
+      // The newest coupon is first on page 1; changing the page reloads the list by itself.
+      if (this.page() === 1) {
+        this.coupons.reload();
+      } else {
+        this.page.set(1);
+      }
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Kupon nije napravljen. Pokušajte ponovo.'));
     } finally {

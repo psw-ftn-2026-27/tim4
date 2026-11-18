@@ -8,7 +8,8 @@ namespace Payment.Tests.Unit;
 
 public sealed class CouponIssuingTests
 {
-    private static readonly DateOnly Today = new(2026, 11, 18);
+    private static readonly DateTime Now = new(2026, 11, 18, 23, 30, 0, DateTimeKind.Utc);
+    private static readonly DateOnly Today = DateOnly.FromDateTime(Now);
 
     [Fact]
     public void A_coupon_for_a_product_of_another_owner_is_not_issued()
@@ -17,7 +18,7 @@ public sealed class CouponIssuingTests
         var ownProduct = CreateProduct(ownerId);
         var otherProduct = CreateProduct(Guid.NewGuid());
 
-        var issue = () => new CouponIssuing().Issue(ownerId, [ownProduct, otherProduct], otherProduct.Id, 10, Today, Today);
+        var issue = () => new CouponIssuing().Issue(ownerId, [ownProduct, otherProduct], otherProduct.Id, 10, Today, Now);
 
         issue.Should().Throw<DomainException>();
     }
@@ -25,7 +26,7 @@ public sealed class CouponIssuingTests
     [Fact]
     public void An_explorer_without_products_cannot_issue_a_coupon()
     {
-        var issue = () => new CouponIssuing().Issue(Guid.NewGuid(), [], null, 10, Today, Today);
+        var issue = () => new CouponIssuing().Issue(Guid.NewGuid(), [], null, 10, Today, Now);
 
         issue.Should().Throw<DomainException>();
     }
@@ -37,7 +38,7 @@ public sealed class CouponIssuingTests
     {
         var ownerId = Guid.NewGuid();
 
-        var issue = () => new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, discountPercent, Today, Today);
+        var issue = () => new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, discountPercent, Today, Now);
 
         issue.Should().Throw<DomainException>();
     }
@@ -49,7 +50,7 @@ public sealed class CouponIssuingTests
     {
         var ownerId = Guid.NewGuid();
 
-        var coupon = new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, discountPercent, Today, Today);
+        var coupon = new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, discountPercent, Today, Now);
 
         coupon.DiscountPercent.Should().Be(discountPercent);
     }
@@ -59,7 +60,7 @@ public sealed class CouponIssuingTests
     {
         var ownerId = Guid.NewGuid();
 
-        var issue = () => new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, 10, Today.AddDays(-1), Today);
+        var issue = () => new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, 10, Today.AddDays(-1), Now);
 
         issue.Should().Throw<DomainException>();
     }
@@ -69,7 +70,7 @@ public sealed class CouponIssuingTests
     {
         var ownerId = Guid.NewGuid();
 
-        var coupon = new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, 10, Today, Today);
+        var coupon = new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, 10, Today, Now);
 
         coupon.ValidUntil.Should().Be(Today);
     }
@@ -79,7 +80,7 @@ public sealed class CouponIssuingTests
     {
         var ownerId = Guid.NewGuid();
 
-        var coupon = new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, 10, Today, Today);
+        var coupon = new CouponIssuing().Issue(ownerId, [CreateProduct(ownerId)], null, 10, Today, Now);
 
         coupon.Code.Value.Should().MatchRegex("^[A-Z0-9]{8}$");
     }

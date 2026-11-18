@@ -6,7 +6,7 @@ namespace Payment.Domain.Coupons;
 public sealed class CouponIssuing
 {
     public Coupon Issue(Guid ownerId, IReadOnlyCollection<Product> ownerProducts, Guid? productId,
-        int discountPercent, DateOnly validUntil, DateOnly today)
+        int discountPercent, DateOnly validUntil, DateTime now)
     {
         var owned = ownerProducts.Where(product => product.OwnerId == ownerId).ToList();
         if (owned.Count == 0)
@@ -14,6 +14,6 @@ public sealed class CouponIssuing
         if (productId is not null && owned.All(product => product.Id != productId))
             throw new DomainException("Kupon može da važi samo za tvoj proizvod.");
 
-        return new Coupon(ownerId, productId, discountPercent, validUntil, today);
+        return new Coupon(ownerId, productId, discountPercent, validUntil, now);
     }
 }
