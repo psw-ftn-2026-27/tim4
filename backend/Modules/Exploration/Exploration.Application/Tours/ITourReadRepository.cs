@@ -9,9 +9,12 @@ public interface ITourReadRepository
     Task<List<TourDto>> GetByAuthorAsync(Guid authorId);
     Task<PageResult<TourDto>> GetPublishedAsync(PublishedTourSearchDto search, int page, int pageSize);
 
-    // Every published tour meeting the search criteria other than price (the length range included),
-    // without paging.
+    // Every published tour meeting the search criteria other than price and the circle (the length
+    // range included), without paging.
     Task<List<TourDto>> GetAllPublishedAsync(PublishedTourSearchDto search);
+
+    // For each of the given tours, the locations of its key points open without purchase, in tour order.
+    Task<Dictionary<Guid, List<LocationDto>>> GetVisibleKeyPointLocationsAsync(List<Guid> tourIds);
 
     // Null when the tour does not exist or is not published. Holds every key point with its secret.
     Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId);

@@ -13,6 +13,7 @@ internal static class TourSeed
     public static readonly Tour PublishedMonasteries;
     public static readonly Tour PublishedVineyardsByBicycleEasy;
     public static readonly Tour PublishedWineAndHeritageWalk;
+    public static readonly Tour PublishedFortressWithHiddenFirstKeyPoint;
     public static readonly Tour ArchivedOldTownWalk;
     public static readonly Tour DraftWithKeyPoints;
 
@@ -51,6 +52,12 @@ internal static class TourSeed
         PublishedWineAndHeritageWalk.AddKeyPoint(new KeyPoint("Stražilovo", "Kraj šetnje.", "/images/seed-publishedwineandheritagewalk-2.jpg", null, new Location(45.189, 19.915), true), 2.1);
         PublishedWineAndHeritageWalk.Publish(new TourPricing(TourPricingType.Free, null));
 
+        PublishedFortressWithHiddenFirstKeyPoint = new(WellKnownUsers.SecondExplorer, "Tajne Petrovaradina", "Tura počinje u podzemnim galerijama Petrovaradinske tvrđave, čija se tačna lokacija otkriva tek posle kupovine, a završava se šetnjom kroz Dunavski park.", TourDifficulty.Moderate, ["istorija"], new RecommendedGroupSize(1, 10));
+        PublishedFortressWithHiddenFirstKeyPoint.AddTransportTime(TransportMode.Walking, 60);
+        PublishedFortressWithHiddenFirstKeyPoint.AddKeyPoint(new KeyPoint("Podzemne galerije", "Skriveni početak ture.", "/images/seed-publishedfortresswithhiddenfirstkeypoint-1.jpg", "Ulaz je iza treće kapije.", new Location(45.2523, 19.8616), false), 0);
+        PublishedFortressWithHiddenFirstKeyPoint.AddKeyPoint(new KeyPoint("Dunavski park", "Kraj ture u parku.", "/images/seed-publishedfortresswithhiddenfirstkeypoint-2.jpg", null, new Location(45.2556, 19.8494), true), 1.0);
+        PublishedFortressWithHiddenFirstKeyPoint.Publish(new TourPricing(TourPricingType.Paid, 40));
+
         ArchivedOldTownWalk = new(WellKnownUsers.Explorer, "Stari grad zimi", "Zimska šetnja vodi od Trga slobode kroz Dunavsku i Zmaj Jovinu ulicu do Katoličke porte, uz priču o starim zanatskim radnjama i gradskim kafanama.", TourDifficulty.Easy, ["grad", "istorija"], new RecommendedGroupSize(1, 10));
         ArchivedOldTownWalk.AddTransportTime(TransportMode.Walking, 75);
         ArchivedOldTownWalk.AddKeyPoint(new KeyPoint("Trg slobode", "Početak zimske šetnje.", "/images/seed-archivedoldtownwalk-1.jpg", null, new Location(45.2551, 19.8452), true), 0);
@@ -59,5 +66,5 @@ internal static class TourSeed
         ArchivedOldTownWalk.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk, ArchivedOldTownWalk, DraftWithKeyPoints];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk, PublishedFortressWithHiddenFirstKeyPoint, ArchivedOldTownWalk, DraftWithKeyPoints];
 }
