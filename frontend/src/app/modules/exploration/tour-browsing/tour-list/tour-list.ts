@@ -38,6 +38,9 @@ const NO_CRITERIA: PublishedTourSearchDto = {
   lengthFrom: null,
   lengthTo: null,
   sort: null,
+  latitude: null,
+  longitude: null,
+  radiusInKm: null,
 };
 
 @Component({
@@ -160,6 +163,9 @@ export class TourList {
       lengthFrom: this.length(this.form.lengthFrom().value()),
       lengthTo: this.length(this.form.lengthTo().value()),
       sort: sort === '' ? null : sort,
+      latitude: null,
+      longitude: null,
+      radiusInKm: null,
     };
   }
 

@@ -21,20 +21,28 @@ public sealed class TourBrowsingQueries
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
 
-        // Prices live in Payment, so the database cannot filter or sort by them. Without a price
-        // criterion the database pages the tours and only the shown tours get their prices.
+        // Prices live in Payment, and key points are stored as JSON, so the database cannot filter or
+        // sort by price or filter by the circle. Without such a criterion the database pages the tours
+        // and only the shown tours get their prices and pins.
+        var usesCircle = search.Latitude is not null && search.Longitude is not null && search.RadiusInKm is not null;
         var usesPrice = search.PriceFrom is not null || search.PriceTo is not null
             || search.Sort is TourSort.PriceAscending or TourSort.PriceDescending;
-        if (!usesPrice)
+        if (!usesPrice && !usesCircle)
         {
             var tourPage = await _tourReadRepository.GetPublishedAsync(search, page, pageSize);
-            var pageItems = await WithPricesAsync(tourPage.Items);
+            var pageLocations = await _tourReadRepository.GetVisibleKeyPointLocationsAsync(tourPage.Items.Select(tour => tour.Id).ToList());
+            var pageItems = await WithPricesAndPinsAsync(tourPage.Items, pageLocations);
             return new PageResult<PublishedTourDto>(pageItems, tourPage.TotalCount);
         }
 
-        // With a price criterion every tour meeting the other criteria is loaded, and the price
-        // range, the price sort, and the paging are applied here, after the prices arrive.
-        var tours = await WithPricesAsync(await _tourReadRepository.GetAllPublishedAsync(search));
+        // Otherwise every tour meeting the other criteria is loaded, and the circle, the price range,
+        // the price sort, and the paging are applied here.
+        var allTours = await _tourReadRepository.GetAllPublishedAsync(search);
+        var locations = await _tourReadRepository.GetVisibleKeyPointLocationsAsync(allTours.Select(tour => tour.Id).ToList());
+        var toursInCircle = usesCircle
+            ? WithinCircle(allTours, locations, new LocationDto(search.Latitude!.Value, search.Longitude!.Value), search.RadiusInKm!.Value)
+            : allTours;
+        var tours = await WithPricesAndPinsAsync(toursInCircle, locations);
         var matching = SortByPrice(WithinPriceRange(tours, search.PriceFrom, search.PriceTo), search.Sort);
         var items = matching
             .Skip((page - 1) * pageSize)
@@ -43,11 +51,40 @@ public sealed class TourBrowsingQueries
         return new PageResult<PublishedTourDto>(items, matching.Count);
     }
 
-    private async Task<List<PublishedTourDto>> WithPricesAsync(List<TourDto> tours)
+    // The pin is the first key point open without purchase, so the map never reveals a location
+    // the visitor has yet to buy.
+    private async Task<List<PublishedTourDto>> WithPricesAndPinsAsync(List<TourDto> tours, Dictionary<Guid, List<LocationDto>> locations)
     {
         var prices = await _paymentApi.GetPricesByEntityIdsAsync(tours.Select(tour => tour.Id).ToList());
-        return tours.Select(tour => new PublishedTourDto(tour, prices[tour.Id])).ToList();
+        return tours
+            .Select(tour => new PublishedTourDto(tour, prices[tour.Id], locations[tour.Id].FirstOrDefault()))
+            .ToList();
     }
+
+    // A tour is in the circle when at least one of its key points open without purchase is in it;
+    // a tour without such key points never is.
+    private static List<TourDto> WithinCircle(List<TourDto> tours, Dictionary<Guid, List<LocationDto>> locations,
+        LocationDto center, double radiusInKm)
+    {
+        return tours
+            .Where(tour => locations[tour.Id].Any(location => DistanceInKm(center, location) <= radiusInKm))
+            .ToList();
+    }
+
+    // The straight-line distance over the Earth's surface (the haversine formula), the same one the
+    // platform's shared map uses for a tour's length.
+    private static double DistanceInKm(LocationDto from, LocationDto to)
+    {
+        const double earthRadiusInKm = 6371;
+        var latitudeDelta = ToRadians(to.Latitude - from.Latitude);
+        var longitudeDelta = ToRadians(to.Longitude - from.Longitude);
+        var a = Math.Sin(latitudeDelta / 2) * Math.Sin(latitudeDelta / 2)
+            + Math.Cos(ToRadians(from.Latitude)) * Math.Cos(ToRadians(to.Latitude))
+            * Math.Sin(longitudeDelta / 2) * Math.Sin(longitudeDelta / 2);
+        return 2 * earthRadiusInKm * Math.Asin(Math.Sqrt(a));
+    }
+
+    private static double ToRadians(double degrees) => degrees * Math.PI / 180;
 
     private static List<PublishedTourDto> WithinPriceRange(List<PublishedTourDto> tours, long? from, long? to)
     {

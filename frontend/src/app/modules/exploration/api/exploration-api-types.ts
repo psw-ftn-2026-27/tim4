@@ -108,9 +108,18 @@ export interface PublishedTourSearchDto {
   lengthFrom: number | null;
   lengthTo: number | null;
   sort: TourSort | null;
+  latitude: number | null;
+  longitude: number | null;
+  radiusInKm: number | null;
+}
+
+export interface LocationDto {
+  latitude: number;
+  longitude: number;
 }
 
 export interface PublishedTourDto {
   tour: TourDto;
   price: number | null;
+  pinLocation: LocationDto | null;
 }

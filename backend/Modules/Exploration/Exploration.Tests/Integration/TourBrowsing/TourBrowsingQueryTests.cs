@@ -253,6 +253,43 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Circle_finds_a_tour_with_only_a_later_key_point_in_it_pinned_at_its_first_open_key_point_and_not_a_tour_with_every_key_point_outside()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var laterKeyPoint = TourSeed.PublishedMonasteries.KeyPoints[1].Location;
+        var firstKeyPoint = TourSeed.PublishedMonasteries.KeyPoints[0].Location;
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>(FormattableString.Invariant($"/api/exploration/tours/published?latitude={laterKeyPoint.Latitude}&longitude={laterKeyPoint.Longitude}&radiusInKm=1&pageSize=100"), JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id
+            && tour.PinLocation == new LocationDto(firstKeyPoint.Latitude, firstKeyPoint.Longitude));
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+    }
+
+    [Fact]
+    public async Task Tour_with_only_a_key_point_hidden_until_purchase_in_the_circle_is_not_found()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var hiddenKeyPoint = TourSeed.PublishedFortressWithHiddenFirstKeyPoint.KeyPoints[0].Location;
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>(FormattableString.Invariant($"/api/exploration/tours/published?latitude={hiddenKeyPoint.Latitude}&longitude={hiddenKeyPoint.Longitude}&radiusInKm=0.5&pageSize=100"), JsonOptions);
+
+        tours!.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedFortressWithHiddenFirstKeyPoint.Id);
+    }
+
+    [Fact]
+    public async Task Tour_whose_first_key_point_is_hidden_until_purchase_is_pinned_at_its_first_open_key_point()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var firstOpenKeyPoint = TourSeed.PublishedFortressWithHiddenFirstKeyPoint.KeyPoints[1].Location;
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?pageSize=100", JsonOptions);
+
+        tours!.Items.Should().ContainSingle(tour => tour.Tour.Id == TourSeed.PublishedFortressWithHiddenFirstKeyPoint.Id)
+            .Which.PinLocation.Should().Be(new LocationDto(firstOpenKeyPoint.Latitude, firstOpenKeyPoint.Longitude));
+    }
+
+    [Fact]
     public async Task Visitor_sees_only_the_key_points_open_without_purchase_and_none_of_their_secrets()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");

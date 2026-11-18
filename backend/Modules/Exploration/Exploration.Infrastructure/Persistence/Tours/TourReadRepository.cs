@@ -41,6 +41,33 @@ internal sealed class TourReadRepository : ITourReadRepository
         return ProjectToDtos(Sort(published, search.Sort)).ToListAsync();
     }
 
+    public async Task<Dictionary<Guid, List<LocationDto>>> GetVisibleKeyPointLocationsAsync(List<Guid> tourIds)
+    {
+        var tours = await _dbContext.Tours
+            .Where(tour => tourIds.Contains(tour.Id))
+            .Select(tour => new
+            {
+                tour.Id,
+                KeyPoints = tour.KeyPoints
+                    .Select(keyPoint => new
+                    {
+                        keyPoint.IsVisibleWithoutPurchase,
+                        keyPoint.Location.Latitude,
+                        keyPoint.Location.Longitude
+                    })
+                    .ToList()
+            })
+            .ToListAsync();
+
+        // The key points are filtered here, after loading, so they keep the order of the tour.
+        return tours.ToDictionary(
+            tour => tour.Id,
+            tour => tour.KeyPoints
+                .Where(keyPoint => keyPoint.IsVisibleWithoutPurchase)
+                .Select(keyPoint => new LocationDto(keyPoint.Latitude, keyPoint.Longitude))
+                .ToList());
+    }
+
     public Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId)
     {
         return _dbContext.Tours
