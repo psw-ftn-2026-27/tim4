@@ -20,7 +20,23 @@
       } @else {
         <h1>{{ loaded.name }}</h1>
 
-        <p class="meta">Stanje: {{ loaded.status }}</p>
+        <p class="meta">
+          Stanje:
+          @switch (loaded.status) {
+            @case ('Draft') {
+              <span class="badge badge--draft">✎ Nacrt</span>
+            }
+            @case ('Published') {
+              <span class="badge badge--published">● Objavljen</span>
+            }
+            @case ('Retired') {
+              <span class="badge badge--retired">⊘ Povučen</span>
+            }
+            @case ('Archived') {
+              <span class="badge badge--archived">▣ Arhiviran</span>
+            }
+          }
+        </p>
 
         <p>{{ loaded.instructions }}</p>
 
