@@ -37,4 +37,37 @@ public class LocationTests
         location.Latitude.Should().Be(latitude);
         location.Longitude.Should().Be(longitude);
     }
+
+    [Fact]
+    public void Distance_from_a_location_to_itself_is_zero()
+    {
+        var location = new Location(45.2551, 19.8452);
+
+        var distance = location.DistanceInKm(new Location(45.2551, 19.8452));
+
+        distance.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(45, 19, 46, 19)]
+    [InlineData(46, 19, 45, 19)]
+    [InlineData(0, 0, 0, 1)]
+    public void One_degree_along_a_meridian_or_the_equator_is_about_111_km(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
+    {
+        var from = new Location(fromLatitude, fromLongitude);
+
+        var distance = from.DistanceInKm(new Location(toLatitude, toLongitude));
+
+        distance.Should().BeApproximately(111.195, 0.001);
+    }
+
+    [Fact]
+    public void One_degree_of_longitude_is_shorter_away_from_the_equator()
+    {
+        var atEquator = new Location(0, 19).DistanceInKm(new Location(0, 20));
+
+        var atNoviSad = new Location(45.2551, 19).DistanceInKm(new Location(45.2551, 20));
+
+        atNoviSad.Should().BeLessThan(atEquator);
+    }
 }

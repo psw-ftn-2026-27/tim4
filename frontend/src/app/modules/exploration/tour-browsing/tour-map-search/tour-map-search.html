@@ -153,12 +153,33 @@
           ⚠ Ture nije moguće učitati.
           <button class="button" type="button" (click)="tours.reload()">Pokušaj ponovo</button>
         </div>
-      } @else if (tours.value(); as page) {
-        @if (page.items.length === 0) {
+      } @else if (tours.value(); as result) {
+        @if (result.items.length === 0) {
           <div class="state">Nijedna tura ne odgovara zadatim kriterijumima.</div>
         } @else {
-          @for (item of page.items; track item.tour.id) {
+          @for (item of result.items; track item.tour.id) {
             <app-tour-card [tour]="item.tour" [price]="item.price" />
+          }
+          @if (pageCount() > 1) {
+            <nav class="pagination" aria-label="Strane">
+              <button
+                class="button"
+                type="button"
+                [disabled]="page() === 1"
+                (click)="changePage(-1)"
+              >
+                Prethodna
+              </button>
+              <span>Strana {{ page() }} od {{ pageCount() }}</span>
+              <button
+                class="button"
+                type="button"
+                [disabled]="page() >= pageCount()"
+                (click)="changePage(1)"
+              >
+                Sledeća
+              </button>
+            </nav>
           }
         }
       }

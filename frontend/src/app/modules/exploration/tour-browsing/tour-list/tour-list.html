@@ -1,7 +1,8 @@
 <div class="stack">
-  <h1>Tours</h1>
-
-  <p><a routerLink="/exploration/map">Pretraga na mapi</a></p>
+  <div class="page-header">
+    <h1>Tours</h1>
+    <a class="button button--primary" routerLink="/exploration/map">Pretraga na mapi</a>
+  </div>
 
   @if (auth.isLoggedIn()) {
     <p class="links">

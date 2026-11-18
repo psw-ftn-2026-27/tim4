@@ -77,8 +77,16 @@ export class TourMapSearch {
   // clicking the map does not reload the tours; clicking "Pretraži" or choosing a sort does.
   private readonly applied = signal<PublishedTourSearchDto>(NO_CRITERIA);
 
+  // Every new search, sort, or clearing starts again at the first page.
+  protected readonly page = signal(1);
+  private readonly pageSize = 20;
+
   protected readonly tours = httpResource<PageResult<PublishedTourDto>>(
-    () => `/api/exploration/tours/published?${this.toQuery(this.applied())}`,
+    () => `/api/exploration/tours/published?${this.toQuery(this.applied(), this.page())}`,
+  );
+
+  protected readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil((this.tours.value()?.totalCount ?? 0) / this.pageSize)),
   );
 
   // The map shows the same tours as the list; a tour without a pin location has no pin.
@@ -121,17 +129,28 @@ export class TourMapSearch {
       return;
     }
     this.applied.set(this.toDto());
+    this.page.set(1);
   }
 
   // A new sort reloads the tours at once, with the criteria of the last search.
   protected sortChanged(): void {
     const sort = this.form.sort().value();
     this.applied.update((applied) => ({ ...applied, sort: sort === '' ? null : sort }));
+    this.page.set(1);
+  }
+
+  protected changePage(change: number): void {
+    const page = this.page() + change;
+    if (page < 1 || page > this.pageCount()) {
+      return;
+    }
+    this.page.set(page);
   }
 
   protected clear(): void {
     this.form().reset({ ...EMPTY_FORM });
     this.applied.set(NO_CRITERIA);
+    this.page.set(1);
   }
 
   private toDto(): PublishedTourSearchDto {
@@ -182,9 +201,9 @@ export class TourMapSearch {
     return value === null || Number.isNaN(value) ? null : value;
   }
 
-  // Every search starts at the first page. Empty criteria are left out of the URL.
-  private toQuery(search: PublishedTourSearchDto): string {
-    const query = new URLSearchParams({ page: '1', pageSize: '20' });
+  // Empty criteria are left out of the URL.
+  private toQuery(search: PublishedTourSearchDto, page: number): string {
+    const query = new URLSearchParams({ page: String(page), pageSize: String(this.pageSize) });
     if (search.name !== null) {
       query.append('name', search.name);
     }

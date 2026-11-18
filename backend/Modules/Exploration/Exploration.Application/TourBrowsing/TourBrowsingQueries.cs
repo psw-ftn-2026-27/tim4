@@ -1,4 +1,5 @@
 using Exploration.Application.Tours;
+using Exploration.Domain.Tours;
 using Payment.Contracts;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
@@ -40,7 +41,7 @@ public sealed class TourBrowsingQueries
         var allTours = await _tourReadRepository.GetAllPublishedAsync(search);
         var locations = await _tourReadRepository.GetVisibleKeyPointLocationsAsync(allTours.Select(tour => tour.Id).ToList());
         var toursInCircle = usesCircle
-            ? WithinCircle(allTours, locations, new LocationDto(search.Latitude!.Value, search.Longitude!.Value), search.RadiusInKm!.Value)
+            ? WithinCircle(allTours, locations, new Location(search.Latitude!.Value, search.Longitude!.Value), search.RadiusInKm!.Value)
             : allTours;
         var tours = await WithPricesAndPinsAsync(toursInCircle, locations);
         var matching = SortByPrice(WithinPriceRange(tours, search.PriceFrom, search.PriceTo), search.Sort);
@@ -64,27 +65,13 @@ public sealed class TourBrowsingQueries
     // A tour is in the circle when at least one of its key points open without purchase is in it;
     // a tour without such key points never is.
     private static List<TourDto> WithinCircle(List<TourDto> tours, Dictionary<Guid, List<LocationDto>> locations,
-        LocationDto center, double radiusInKm)
+        Location center, double radiusInKm)
     {
         return tours
-            .Where(tour => locations[tour.Id].Any(location => DistanceInKm(center, location) <= radiusInKm))
+            .Where(tour => locations[tour.Id]
+                .Any(location => center.DistanceInKm(new Location(location.Latitude, location.Longitude)) <= radiusInKm))
             .ToList();
     }
-
-    // The straight-line distance over the Earth's surface (the haversine formula), the same one the
-    // platform's shared map uses for a tour's length.
-    private static double DistanceInKm(LocationDto from, LocationDto to)
-    {
-        const double earthRadiusInKm = 6371;
-        var latitudeDelta = ToRadians(to.Latitude - from.Latitude);
-        var longitudeDelta = ToRadians(to.Longitude - from.Longitude);
-        var a = Math.Sin(latitudeDelta / 2) * Math.Sin(latitudeDelta / 2)
-            + Math.Cos(ToRadians(from.Latitude)) * Math.Cos(ToRadians(to.Latitude))
-            * Math.Sin(longitudeDelta / 2) * Math.Sin(longitudeDelta / 2);
-        return 2 * earthRadiusInKm * Math.Asin(Math.Sqrt(a));
-    }
-
-    private static double ToRadians(double degrees) => degrees * Math.PI / 180;
 
     private static List<PublishedTourDto> WithinPriceRange(List<PublishedTourDto> tours, long? from, long? to)
     {
