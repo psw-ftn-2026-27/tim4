@@ -13,14 +13,16 @@ public sealed class CartCheckoutQueries
     private readonly IPurchaseReadRepository _purchases;
     private readonly ICouponRepository _coupons;
     private readonly IGiftCardRepository _giftCards;
+    private readonly IGiftCardReadRepository _giftCardReads;
 
     public CartCheckoutQueries(IShoppingCartReadRepository carts, IPurchaseReadRepository purchases,
-        ICouponRepository coupons, IGiftCardRepository giftCards)
+        ICouponRepository coupons, IGiftCardRepository giftCards, IGiftCardReadRepository giftCardReads)
     {
         _carts = carts;
         _purchases = purchases;
         _coupons = coupons;
         _giftCards = giftCards;
+        _giftCardReads = giftCardReads;
     }
 
     public async Task<CartDto> GetCartAsync(Guid userId) => await _carts.GetCartAsync(userId)
@@ -37,7 +39,7 @@ public sealed class CartCheckoutQueries
             ? checkout with
             {
                 TotalToPay = totalAfterCoupon,
-                AvailableGiftCard = await GetAvailableGiftCardAsync(userId, today)
+                AvailableGiftCard = await _giftCardReads.GetFirstToExpireAsync(userId, today)
             }
             : await CheckAppliedGiftCardAsync(userId, checkout, totalAfterCoupon, today);
     }
@@ -84,11 +86,5 @@ public sealed class CartCheckoutQueries
             AppliedGiftCard = applied with { Discount = 0, IsValid = false, InvalidReason = reason },
             TotalToPay = totalAfterCoupon
         };
-    }
-
-    private async Task<AvailableGiftCardDto?> GetAvailableGiftCardAsync(Guid userId, DateOnly today)
-    {
-        var giftCard = GiftCard.FirstToExpire(await _giftCards.GetByRecipientAsync(userId), userId, today);
-        return giftCard is null ? null : new AvailableGiftCardDto(giftCard.Id, giftCard.Amount, giftCard.ValidUntil);
     }
 }

@@ -1,0 +1,32 @@
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">{{ showGiver() ? 'Darivalac' : 'Primalac' }}</th>
+        <th scope="col" class="col-fit">Iznos</th>
+        <th scope="col">Poruka</th>
+        <th scope="col" class="col-fit">Napravljena</th>
+        <th scope="col" class="col-fit">Važi do</th>
+        <th scope="col" class="col-fit">Stanje</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (card of cards(); track card.id) {
+        <tr [class.row--muted]="card.status !== 'Valid'">
+          <td>
+            {{ (showGiver() ? card.giverEmail : card.recipientEmail) ?? 'Nepoznat korisnik' }}
+          </td>
+          <td class="col-fit">
+            <span class="badge badge--ec">{{ card.amount }} EC</span>
+          </td>
+          <td>{{ card.message }}</td>
+          <td class="col-fit">{{ formatDate(card.createdAt) }}</td>
+          <td class="col-fit">{{ formatDate(card.validUntil) }}</td>
+          <td class="col-fit">
+            <span [class]="statusClass(card.status)">{{ statusLabel(card.status) }}</span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

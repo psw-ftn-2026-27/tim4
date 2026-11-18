@@ -63,50 +63,13 @@
       </form>
     </section>
     @if (summary.appliedGiftCard || summary.availableGiftCard) {
-      <section class="card stack" aria-labelledby="checkout-gift-card-heading">
-        <h2 id="checkout-gift-card-heading">Poklon kartica</h2>
-        <label class="choice" for="checkout-use-gift-card">
-          <input
-            id="checkout-use-gift-card"
-            type="checkbox"
-            [checked]="!!summary.appliedGiftCard"
-            [disabled]="pending()"
-            (change)="toggleGiftCard($event)"
-          />
-          @if (summary.appliedGiftCard; as giftCard) {
-            Iskoristi poklon karticu od
-            <span class="badge badge--ec">{{ giftCard.amount }} EC</span>
-          } @else if (summary.availableGiftCard; as giftCard) {
-            Iskoristi poklon karticu od
-            <span class="badge badge--ec">{{ giftCard.amount }} EC</span>
-            (važi do {{ formatDate(giftCard.validUntil) }})
-          }
-        </label>
-        @if (summary.appliedGiftCard; as giftCard) {
-          @if (giftCard.isValid) {
-            <p>
-              Kartica umanjuje cenu za
-              <span class="badge badge--ec">{{ giftCard.discount }} EC</span>
-            </p>
-            @if (lostGiftCardRest() > 0) {
-              <p class="meta">
-                Kartica je veća od cene. Koristi se u celosti, pa se ostatak od
-                {{ lostGiftCardRest() }} EC gubi.
-              </p>
-            }
-          } @else {
-            <p class="error" role="alert">
-              Poklon kartica ne važi: {{ giftCard.invalidReason }} Cena je prikazana bez kartice.
-              Isključi karticu da bi nastavio kupovinu.
-            </p>
-          }
-        } @else {
-          <p class="meta">Kartica se koristi u celosti i umanjuje cenu posle popusta kupona.</p>
-        }
-        @if (giftCardError()) {
-          <p class="error" role="alert">{{ giftCardError() }}</p>
-        }
-      </section>
+      <app-checkout-gift-card
+        [applied]="summary.appliedGiftCard"
+        [available]="summary.availableGiftCard"
+        [pending]="pending()"
+        [error]="giftCardError()"
+        (useChange)="changeGiftCardUse($event)"
+      />
     }
     <section class="card stack" aria-labelledby="checkout-summary-heading">
       <h2 id="checkout-summary-heading">Ukupno za plaćanje: {{ summary.totalToPay }} EC</h2>

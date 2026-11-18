@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Payment.Application.PersonalGiftCards;
 using Shared.Api;
+using Shared.Domain;
 
 namespace Payment.Api;
 
@@ -19,9 +20,15 @@ public sealed class PersonalGiftCardsController : ControllerBase
         _queries = queries;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<MyGiftCardsDto>> GetMyGiftCards() =>
-        await _queries.GetMyGiftCardsAsync(User.GetUserId());
+    [HttpGet("bought")]
+    public async Task<ActionResult<PageResult<GiftCardDto>>> GetBought(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        await _queries.GetBoughtAsync(User.GetUserId(), page, pageSize);
+
+    [HttpGet("received")]
+    public async Task<ActionResult<PageResult<GiftCardDto>>> GetReceived(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        await _queries.GetReceivedAsync(User.GetUserId(), page, pageSize);
 
     [HttpPost]
     public async Task<ActionResult<Guid>> BuyGiftCard(BuyGiftCardDto dto) =>

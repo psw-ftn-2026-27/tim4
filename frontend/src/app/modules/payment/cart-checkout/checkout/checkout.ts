@@ -6,11 +6,12 @@ import { Auth } from '../../../../core/auth/auth';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { CartCheckoutDto } from '../../api/payment-api-types';
 import { CartItems } from '../cart-items/cart-items';
+import { CheckoutGiftCard } from '../checkout-gift-card/checkout-gift-card';
 import { CartCheckout } from '../cart-checkout';
 
 @Component({
   selector: 'app-checkout',
-  imports: [CartItems, FormField, RouterLink],
+  imports: [CartItems, CheckoutGiftCard, FormField, RouterLink],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
 })
@@ -38,10 +39,6 @@ export class Checkout {
   protected readonly hasInvalidGiftCard = computed(
     () => this.checkout.value()?.appliedGiftCard?.isValid === false,
   );
-  protected readonly lostGiftCardRest = computed(() => {
-    const giftCard = this.checkout.value()?.appliedGiftCard;
-    return giftCard?.isValid ? giftCard.amount - giftCard.discount : 0;
-  });
   protected readonly canPay = computed(() => {
     const checkout = this.checkout.value();
     return (
@@ -102,35 +99,26 @@ export class Checkout {
     }
   }
 
-  protected async toggleGiftCard(event: Event): Promise<void> {
-    const checkbox = event.target as HTMLInputElement;
-    if (this.pending()) {
-      checkbox.checked = !checkbox.checked;
-      return;
-    }
+  protected async changeGiftCardUse(use: boolean): Promise<void> {
+    if (this.pending()) return;
     this.pending.set(true);
     this.giftCardError.set(null);
     this.error.set(null);
     try {
-      if (checkbox.checked) {
+      if (use) {
         await this.cartCheckout.useGiftCard(this.checkoutId());
       } else {
         await this.cartCheckout.removeGiftCard(this.checkoutId());
       }
     } catch (failure) {
-      checkbox.checked = !checkbox.checked;
       this.giftCardError.set(
         serverMessage(failure, 'Izmena poklon kartice nije uspela. Pokušaj ponovo.'),
       );
     } finally {
       this.pending.set(false);
+      // Reloading shows the section again with the checkbox as the server saved it.
       this.checkout.reload();
     }
-  }
-
-  protected formatDate(value: string): string {
-    const [year, month, day] = value.split('-');
-    return `${day}.${month}.${year}.`;
   }
 
   protected async confirm(): Promise<void> {

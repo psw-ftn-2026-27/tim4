@@ -4,6 +4,7 @@ using FluentAssertions;
 using Payment.Application.PersonalGiftCards;
 using Payment.Domain.GiftCards;
 using Payment.Tests.Integration.Seeds;
+using Shared.Domain;
 using Shared.Tests;
 using Xunit;
 
@@ -21,15 +22,30 @@ public sealed class PersonalGiftCardsQueryTests : BaseIntegrationTest
         var expected = GiftCardSeed.All.Where(card => card.GiverId == GiftCardSeed.Giver)
             .OrderByDescending(card => card.CreatedAt).ToList();
 
-        var giftCards = await client.GetFromJsonAsync<MyGiftCardsDto>("/api/payment/gift-cards", JsonOptions);
+        var bought = await client.GetFromJsonAsync<PageResult<GiftCardDto>>(
+            "/api/payment/gift-cards/bought", JsonOptions);
 
-        giftCards!.Bought.Select(card => card.Id).Should().Equal(expected.Select(card => card.Id));
-        giftCards.Bought.Select(card => card.Status).Should().Equal(expected.Select(card => card.GetStatus(today)));
-        giftCards.Bought.Single(card => card.Id == GiftCardSeed.ForExplorer.Id).RecipientEmail
+        bought!.TotalCount.Should().Be(expected.Count);
+        bought.Items.Select(card => card.Id).Should().Equal(expected.Select(card => card.Id));
+        bought.Items.Select(card => card.Status).Should().Equal(expected.Select(card => card.GetStatus(today)));
+        bought.Items.Single(card => card.Id == GiftCardSeed.ForExplorer.Id).RecipientEmail
             .Should().Be("explorer1@explorer.dev");
-        giftCards.Bought.Single(card => card.Id == GiftCardSeed.ExpiredYesterday.Id).Status
+        bought.Items.Single(card => card.Id == GiftCardSeed.ExpiredYesterday.Id).Status
             .Should().Be(GiftCardStatus.Expired);
-        giftCards.Received.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Bought_gift_cards_are_paged_and_the_count_covers_all_of_them()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.Giver, "explorer");
+        var expected = GiftCardSeed.All.Where(card => card.GiverId == GiftCardSeed.Giver)
+            .OrderByDescending(card => card.CreatedAt).ToList();
+
+        var secondPage = await client.GetFromJsonAsync<PageResult<GiftCardDto>>(
+            "/api/payment/gift-cards/bought?page=2&pageSize=2", JsonOptions);
+
+        secondPage!.TotalCount.Should().Be(expected.Count);
+        secondPage.Items.Select(card => card.Id).Should().Equal(expected.Skip(2).Take(2).Select(card => card.Id));
     }
 
     [Fact]
@@ -38,24 +54,27 @@ public sealed class PersonalGiftCardsQueryTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(PurchaseSeed.GiftCardBuyer, "explorer");
         var seeded = PurchaseSeed.RedeemedGiftCard;
 
-        var giftCards = await client.GetFromJsonAsync<MyGiftCardsDto>("/api/payment/gift-cards", JsonOptions);
+        var received = await client.GetFromJsonAsync<PageResult<GiftCardDto>>(
+            "/api/payment/gift-cards/received", JsonOptions);
 
-        var received = giftCards!.Received.Should().ContainSingle().Subject;
-        received.Id.Should().Be(seeded.Id);
-        received.GiverId.Should().Be(PurchaseSeed.GiftCardGiver);
-        received.Amount.Should().Be(seeded.Amount);
-        received.Message.Should().Be(seeded.Message);
-        received.ValidUntil.Should().Be(seeded.ValidUntil);
-        received.Status.Should().Be(GiftCardStatus.Redeemed);
-        giftCards.Bought.Should().BeEmpty();
+        received!.TotalCount.Should().Be(GiftCardSeed.All.Count(card => card.RecipientId == PurchaseSeed.GiftCardBuyer));
+        var card = received.Items.Should().ContainSingle().Subject;
+        card.Id.Should().Be(seeded.Id);
+        card.GiverId.Should().Be(PurchaseSeed.GiftCardGiver);
+        card.Amount.Should().Be(seeded.Amount);
+        card.Message.Should().Be(seeded.Message);
+        card.ValidUntil.Should().Be(seeded.ValidUntil);
+        card.Status.Should().Be(GiftCardStatus.Redeemed);
     }
 
-    [Fact]
-    public async Task Gift_cards_are_visible_only_to_signed_in_explorers()
+    [Theory]
+    [InlineData("bought")]
+    [InlineData("received")]
+    public async Task Gift_cards_are_visible_only_to_signed_in_explorers(string list)
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
-        var response = await client.GetAsync("/api/payment/gift-cards");
+        var response = await client.GetAsync($"/api/payment/gift-cards/{list}");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

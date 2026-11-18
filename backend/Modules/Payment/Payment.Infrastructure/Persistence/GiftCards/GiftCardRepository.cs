@@ -16,8 +16,10 @@ internal sealed class GiftCardRepository : IGiftCardRepository
     public Task<GiftCard?> GetByIdAsync(Guid id) =>
         _context.GiftCards.SingleOrDefaultAsync(giftCard => giftCard.Id == id);
 
-    public Task<List<GiftCard>> GetByRecipientAsync(Guid recipientId) =>
-        _context.GiftCards.Where(giftCard => giftCard.RecipientId == recipientId).ToListAsync();
+    public Task<List<GiftCard>> GetUnredeemedByRecipientAsync(Guid recipientId, DateOnly today) => _context.GiftCards
+        .Where(giftCard => giftCard.RecipientId == recipientId && giftCard.RedeemedInPurchaseId == null
+            && giftCard.ValidUntil >= today)
+        .ToListAsync();
 
     public void Add(GiftCard giftCard) => _context.GiftCards.Add(giftCard);
 }

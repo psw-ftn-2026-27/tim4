@@ -10,9 +10,7 @@
     </div>
   } @else if (!isExplorer()) {
     <div class="state">Ova stranica je dostupna istraživaču.</div>
-  } @else if (giftCards.isLoading()) {
-    <div class="state" role="status">Učitavanje poklon kartica…</div>
-  } @else if (giftCards.error()) {
+  } @else if (bought.error() || received.error()) {
     <div class="state state--error" role="alert">
       ⚠ Poklon kartice nisu učitane.
       <button class="button" type="button" (click)="reload()">Pokušaj ponovo</button>
@@ -113,77 +111,65 @@
 
     <section class="stack" aria-labelledby="bought-gift-cards-title">
       <h2 id="bought-gift-cards-title">Kupljene kartice</h2>
-      @if ((giftCards.value()?.bought ?? []).length === 0) {
+      @if (bought.isLoading()) {
+        <div class="state" role="status">Učitavanje kupljenih kartica…</div>
+      } @else if ((bought.value()?.totalCount ?? 0) === 0) {
         <div class="state">Još niste poklonili nijednu karticu.</div>
       } @else {
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">Primalac</th>
-                <th scope="col" class="col-fit">Iznos</th>
-                <th scope="col">Poruka</th>
-                <th scope="col" class="col-fit">Napravljena</th>
-                <th scope="col" class="col-fit">Važi do</th>
-                <th scope="col" class="col-fit">Stanje</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (card of giftCards.value()?.bought ?? []; track card.id) {
-                <tr [class.row--muted]="card.status !== 'Valid'">
-                  <td>{{ card.recipientEmail ?? 'Nepoznat korisnik' }}</td>
-                  <td class="col-fit">
-                    <span class="badge badge--ec">{{ card.amount }} EC</span>
-                  </td>
-                  <td>{{ card.message }}</td>
-                  <td class="col-fit">{{ formatDate(card.createdAt) }}</td>
-                  <td class="col-fit">{{ formatDate(card.validUntil) }}</td>
-                  <td class="col-fit">
-                    <span [class]="statusClass(card.status)">{{ statusLabel(card.status) }}</span>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+        <app-gift-card-list [cards]="bought.value()?.items ?? []" />
+        <nav class="pagination" aria-label="Stranice kupljenih kartica">
+          <button
+            class="button"
+            type="button"
+            [disabled]="boughtPage() === 1"
+            (click)="changeBoughtPage(-1)"
+          >
+            Prethodna
+          </button>
+          <p class="meta" aria-live="polite">
+            Stranica {{ boughtPage() }} od {{ boughtPageCount() }}
+          </p>
+          <button
+            class="button"
+            type="button"
+            [disabled]="boughtPage() >= boughtPageCount()"
+            (click)="changeBoughtPage(1)"
+          >
+            Sledeća
+          </button>
+        </nav>
       }
     </section>
 
     <section class="stack" aria-labelledby="received-gift-cards-title">
       <h2 id="received-gift-cards-title">Dobijene kartice</h2>
-      @if ((giftCards.value()?.received ?? []).length === 0) {
+      @if (received.isLoading()) {
+        <div class="state" role="status">Učitavanje dobijenih kartica…</div>
+      } @else if ((received.value()?.totalCount ?? 0) === 0) {
         <div class="state">Još niste dobili nijednu karticu.</div>
       } @else {
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">Darivalac</th>
-                <th scope="col" class="col-fit">Iznos</th>
-                <th scope="col">Poruka</th>
-                <th scope="col" class="col-fit">Napravljena</th>
-                <th scope="col" class="col-fit">Važi do</th>
-                <th scope="col" class="col-fit">Stanje</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (card of giftCards.value()?.received ?? []; track card.id) {
-                <tr [class.row--muted]="card.status !== 'Valid'">
-                  <td>{{ card.giverEmail ?? 'Nepoznat korisnik' }}</td>
-                  <td class="col-fit">
-                    <span class="badge badge--ec">{{ card.amount }} EC</span>
-                  </td>
-                  <td>{{ card.message }}</td>
-                  <td class="col-fit">{{ formatDate(card.createdAt) }}</td>
-                  <td class="col-fit">{{ formatDate(card.validUntil) }}</td>
-                  <td class="col-fit">
-                    <span [class]="statusClass(card.status)">{{ statusLabel(card.status) }}</span>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+        <app-gift-card-list [cards]="received.value()?.items ?? []" [showGiver]="true" />
+        <nav class="pagination" aria-label="Stranice dobijenih kartica">
+          <button
+            class="button"
+            type="button"
+            [disabled]="receivedPage() === 1"
+            (click)="changeReceivedPage(-1)"
+          >
+            Prethodna
+          </button>
+          <p class="meta" aria-live="polite">
+            Stranica {{ receivedPage() }} od {{ receivedPageCount() }}
+          </p>
+          <button
+            class="button"
+            type="button"
+            [disabled]="receivedPage() >= receivedPageCount()"
+            (click)="changeReceivedPage(1)"
+          >
+            Sledeća
+          </button>
+        </nav>
         <p class="meta">Važeću karticu možete da iskoristite pri plaćanju korpe.</p>
       }
     </section>

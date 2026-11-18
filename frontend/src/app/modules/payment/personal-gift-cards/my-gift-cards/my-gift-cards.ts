@@ -13,8 +13,14 @@ import {
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { GiftCardStatus, MyGiftCardsDto, WalletBalanceDto } from '../../api/payment-api-types';
+import { PageResult } from '../../../../shared/api/page-result';
+import { GiftCardDto, WalletBalanceDto } from '../../api/payment-api-types';
+import { GiftCardList } from '../gift-card-list/gift-card-list';
 import { PersonalGiftCards } from '../personal-gift-cards';
+
+function pageCount(result: PageResult<GiftCardDto> | undefined): number {
+  return Math.max(1, Math.ceil((result?.totalCount ?? 0) / PAGE_SIZE));
+}
 
 interface GiftCardForm {
   recipientEmail: string;
@@ -26,9 +32,10 @@ const EMPTY_GIFT_CARD: GiftCardForm = { recipientEmail: '', amount: null, messag
 const MIN_AMOUNT = 10;
 const MAX_AMOUNT = 1000;
 const MAX_MESSAGE_LENGTH = 200;
+const PAGE_SIZE = 10;
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [FormField, GiftCardList, RouterLink],
   selector: 'app-my-gift-cards',
   styleUrl: './my-gift-cards.scss',
   templateUrl: './my-gift-cards.html',
@@ -41,9 +48,20 @@ export class MyGiftCards {
   protected readonly isExplorer = computed(
     () => this.auth.user()?.roles.includes('explorer') ?? false,
   );
-  protected readonly giftCards = httpResource<MyGiftCardsDto>(() =>
-    this.isExplorer() ? '/api/payment/gift-cards' : undefined,
+  protected readonly boughtPage = signal(1);
+  protected readonly receivedPage = signal(1);
+  protected readonly bought = httpResource<PageResult<GiftCardDto>>(() =>
+    this.isExplorer()
+      ? `/api/payment/gift-cards/bought?page=${this.boughtPage()}&pageSize=${PAGE_SIZE}`
+      : undefined,
   );
+  protected readonly received = httpResource<PageResult<GiftCardDto>>(() =>
+    this.isExplorer()
+      ? `/api/payment/gift-cards/received?page=${this.receivedPage()}&pageSize=${PAGE_SIZE}`
+      : undefined,
+  );
+  protected readonly boughtPageCount = computed(() => pageCount(this.bought.value()));
+  protected readonly receivedPageCount = computed(() => pageCount(this.received.value()));
   protected readonly balance = httpResource<WalletBalanceDto>(() =>
     this.isExplorer() ? '/api/payment/wallet/balance' : undefined,
   );
@@ -76,36 +94,19 @@ export class MyGiftCards {
   protected readonly error = signal<string | null>(null);
   protected readonly success = signal<string | null>(null);
 
-  // Gift card dates follow UTC on the server, so the date part of an ISO value is shown as it is.
-  protected formatDate(value: string): string {
-    const [year, month, day] = value.slice(0, 10).split('-');
-    return `${day}.${month}.${year}.`;
+  protected changeBoughtPage(step: number): void {
+    this.boughtPage.update((page) => Math.min(Math.max(page + step, 1), this.boughtPageCount()));
   }
 
-  protected statusLabel(status: GiftCardStatus): string {
-    switch (status) {
-      case 'Valid':
-        return '● Važeća';
-      case 'Redeemed':
-        return '✓ Iskorišćena';
-      default:
-        return '⊘ Istekla';
-    }
-  }
-
-  protected statusClass(status: GiftCardStatus): string {
-    switch (status) {
-      case 'Valid':
-        return 'badge badge--published';
-      case 'Redeemed':
-        return 'badge badge--muted';
-      default:
-        return 'badge badge--retired';
-    }
+  protected changeReceivedPage(step: number): void {
+    this.receivedPage.update((page) =>
+      Math.min(Math.max(page + step, 1), this.receivedPageCount()),
+    );
   }
 
   protected reload(): void {
-    this.giftCards.reload();
+    this.bought.reload();
+    this.received.reload();
     this.balance.reload();
   }
 
@@ -129,7 +130,13 @@ export class MyGiftCards {
       });
       this.giftCardForm().reset({ ...EMPTY_GIFT_CARD });
       this.success.set(`Poklon kartica od ${amount} EC je poslata korisniku ${recipientEmail}.`);
-      this.reload();
+      this.balance.reload();
+      // The new card is first on page 1 of the bought cards; changing the page reloads the list by itself.
+      if (this.boughtPage() === 1) {
+        this.bought.reload();
+      } else {
+        this.boughtPage.set(1);
+      }
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Kartica nije napravljena. Pokušajte ponovo.'));
       this.balance.reload();

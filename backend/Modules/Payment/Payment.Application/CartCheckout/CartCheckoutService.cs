@@ -89,8 +89,9 @@ public sealed class CartCheckoutService
     public async Task UseGiftCardAsync(Guid userId, Guid checkoutId)
     {
         var cart = await GetCartAsync(userId);
-        var giftCards = await _giftCards.GetByRecipientAsync(userId);
-        _purchasing.UseGiftCard(cart, checkoutId, giftCards, DateOnly.FromDateTime(DateTime.UtcNow));
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var giftCards = await _giftCards.GetUnredeemedByRecipientAsync(userId, today);
+        _purchasing.UseGiftCard(cart, checkoutId, giftCards, today);
         await _unitOfWork.SaveChangesAsync();
     }
 
