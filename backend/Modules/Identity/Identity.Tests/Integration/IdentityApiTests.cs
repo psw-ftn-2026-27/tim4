@@ -114,7 +114,7 @@ public sealed class IdentityApiTests : BaseIntegrationTest
 
         var explorers = await identityApi.GetExplorersByIdsAsync(userIds);
 
-        explorers.Should().BeEquivalentTo(SeededExplorers());
+        explorers.Should().BeEquivalentTo(SeededExplorers().Where(explorer => userIds.Contains(explorer.Id)));
     }
 
     private static IEnumerable<ExplorerSummary> SeededExplorers()
