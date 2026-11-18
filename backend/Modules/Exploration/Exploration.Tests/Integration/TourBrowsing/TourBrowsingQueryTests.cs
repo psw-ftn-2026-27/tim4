@@ -214,6 +214,45 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Length_range_finds_tours_with_a_length_within_it_including_its_bounds()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?lengthFrom=1.3&lengthTo=2.1&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id && tour.Tour.LengthInKm == TourSeed.PublishedVineyardsByBicycleEasy.LengthInKm);
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id && tour.Tour.LengthInKm == TourSeed.PublishedWineAndHeritageWalk.LengthInKm);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+    }
+
+    [Fact]
+    public async Task Length_range_with_bounds_in_reverse_order_finds_the_tours_between_them()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?lengthFrom=2.1&lengthTo=1.3&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+    }
+
+    [Fact]
+    public async Task Length_range_together_with_a_price_range_finds_only_tours_meeting_both()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?lengthFrom=1&priceFrom=20&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedWineAndHeritageWalk.Id);
+    }
+
+    [Fact]
     public async Task Visitor_sees_only_the_key_points_open_without_purchase_and_none_of_their_secrets()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
