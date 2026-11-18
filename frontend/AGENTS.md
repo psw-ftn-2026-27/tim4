@@ -36,7 +36,8 @@ frontend/src/
       api/                   shared types (PageResult, ProblemDetails,
                              CoordinatesDto),
                              mirror the server, no client-only fields          [platform]
-      map/                   LocationMap (Leaflet): pins, path, picking a location;
+      map/                   LocationMap (Leaflet): pins, path, picking a location,
+                             position, route to a target, area circle;
                              see its README, example at /design-preview/map    [platform]
       analytics/             Analytics (Google Analytics 4): consent, page views,
                              the event catalog; see "Analytics" below          [platform]
@@ -173,8 +174,9 @@ with mock data. It is reached only by typing the URL, never linked from the app'
 navigation. Before writing a style, look there for a class that already fits. When a
 global class is added to `_components.scss`, show it on the overview page in the same
 change. The sketches never call the server and are never imported by a module. The single
-exception is the "Simulator pozicije" section on `/design-preview/map`, which reads and
-sets the signed-in tourist's position through `shared/position`.
+exception is the "Simulator pozicije" and "Ruta do sledeće tačke" sections on
+`/design-preview/map`, which read and set the signed-in tourist's position through
+`shared/position`.
 
 An entity's state is always shown with a state badge from the style guide (`.badge` with
 the modifier `/design-preview` lists for that state), never as its raw value.

@@ -26,6 +26,13 @@ export interface MapCoordinates {
   longitude: number;
 }
 
+// A circle on the map: its centre in decimal degrees and its radius in metres.
+export interface MapArea {
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+}
+
 // The view shown when there are no locations: the centre of Novi Sad.
 const DEFAULT_CENTER: L.LatLngTuple = [45.2551, 19.8452];
 const DEFAULT_ZOOM = 13;
@@ -76,6 +83,11 @@ export class LocationMap {
   readonly selected = input<MapCoordinates | null>(null);
   // The tourist's position, drawn as its own marker. The page owns it, like selected.
   readonly position = input<MapCoordinates | null>(null);
+  // The next point the tourist walks to. While both position and target are set, the map draws
+  // the walking route from the position to it.
+  readonly target = input<MapCoordinates | null>(null);
+  // A circle given by its centre and its radius in metres. The page owns it; a click never moves it.
+  readonly area = input<MapArea | null>(null);
 
   // The length of the path along the roads, in kilometres, sent once the routes of all
   // segments have arrived after the locations change.
@@ -97,6 +109,12 @@ export class LocationMap {
   // The list of locations the current routes belong to; null when there are none.
   private routedLocations: MapLocation[] | null = null;
 
+  // The line of the route from the position to the target; null while it is being fetched.
+  private readonly targetRoute = signal<MapCoordinates[] | null>(null);
+
+  // Counts the requests for that route, so the answer for an older position or target is thrown away.
+  private targetRouteRequest = 0;
+
   // Set once the map's element exists, so the effect below waits for it.
   private readonly map = signal<L.Map | undefined>(undefined);
 
@@ -111,6 +129,12 @@ export class LocationMap {
 
   // Holds the tourist's position apart from the other pins, so moving it never refits the view.
   private readonly positionLayer = L.layerGroup();
+
+  // Holds the route to the target, so it is redrawn without touching the tour's path or the view.
+  private readonly targetRouteLayer = L.layerGroup();
+
+  // Holds the area's circle, so drawing it never refits the view.
+  private readonly areaLayer = L.layerGroup();
 
   // The accent colour from _tokens.scss, read once the map's element exists.
   private selectedColor = '';
@@ -127,8 +151,10 @@ export class LocationMap {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 19,
       }).addTo(map);
+      this.areaLayer.addTo(map);
       this.layers.addTo(map);
       this.pathLayer.addTo(map);
+      this.targetRouteLayer.addTo(map);
       // The selected pin gets its own pane above the other pins, so a pin on the same place
       // never hides it (Leaflet's pin pane has z-index 600).
       map.createPane(SELECTED_PANE).style.zIndex = '650';
@@ -200,9 +226,40 @@ export class LocationMap {
       this.drawPosition(this.position());
     });
 
+    // The route to the target is asked for again whenever the position or the target changes,
+    // and never while either is missing.
+    effect(() => {
+      const position = this.position();
+      const target = this.target();
+      if (position === null || target === null) {
+        // Drop the old route and any answer on its way.
+        this.targetRouteRequest++;
+        this.targetRoute.set(null);
+        return;
+      }
+      void this.fetchTargetRoute(position, target);
+    });
+
+    // The route to the target follows its signal, without touching the pins or the view.
+    effect(() => {
+      if (this.map() === undefined) {
+        return;
+      }
+      this.drawTargetRoute(this.targetRoute());
+    });
+
+    // The circle follows the area input, the same way as the position marker.
+    effect(() => {
+      if (this.map() === undefined) {
+        return;
+      }
+      this.drawArea(this.area());
+    });
+
     inject(DestroyRef).onDestroy(() => {
       // Any answer still on its way belongs to a map that no longer exists.
       this.routeRequest++;
+      this.targetRouteRequest++;
       this.map()?.remove();
     });
   }
@@ -217,6 +274,25 @@ export class LocationMap {
     }
     this.route.set(path.segments);
     this.pathLengthChange.emit(path.lengthKm);
+  }
+
+  // Hides the old route and asks for the walking route from the position to the target. It is one
+  // segment of the same kind as the tour's path, so it falls back to a straight line the same way.
+  private async fetchTargetRoute(position: MapCoordinates, target: MapCoordinates): Promise<void> {
+    const request = ++this.targetRouteRequest;
+    this.targetRoute.set(null);
+    // routedPath takes locations, and the two ends of this route have no names.
+    const path = await routedPath(
+      [
+        { ...position, name: '' },
+        { ...target, name: '' },
+      ],
+      (from, to) => this.fetchSegment(from, to),
+    );
+    if (request !== this.targetRouteRequest) {
+      return;
+    }
+    this.targetRoute.set(path.segments[0]);
   }
 
   // The walking route between two locations, or null when the service finds none.
@@ -315,5 +391,33 @@ export class LocationMap {
       fillColor: this.positionColor,
       fillOpacity: 1,
     }).addTo(this.positionLayer);
+  }
+
+  private drawTargetRoute(route: MapCoordinates[] | null): void {
+    this.targetRouteLayer.clearLayers();
+    if (route === null) {
+      return;
+    }
+    L.polyline(route.map((point): L.LatLngTuple => [point.latitude, point.longitude])).addTo(
+      this.targetRouteLayer,
+    );
+  }
+
+  // L.circle, not L.circleMarker: its radius is in metres, so it keeps its size against the
+  // streets when the map is zoomed.
+  private drawArea(area: MapArea | null): void {
+    this.areaLayer.clearLayers();
+    if (area === null) {
+      return;
+    }
+    L.circle([area.latitude, area.longitude], {
+      // A click on the circle goes through to the map, and the circle never moves.
+      interactive: false,
+      radius: area.radiusMeters,
+      weight: 2,
+      color: this.selectedColor,
+      fillColor: this.selectedColor,
+      fillOpacity: 0.15,
+    }).addTo(this.areaLayer);
   }
 }
