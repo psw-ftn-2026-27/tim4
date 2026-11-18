@@ -136,5 +136,4 @@ export interface RecordLocationSearchDto {
   priceTo: number | null;
   lengthFrom: number | null;
   lengthTo: number | null;
-  resultCount: number;
 }

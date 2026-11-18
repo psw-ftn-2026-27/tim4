@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, form, min, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
@@ -89,30 +89,6 @@ export class TourMapSearch {
     () => `/api/exploration/tours/published?${this.toQuery(this.applied(), this.page())}`,
   );
 
-  // The circle and criteria of a "Pretraži" with a circle, waiting for its search to load.
-  // Only search() sets it; a sort or page change is not a new search and records nothing.
-  private readonly pendingRecord = signal<Omit<RecordLocationSearchDto, 'resultCount'> | null>(
-    null,
-  );
-
-  // The search resource has no other way to say that its load is done, and that moment must
-  // drive a request to the server: recording the search with the total number of tours found.
-  // pendingRecord is cleared first, so one search is never recorded twice. A repeated
-  // "Pretraži" with the same criteria keeps the same URL, so the resource does not reload; the
-  // already loaded result is recorded again, which is a new record, as the spec asks.
-  private readonly recordSearch = effect(() => {
-    const pending = this.pendingRecord();
-    if (pending === null || this.tours.isLoading()) {
-      return;
-    }
-    this.pendingRecord.set(null);
-    // A failed search records nothing, because the number of tours found is not known.
-    if (this.tours.error() || !this.tours.hasValue()) {
-      return;
-    }
-    void this.record({ ...pending, resultCount: this.tours.value().totalCount });
-  });
-
   protected readonly pageCount = computed(() =>
     Math.max(1, Math.ceil((this.tours.value()?.totalCount ?? 0) / this.pageSize)),
   );
@@ -161,7 +137,7 @@ export class TourMapSearch {
     this.page.set(1);
     // Only a search with a circle is recorded; the form lets through both or neither.
     if (dto.latitude !== null && dto.longitude !== null && dto.radiusInKm !== null) {
-      this.pendingRecord.set({
+      void this.record({
         latitude: dto.latitude,
         longitude: dto.longitude,
         radiusInKm: dto.radiusInKm,
@@ -196,7 +172,6 @@ export class TourMapSearch {
     this.form().reset({ ...EMPTY_FORM });
     this.applied.set(NO_CRITERIA);
     this.page.set(1);
-    this.pendingRecord.set(null);
   }
 
   private async record(dto: RecordLocationSearchDto): Promise<void> {

@@ -10,7 +10,7 @@ public sealed class LocationSearchRecord : AggregateRoot
 {
     public Guid TouristId { get; private set; }
     public Location Center { get; private set; }
-    public double RadiusKm { get; private set; }
+    public double RadiusInKm { get; private set; }
     public LocationSearchCriteria Criteria { get; private set; }
     public int ResultCount { get; private set; }
     public DateTime SearchedAt { get; private set; }
@@ -21,11 +21,11 @@ public sealed class LocationSearchRecord : AggregateRoot
         Criteria = null!;
     }
 
-    public LocationSearchRecord(Guid touristId, Location center, double radiusKm,
+    public LocationSearchRecord(Guid touristId, Location center, double radiusInKm,
         LocationSearchCriteria criteria, int resultCount, DateTime searchedAt)
         : base(Guid.NewGuid())
     {
-        if (!double.IsFinite(radiusKm) || radiusKm <= 0)
+        if (!double.IsFinite(radiusInKm) || radiusInKm <= 0)
         {
             throw new DomainException("A location search requires a radius greater than zero.");
         }
@@ -37,7 +37,7 @@ public sealed class LocationSearchRecord : AggregateRoot
 
         TouristId = touristId;
         Center = center;
-        RadiusKm = radiusKm;
+        RadiusInKm = radiusInKm;
         Criteria = criteria;
         ResultCount = resultCount;
         SearchedAt = searchedAt;

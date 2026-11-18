@@ -11,9 +11,9 @@ public class LocationSearchRecordTests
     [Theory]
     [InlineData(0)]
     [InlineData(-5)]
-    public void Record_with_a_radius_not_greater_than_zero_is_rejected(double radiusKm)
+    public void Record_with_a_radius_not_greater_than_zero_is_rejected(double radiusInKm)
     {
-        var creation = () => CreateRecord(radiusKm, 3);
+        var creation = () => CreateRecord(radiusInKm, 3);
 
         creation.Should().Throw<DomainException>();
     }
@@ -34,10 +34,10 @@ public class LocationSearchRecordTests
         creation.Should().Throw<DomainException>();
     }
 
-    private static LocationSearchRecord CreateRecord(double radiusKm, int resultCount)
+    private static LocationSearchRecord CreateRecord(double radiusInKm, int resultCount)
     {
         var criteria = new LocationSearchCriteria(null, null, null, null, null, null, null, null);
-        return new LocationSearchRecord(Guid.NewGuid(), new Location(45.25, 19.85), radiusKm, criteria,
+        return new LocationSearchRecord(Guid.NewGuid(), new Location(45.25, 19.85), radiusInKm, criteria,
             resultCount, DateTime.UtcNow);
     }
 }

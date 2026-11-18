@@ -20,7 +20,7 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     TouristId = table.Column<Guid>(type: "uuid", nullable: false),
                     Center_Latitude = table.Column<double>(type: "double precision", nullable: false),
                     Center_Longitude = table.Column<double>(type: "double precision", nullable: false),
-                    RadiusKm = table.Column<double>(type: "double precision", nullable: false),
+                    RadiusInKm = table.Column<double>(type: "double precision", nullable: false),
                     ResultCount = table.Column<int>(type: "integer", nullable: false),
                     SearchedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Criteria = table.Column<string>(type: "jsonb", nullable: false)

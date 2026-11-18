@@ -30,7 +30,7 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<double>("RadiusKm")
+                    b.Property<double>("RadiusInKm")
                         .HasColumnType("double precision");
 
                     b.Property<int>("ResultCount")

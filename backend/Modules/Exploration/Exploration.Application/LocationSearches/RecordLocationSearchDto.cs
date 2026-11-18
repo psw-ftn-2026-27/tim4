@@ -2,8 +2,8 @@ using Exploration.Domain.Tours;
 
 namespace Exploration.Application.LocationSearches;
 
-// The circle and the other criteria of a search the client ran, plus ResultCount: the total
-// number of tours the search found, taken from the search response, not the size of the shown page.
+// The circle and the other criteria of a search the client ran. The number of tours found is
+// not sent: the server runs the search again and counts them itself.
 public sealed record RecordLocationSearchDto(
     double Latitude,
     double Longitude,
@@ -15,5 +15,4 @@ public sealed record RecordLocationSearchDto(
     long? PriceFrom,
     long? PriceTo,
     double? LengthFrom,
-    double? LengthTo,
-    int ResultCount);
+    double? LengthTo);

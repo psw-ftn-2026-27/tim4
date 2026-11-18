@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Exploration.Application.LocationSearches;
 using Exploration.Domain.Tours;
 using Exploration.Infrastructure.Persistence;
+using Exploration.Tests.Integration.Seeds;
 using FluentAssertions;
 using Shared.Tests;
 using Xunit;
@@ -14,33 +15,32 @@ public class LocationSearchesCommandTests : BaseIntegrationTest
     public LocationSearchesCommandTests(ExplorationApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Location_search_is_recorded_with_its_circle_criteria_total_and_tourist()
+    public async Task Location_search_is_recorded_with_its_circle_criteria_tourist_and_the_number_of_tours_the_server_found()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new RecordLocationSearchDto(45.25, 19.85, 12.5, "Petrovaradin",
-            [TourDifficulty.Easy, TourDifficulty.Moderate], ["istorija"], TransportMode.Walking,
-            100, 900, 2, 15, 7);
+        var center = TourSeed.PublishedMonasteries.KeyPoints[1].Location;
+        var request = new RecordLocationSearchDto(center.Latitude, center.Longitude, 1, TourSeed.PublishedMonasteries.Name,
+            [TourDifficulty.Hard], ["istorija"], TransportMode.Car, 0, 10, 5, 10);
         using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
-        var recordCountBefore = arrangeContext.LocationSearchRecords.Count();
+        var recordIdsBefore = arrangeContext.LocationSearchRecords.Select(record => record.Id).ToList();
 
         var response = await client.PostAsJsonAsync("/api/exploration/location-searches", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<ExplorationDbContext>();
-        assertContext.LocationSearchRecords.Count().Should().Be(recordCountBefore + 1);
-        var stored = assertContext.LocationSearchRecords.Single();
+        var stored = assertContext.LocationSearchRecords.Single(record => !recordIdsBefore.Contains(record.Id));
         stored.TouristId.Should().Be(WellKnownUsers.Explorer);
-        stored.Center.Should().Be(new Location(45.25, 19.85));
-        stored.RadiusKm.Should().Be(12.5);
-        stored.Criteria.Name.Should().Be("Petrovaradin");
-        stored.Criteria.Difficulties.Should().Equal(TourDifficulty.Easy, TourDifficulty.Moderate);
+        stored.Center.Should().Be(center);
+        stored.RadiusInKm.Should().Be(1);
+        stored.Criteria.Name.Should().Be(TourSeed.PublishedMonasteries.Name);
+        stored.Criteria.Difficulties.Should().Equal(TourDifficulty.Hard);
         stored.Criteria.Tags.Should().Equal("istorija");
-        stored.Criteria.Transport.Should().Be(TransportMode.Walking);
-        stored.Criteria.PriceFrom.Should().Be(100);
-        stored.Criteria.PriceTo.Should().Be(900);
-        stored.Criteria.LengthFrom.Should().Be(2);
-        stored.Criteria.LengthTo.Should().Be(15);
-        stored.ResultCount.Should().Be(7);
+        stored.Criteria.Transport.Should().Be(TransportMode.Car);
+        stored.Criteria.PriceFrom.Should().Be(0);
+        stored.Criteria.PriceTo.Should().Be(10);
+        stored.Criteria.LengthFrom.Should().Be(5);
+        stored.Criteria.LengthTo.Should().Be(10);
+        stored.ResultCount.Should().Be(1);
     }
 
     [Fact]
@@ -81,6 +81,6 @@ public class LocationSearchesCommandTests : BaseIntegrationTest
     private static RecordLocationSearchDto CircleOnlySearch(double radiusInKm)
     {
         return new RecordLocationSearchDto(45.25, 19.85, radiusInKm, null, null, null, null,
-            null, null, null, null, 3);
+            null, null, null, null);
     }
 }
