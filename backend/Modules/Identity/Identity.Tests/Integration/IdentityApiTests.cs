@@ -74,6 +74,49 @@ public sealed class IdentityApiTests : BaseIntegrationTest
         exists.Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData("explorer@test.com")]
+    [InlineData("EXPLORER@Test.COM")]
+    public async Task Explorer_is_found_by_email_in_any_letter_case(string email)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
+
+        var explorer = await identityApi.FindExplorerByEmailAsync(email);
+
+        explorer.Should().Be(new ExplorerSummary(UserSeed.Explorer.Id, UserSeed.Explorer.Email!));
+    }
+
+    public static TheoryData<string> NonExplorerEmails => [UserSeed.Administrator.Email!, "nobody@test.com"];
+
+    [Theory]
+    [MemberData(nameof(NonExplorerEmails))]
+    public async Task Administrator_and_unknown_email_find_no_explorer(string email)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
+
+        var explorer = await identityApi.FindExplorerByEmailAsync(email);
+
+        explorer.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Explorers_are_returned_once_each_for_their_ids_and_other_ids_are_left_out()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
+        Guid[] userIds =
+        [
+            UserSeed.Explorer.Id, UserSeed.SecondExplorer.Id, UserSeed.Explorer.Id,
+            UserSeed.Administrator.Id, Guid.Parse("00000000-0000-0000-0000-0000000000ff")
+        ];
+
+        var explorers = await identityApi.GetExplorersByIdsAsync(userIds);
+
+        explorers.Should().BeEquivalentTo(SeededExplorers().Where(explorer => userIds.Contains(explorer.Id)));
+    }
+
     private static IEnumerable<ExplorerSummary> SeededExplorers()
     {
         var explorerIds = UserSeed.All.OfType<IdentityUserRole<Guid>>()
