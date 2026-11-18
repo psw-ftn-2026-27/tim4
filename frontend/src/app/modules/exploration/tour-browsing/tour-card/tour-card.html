@@ -5,6 +5,16 @@
 
   <p>{{ excerpt() }}</p>
 
+  <p>
+    @if (price() === null) {
+      <span class="meta">Cena još nije određena</span>
+    } @else if (price() === 0) {
+      <span class="badge badge--success">✓ Besplatno</span>
+    } @else {
+      <span class="badge badge--ec">◎ {{ price() }} EC</span>
+    }
+  </p>
+
   <p class="meta">Difficulty: {{ tour().difficulty }}</p>
 
   <p class="meta">
