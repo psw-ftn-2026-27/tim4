@@ -118,6 +118,21 @@ internal sealed class TourReadRepository : ITourReadRepository
             var transport = search.Transport.Value;
             tours = tours.Where(tour => tour.TransportTimes.Any(time => time.Transport == transport));
         }
+        var lengthFrom = search.LengthFrom;
+        var lengthTo = search.LengthTo;
+        // Bounds entered in the wrong order are swapped, so 5 to 2 km means 2 to 5 km.
+        if (lengthFrom > lengthTo)
+        {
+            (lengthFrom, lengthTo) = (lengthTo, lengthFrom);
+        }
+        if (lengthFrom is not null)
+        {
+            tours = tours.Where(tour => tour.LengthInKm >= lengthFrom);
+        }
+        if (lengthTo is not null)
+        {
+            tours = tours.Where(tour => tour.LengthInKm <= lengthTo);
+        }
         return tours;
     }
 
