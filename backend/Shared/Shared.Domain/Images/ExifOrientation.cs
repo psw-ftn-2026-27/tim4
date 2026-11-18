@@ -7,18 +7,32 @@ namespace Shared.Domain.Images;
 // a header (byte order, offset of the first directory) and directories of 12-byte entries.
 internal static class ExifOrientation
 {
-    private const ushort OrientationTag = 0x0112;
+    private const int HeaderLength = 8;
     private const int EntryLength = 12;
+    private const ushort OrientationTag = 0x0112;
 
     // Reads a turning orientation (2 to 8) from the first directory.
     // Returns null for an upright photo (1) and for anything it cannot read.
     public static ushort? ReadFrom(ReadOnlySpan<byte> tiff)
     {
-        if (tiff.Length < 8)
+        if (tiff.Length < HeaderLength)
         {
             return null;
         }
         var bigEndian = tiff[0] == 'M';
+        var entry = OrientationEntryIn(tiff, bigEndian);
+        if (entry is null)
+        {
+            return null;
+        }
+
+        var orientation = ReadUInt16(tiff[(entry.Value + 8)..], bigEndian);
+        return orientation is >= 2 and <= 8 ? orientation : null;
+    }
+
+    // Returns where the orientation entry of the first directory starts, or null.
+    private static int? OrientationEntryIn(ReadOnlySpan<byte> tiff, bool bigEndian)
+    {
         var directory = ReadUInt32(tiff[4..], bigEndian);
         // Written without adding to the offset, so a huge offset cannot wrap around and pass.
         if (directory > tiff.Length - 2)
@@ -36,8 +50,7 @@ internal static class ExifOrientation
             }
             if (ReadUInt16(tiff[entry..], bigEndian) == OrientationTag)
             {
-                var orientation = ReadUInt16(tiff[(entry + 8)..], bigEndian);
-                return orientation is >= 2 and <= 8 ? orientation : null;
+                return entry;
             }
         }
         return null;
