@@ -25,6 +25,7 @@ export class Checkout {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly couponError = signal<string | null>(null);
+  protected readonly giftCardError = signal<string | null>(null);
   protected readonly couponForm = form(signal({ code: '' }), (path) => {
     required(path.code, { message: 'Unesi kod kupona.' });
   });
@@ -34,13 +35,21 @@ export class Checkout {
   protected readonly hasInvalidCoupon = computed(
     () => this.checkout.value()?.appliedCoupon?.isValid === false,
   );
+  protected readonly hasInvalidGiftCard = computed(
+    () => this.checkout.value()?.appliedGiftCard?.isValid === false,
+  );
+  protected readonly lostGiftCardRest = computed(() => {
+    const giftCard = this.checkout.value()?.appliedGiftCard;
+    return giftCard?.isValid ? giftCard.amount - giftCard.discount : 0;
+  });
   protected readonly canPay = computed(() => {
     const checkout = this.checkout.value();
     return (
       !!checkout &&
       checkout.items.length > 0 &&
       checkout.availableBalance >= checkout.totalToPay &&
-      !this.hasInvalidCoupon()
+      !this.hasInvalidCoupon() &&
+      !this.hasInvalidGiftCard()
     );
   });
   protected readonly couponProductName = computed(() => {
@@ -93,6 +102,37 @@ export class Checkout {
     }
   }
 
+  protected async toggleGiftCard(event: Event): Promise<void> {
+    const checkbox = event.target as HTMLInputElement;
+    if (this.pending()) {
+      checkbox.checked = !checkbox.checked;
+      return;
+    }
+    this.pending.set(true);
+    this.giftCardError.set(null);
+    this.error.set(null);
+    try {
+      if (checkbox.checked) {
+        await this.cartCheckout.useGiftCard(this.checkoutId());
+      } else {
+        await this.cartCheckout.removeGiftCard(this.checkoutId());
+      }
+    } catch (failure) {
+      checkbox.checked = !checkbox.checked;
+      this.giftCardError.set(
+        serverMessage(failure, 'Izmena poklon kartice nije uspela. Pokušaj ponovo.'),
+      );
+    } finally {
+      this.pending.set(false);
+      this.checkout.reload();
+    }
+  }
+
+  protected formatDate(value: string): string {
+    const [year, month, day] = value.split('-');
+    return `${day}.${month}.${year}.`;
+  }
+
   protected async confirm(): Promise<void> {
     const checkout = this.checkout.value();
     if (this.pending() || !this.canPay() || !checkout) {
@@ -116,6 +156,7 @@ export class Checkout {
   protected reload(): void {
     this.error.set(null);
     this.couponError.set(null);
+    this.giftCardError.set(null);
     this.checkout.reload();
   }
 }

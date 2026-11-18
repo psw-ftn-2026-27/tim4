@@ -47,6 +47,13 @@
         <span class="badge badge--ec">{{ coupon.discount }} EC</span>
       </p>
     }
+    @if (receipt.appliedGiftCard; as giftCard) {
+      <p>
+        Iskorišćena poklon kartica od
+        <span class="badge badge--ec">{{ giftCard.amount }} EC</span>, umanjenje
+        <span class="badge badge--ec">{{ giftCard.discount }} EC</span>
+      </p>
+    }
     <p class="total">
       Ukupno placeno: <strong>{{ receipt.total }} EC</strong>
     </p>

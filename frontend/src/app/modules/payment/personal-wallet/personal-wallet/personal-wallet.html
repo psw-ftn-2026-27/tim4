@@ -1,5 +1,8 @@
 <div class="stack">
   <h1>Moj novcanik</h1>
+  @if (auth.user()?.roles.includes('explorer')) {
+    <p><a routerLink="/payment/gift-cards">Poklon kartice</a></p>
+  }
   @if (auth.user()?.roles.includes('administrator')) {
     <p><a routerLink="/payment/administration">Administracija novcanika</a></p>
   }
