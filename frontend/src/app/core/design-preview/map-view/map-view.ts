@@ -2,7 +2,7 @@ import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CoordinatesDto } from '../../../shared/api/coordinates-dto';
-import { LocationMap, MapCoordinates, MapLocation } from '../../../shared/map/location-map';
+import { LocationMap, MapArea, MapCoordinates, MapLocation } from '../../../shared/map/location-map';
 import { PositionSimulation } from '../../../shared/position/position-simulation';
 import { serverMessage } from '../../../shared/util/server-message';
 import { Auth } from '../../auth/auth';
@@ -24,9 +24,16 @@ const TOUR_KEY_POINTS: MapLocation[] = [
   { latitude: 45.2517, longitude: 19.8618, name: '5. Petrovaradinska tvrđava' },
 ];
 
+// A search area of 500 m around Trg slobode, as in E23.
+const SEARCH_AREA: MapArea = { latitude: 45.2551, longitude: 19.8452, radiusMeters: 500 };
+
+// A smaller area around the hidden location on the fortress, as in G21.
+const HIDDEN_LOCATION_AREA: MapArea = { latitude: 45.2517, longitude: 19.8618, radiusMeters: 100 };
+
 // The living example of the shared map (shared/map): city challenges, a tour and an empty
-// list, then picking a location, adding a key point and moving an existing one. The last
-// section, the position simulator, is the one part of the style guide that calls the server.
+// list, then picking a location, adding a key point and moving an existing one. The position
+// simulator and the route to the next key point are the parts of the style guide that call
+// the server; the last section draws an area as a circle.
 @Component({
   imports: [LocationMap, RouterLink],
   selector: 'app-map-view',
@@ -154,5 +161,48 @@ export class MapView {
     } finally {
       this.pending.set(false);
     }
+  }
+
+  // The route to the next key point. The position comes from the same resource as the
+  // simulator's, so it is always the one saved on the server.
+  protected readonly tourKeyPoints = TOUR_KEY_POINTS;
+
+  // The position in the tour of the key point picked as the next one; null until a pin is clicked.
+  protected readonly nextIndex = signal<number | null>(null);
+  protected readonly nextPoint = computed(() => {
+    const index = this.nextIndex();
+    return index === null ? null : TOUR_KEY_POINTS[index];
+  });
+
+  // A failed save in this section shows under its own map, not under the simulator's.
+  protected readonly routeError = signal<string | null>(null);
+
+  // A click on the empty map saves the position, like in the simulator.
+  protected async setRoutePosition(coordinates: MapCoordinates): Promise<void> {
+    if (this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.routeError.set(null);
+    try {
+      await this.positionSimulation.setPosition(coordinates);
+      this.position.reload();
+    } catch (failure) {
+      this.routeError.set(serverMessage(failure, 'Poziciju nije moguće sačuvati.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  // The area on the map: a search area as in E23 and a smaller one around a hidden location as
+  // in G21. In a module the radius comes from the page's form or from the server.
+  protected readonly area = signal<MapArea | null>(null);
+
+  protected showSearchArea(): void {
+    this.area.set(SEARCH_AREA);
+  }
+
+  protected showHiddenLocationArea(): void {
+    this.area.set(HIDDEN_LOCATION_AREA);
   }
 }

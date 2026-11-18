@@ -109,3 +109,58 @@
     }
   }
 </section>
+
+<section class="stack">
+  <h2>Ruta do sledeće tačke</h2>
+
+  @if (!auth.isLoggedIn()) {
+    <div class="state">
+      Prijavite se da vidite rutu od svoje pozicije.
+      <a routerLink="/login">Prijava</a>
+    </div>
+  } @else if (!isExplorer()) {
+    <div class="state">Ruta do sledeće tačke je dostupna turistima.</div>
+  } @else if (position.status() === 'loading') {
+    <div class="state" role="status">Učitavanje pozicije…</div>
+  } @else if (position.error()) {
+    <div class="state state--error" role="alert">
+      ⚠ Pozicija nije učitana.
+      <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else {
+    <!-- A click on the empty map sets the position; a click on a pin picks the next point. -->
+    <app-location-map
+      [locations]="tourKeyPoints"
+      [selectable]="true"
+      [position]="position.value() ?? null"
+      [target]="nextPoint()"
+      (selectedChange)="setRoutePosition($event)"
+      (locationClick)="nextIndex.set($event)"
+    />
+
+    @if (!position.value()) {
+      <p>Pozicija nije postavljena — kliknite na mapu da označite gde se nalazite</p>
+    }
+
+    @if (nextPoint(); as point) {
+      <p>Sledeća tačka: {{ point.name }}</p>
+    } @else {
+      <p>Kliknite na ključnu tačku da je izaberete kao sledeću</p>
+    }
+
+    @if (routeError()) {
+      <p class="error" role="alert">{{ routeError() }}</p>
+    }
+  }
+</section>
+
+<section class="stack">
+  <h2>Oblast na mapi</h2>
+
+  <div class="actions">
+    <button class="button" type="button" (click)="showSearchArea()">Oblast pretrage</button>
+    <button class="button" type="button" (click)="showHiddenLocationArea()">Oblast traženja</button>
+  </div>
+
+  <app-location-map [locations]="[]" [area]="area()" />
+</section>
