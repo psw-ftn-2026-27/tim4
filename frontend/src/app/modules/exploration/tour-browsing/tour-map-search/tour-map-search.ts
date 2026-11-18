@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, form, min, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
@@ -7,10 +7,12 @@ import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map
 import {
   PublishedTourDto,
   PublishedTourSearchDto,
+  RecordLocationSearchDto,
   TourDifficulty,
   TourSort,
   TransportMode,
 } from '../../api/exploration-api-types';
+import { TourBrowsing } from '../tour-browsing';
 import { TourCard } from '../tour-card/tour-card';
 
 const EMPTY_FORM = {
@@ -51,6 +53,8 @@ const NO_CRITERIA: PublishedTourSearchDto = {
   templateUrl: './tour-map-search.html',
 })
 export class TourMapSearch {
+  private readonly tourBrowsing = inject(TourBrowsing);
+
   protected readonly form = form(signal({ ...EMPTY_FORM }), (path) => {
     min(path.lengthFrom, 0, { message: 'Granica ne može biti negativna.' });
     min(path.lengthTo, 0, { message: 'Granica ne može biti negativna.' });
@@ -128,8 +132,25 @@ export class TourMapSearch {
       this.form().markAsTouched();
       return;
     }
-    this.applied.set(this.toDto());
+    const dto = this.toDto();
+    this.applied.set(dto);
     this.page.set(1);
+    // Only a search with a circle is recorded; the form lets through both or neither.
+    if (dto.latitude !== null && dto.longitude !== null && dto.radiusInKm !== null) {
+      void this.record({
+        latitude: dto.latitude,
+        longitude: dto.longitude,
+        radiusInKm: dto.radiusInKm,
+        name: dto.name,
+        difficulties: dto.difficulties,
+        tags: dto.tags,
+        transport: dto.transport,
+        priceFrom: dto.priceFrom,
+        priceTo: dto.priceTo,
+        lengthFrom: dto.lengthFrom,
+        lengthTo: dto.lengthTo,
+      });
+    }
   }
 
   // A new sort reloads the tours at once, with the criteria of the last search.
@@ -151,6 +172,14 @@ export class TourMapSearch {
     this.form().reset({ ...EMPTY_FORM });
     this.applied.set(NO_CRITERIA);
     this.page.set(1);
+  }
+
+  private async record(dto: RecordLocationSearchDto): Promise<void> {
+    try {
+      await this.tourBrowsing.recordLocationSearch(dto);
+    } catch {
+      // The tourist does not know that searches are recorded, so a failure shows nothing.
+    }
   }
 
   private toDto(): PublishedTourSearchDto {
