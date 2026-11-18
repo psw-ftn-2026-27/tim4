@@ -31,7 +31,7 @@ internal static class TourSeed
         PublishedVineyards.AddTransportTime(TransportMode.Bicycle, 60);
         PublishedVineyards.AddKeyPoint(new KeyPoint("Porodični podrum", "Prvi podrum na turi.", "/images/seed-publishedvineyards-1.jpg", "Podrum je star dva veka.", new Location(45.201, 19.935), true), 0);
         PublishedVineyards.AddKeyPoint(new KeyPoint("Degustacija bermeta", "Završetak u Sremskim Karlovcima.", "/images/seed-publishedvineyards-2.jpg", "Recept bermeta čuva jedna porodica.", new Location(45.203, 19.933), false), 0.3);
-        PublishedVineyards.Publish(new TourPricing(TourPricingType.Free, null));
+        PublishedVineyards.Publish(new TourPricing(TourPricingType.Paid, 30));
 
         PublishedMonasteries = new(WellKnownUsers.Explorer, "Fruškogorski manastiri", "Tura obilazi tri fruškogorska manastira: Krušedol, Grgeteg i Novo Hopovo, sa pauzom za ručak u podnožju nacionalnog parka.", TourDifficulty.Hard, ["istorija"], new RecommendedGroupSize(1, 10));
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
@@ -43,7 +43,7 @@ internal static class TourSeed
         PublishedVineyardsByBicycleEasy.AddTransportTime(TransportMode.Bicycle, 40);
         PublishedVineyardsByBicycleEasy.AddKeyPoint(new KeyPoint("Polazna tačka", "Početak vožnje kroz vinograde.", "/images/seed-publishedvineyardsbybicycleeasy-1.jpg", null, new Location(45.199, 19.93), true), 0);
         PublishedVineyardsByBicycleEasy.AddKeyPoint(new KeyPoint("Vidikovac", "Kratko zadržavanje kod vidikovca.", "/images/seed-publishedvineyardsbybicycleeasy-2.jpg", null, new Location(45.19, 19.92), true), 1.3);
-        PublishedVineyardsByBicycleEasy.Publish(new TourPricing(TourPricingType.Free, null));
+        PublishedVineyardsByBicycleEasy.Publish(new TourPricing(TourPricingType.Paid, 60));
 
         PublishedWineAndHeritageWalk = new(WellKnownUsers.SecondExplorer, "Vino i nasleđe Karlovaca", "Šetnja vodi od Saborne crkve i Patrijaršijskog dvora do Stražilova, uz obilazak starog podruma i priču o istoriji vinarstva u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "istorija"], new RecommendedGroupSize(1, 10));
         PublishedWineAndHeritageWalk.AddTransportTime(TransportMode.Walking, 120);
@@ -55,7 +55,7 @@ internal static class TourSeed
         ArchivedOldTownWalk.AddTransportTime(TransportMode.Walking, 75);
         ArchivedOldTownWalk.AddKeyPoint(new KeyPoint("Trg slobode", "Početak zimske šetnje.", "/images/seed-archivedoldtownwalk-1.jpg", null, new Location(45.2551, 19.8452), true), 0);
         ArchivedOldTownWalk.AddKeyPoint(new KeyPoint("Katolička porta", "Kraj zimske šetnje.", "/images/seed-archivedoldtownwalk-2.jpg", null, new Location(45.256, 19.844), true), 0.2);
-        ArchivedOldTownWalk.Publish(new TourPricing(TourPricingType.Free, null));
+        ArchivedOldTownWalk.Publish(new TourPricing(TourPricingType.Paid, 20));
         ArchivedOldTownWalk.Archive();
     }
 

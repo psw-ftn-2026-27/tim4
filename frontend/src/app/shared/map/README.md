@@ -27,6 +27,7 @@ rutiranje: koriste samo ulaze i izlaze opisane ispod.
 | `selectable`       | ulaz, podrazumevano `false` | da li klik na mapu bira lokaciju                                                       |
 | `selected`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: izabrani pin, ako postoji                                    |
 | `selectedChange`   | izlaz, `MapCoordinates`     | koordinate mesta na koje je korisnik kliknuo, dok je izbor uključen                    |
+| `position`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: pozicija turiste, ako je postavljena                         |
 | `locationClick`    | izlaz, `number`             | pozicija u `locations` pina na koji je korisnik kliknuo                                |
 
 Dužina putanje je zbir dužina pešačkih ruta po putevima između uzastopnih lokacija;
@@ -152,6 +153,49 @@ Pri slanju komande stranica uzima `form.location().value()` i šalje njene `lati
 `longitude` zajedno sa ostalim poljima forme. Sekcija "Izbor lokacije" na `/design-preview/map`
 pokazuje samu mapu za izbor, sa novom lokacijom i izmenom postojeće; forma iz ovog primera
 je posao stranice modula.
+
+## Upotreba: simulator pozicije
+
+Ulaz `position` crta oznaku pozicije turiste: malu tamnu tačku sa svetlim okvirom, koja se
+razlikuje i od pinova iz `locations` i od izabranog kruga. Kao i izabrani pin, oznaku pomera
+samo stranica, kroz ulaz; promena ulaza ne menja vidno polje. Za `null` oznake nema.
+
+Klik se hvata postojećim `selectable` i `selectedChange`. Stranica simulatora ne postavlja
+`selected`, pa klik na njenoj mapi znači samo postavljanje pozicije, nikad i izbor lokacije.
+Stranica šalje koordinate komandom servisa iz `shared/position` i posle uspeha ponovo učita
+svoj resurs, pa se oznaka pomera tek kada server sačuva poziciju (vidi README u
+`shared/position`).
+
+```ts
+import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
+import { LocationMap, MapCoordinates } from '../../../../shared/map/location-map';
+import { PositionSimulation } from '../../../../shared/position/position-simulation';
+
+@Component({ imports: [LocationMap] /* ... */ })
+export class TourRun {
+  private readonly positionSimulation = inject(PositionSimulation);
+  // null kada pozicija nije postavljena (server odgovara sa 204).
+  protected readonly position = httpResource<CoordinatesDto | null>(() => '/api/positions/mine');
+  protected readonly pending = signal(false);
+  protected readonly error = signal<string | null>(null);
+
+  protected async setPosition(coordinates: MapCoordinates): Promise<void> {
+    // komanda, pa this.position.reload(), kao u README-u iz shared/position
+  }
+}
+```
+
+```html
+<app-location-map
+  [locations]="keyPoints()"
+  [selectable]="true"
+  [position]="position.value() ?? null"
+  (selectedChange)="setPosition($event)"
+/>
+```
+
+Sekcija "Simulator pozicije" na `/design-preview/map` pokazuje ceo tok, sa porukom ispod mape
+i stanjima stranice.
 
 ## Izuzetak od Angular podskupa
 

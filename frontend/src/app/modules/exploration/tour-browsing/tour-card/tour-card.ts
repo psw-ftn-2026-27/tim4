@@ -12,6 +12,8 @@ const EXCERPT_LENGTH = 150;
 })
 export class TourCard {
   readonly tour = input.required<TourDto>();
+  // Null when the tour has no price yet; zero when it is free.
+  readonly price = input.required<number | null>();
 
   // The first 150 characters of the description, with "..." when it is longer.
   protected readonly excerpt = computed(() => {
@@ -20,4 +22,7 @@ export class TourCard {
       ? `${description.slice(0, EXCERPT_LENGTH)}...`
       : description;
   });
+
+  // The length in kilometres with one decimal and a decimal comma, for example "3,2".
+  protected readonly length = computed(() => this.tour().lengthInKm.toFixed(1).replace('.', ','));
 }

@@ -1,6 +1,11 @@
-import { Component, computed, signal } from '@angular/core';
-import { LocationMap, MapCoordinates, MapLocation } from '../../../shared/map/location-map';
+import { httpResource } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CoordinatesDto } from '../../../shared/api/coordinates-dto';
+import { LocationMap, MapCoordinates, MapLocation } from '../../../shared/map/location-map';
+import { PositionSimulation } from '../../../shared/position/position-simulation';
+import { serverMessage } from '../../../shared/util/server-message';
+import { Auth } from '../../auth/auth';
 
 // Challenges spread around Novi Sad, shown without a path.
 const CITY_CHALLENGES: MapLocation[] = [
@@ -20,7 +25,8 @@ const TOUR_KEY_POINTS: MapLocation[] = [
 ];
 
 // The living example of the shared map (shared/map): city challenges, a tour and an empty
-// list, then picking a location, adding a key point and moving an existing one.
+// list, then picking a location, adding a key point and moving an existing one. The last
+// section, the position simulator, is the one part of the style guide that calls the server.
 @Component({
   imports: [LocationMap, RouterLink],
   selector: 'app-map-view',
@@ -117,5 +123,36 @@ export class MapView {
     );
     this.editing.set(null);
     this.selected.set(null);
+  }
+
+  // The position simulator: only a tourist sets a position, so the request is made only then.
+  protected readonly auth = inject(Auth);
+  private readonly positionSimulation = inject(PositionSimulation);
+  protected readonly isExplorer = computed(
+    () => this.auth.user()?.roles.includes('explorer') ?? false,
+  );
+
+  // The server answers 204 No Content when the tourist has no position, so the value is null.
+  protected readonly position = httpResource<CoordinatesDto | null>(() =>
+    this.isExplorer() ? '/api/positions/mine' : undefined,
+  );
+  protected readonly pending = signal(false);
+  protected readonly error = signal<string | null>(null);
+
+  // A click on the map saves the position; the marker moves only once the resource reloads.
+  protected async setPosition(coordinates: MapCoordinates): Promise<void> {
+    if (this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.positionSimulation.setPosition(coordinates);
+      this.position.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Poziciju nije moguće sačuvati.'));
+    } finally {
+      this.pending.set(false);
+    }
   }
 }

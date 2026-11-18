@@ -25,59 +25,109 @@
   <form class="card stack" (submit)="search($event)">
     <div class="filters">
       <div class="field">
-        <label for="name-filter">Name contains</label>
+        <label for="name-filter">Naziv sadrži</label>
         <input id="name-filter" type="search" [formField]="form.name" />
       </div>
 
       <div class="field">
-        <span class="label">Difficulty</span>
+        <span class="label">Težina</span>
         <details class="dropdown">
           <summary>{{ difficultySummary() }}</summary>
           <div class="dropdown-options">
             <div class="checkbox">
               <input id="easy-filter" type="checkbox" [formField]="form.easy" />
-              <label for="easy-filter">Easy</label>
+              <label for="easy-filter">Lako</label>
             </div>
             <div class="checkbox">
               <input id="moderate-filter" type="checkbox" [formField]="form.moderate" />
-              <label for="moderate-filter">Moderate</label>
+              <label for="moderate-filter">Srednje</label>
             </div>
             <div class="checkbox">
               <input id="hard-filter" type="checkbox" [formField]="form.hard" />
-              <label for="hard-filter">Hard</label>
+              <label for="hard-filter">Teško</label>
             </div>
           </div>
         </details>
       </div>
 
       <div class="field">
-        <label for="tags-filter">Tags, separated by commas</label>
+        <label for="tags-filter">Oznake, odvojene zarezima</label>
         <input id="tags-filter" type="text" [formField]="form.tags" />
       </div>
 
       <div class="field">
-        <label for="transport-filter">Transport</label>
+        <label for="transport-filter">Prevoz</label>
         <select id="transport-filter" [formField]="form.transport">
-          <option value="">All</option>
-          <option value="Walking">Walking</option>
-          <option value="Bicycle">Bicycle</option>
-          <option value="Car">Car</option>
+          <option value="">Svi</option>
+          <option value="Walking">Peške</option>
+          <option value="Bicycle">Bicikl</option>
+          <option value="Car">Automobil</option>
         </select>
       </div>
 
       <div class="field">
-        <label for="sort">Sort</label>
-        <select id="sort" [formField]="form.sortByDifficulty">
-          <option value="">Newest first</option>
-          <option value="Ascending">Difficulty, easiest first</option>
-          <option value="Descending">Difficulty, hardest first</option>
+        <label for="price-from-filter">Cena od (EC)</label>
+        <input id="price-from-filter" type="number" step="1" [formField]="form.priceFrom" />
+      </div>
+
+      <div class="field">
+        <label for="price-to-filter">Cena do (EC)</label>
+        <input id="price-to-filter" type="number" step="1" [formField]="form.priceTo" />
+      </div>
+
+      <div class="field">
+        <label for="length-from-filter">Dužina od (km)</label>
+        <input
+          id="length-from-filter"
+          type="number"
+          step="any"
+          [formField]="form.lengthFrom"
+          [attr.aria-invalid]="
+            (form.lengthFrom().dirty() || form.lengthFrom().touched()) &&
+            form.lengthFrom().errors().length > 0
+          "
+        />
+        @if (form.lengthFrom().dirty() || form.lengthFrom().touched()) {
+          @for (message of form.lengthFrom().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="length-to-filter">Dužina do (km)</label>
+        <input
+          id="length-to-filter"
+          type="number"
+          step="any"
+          [formField]="form.lengthTo"
+          [attr.aria-invalid]="
+            (form.lengthTo().dirty() || form.lengthTo().touched()) &&
+            form.lengthTo().errors().length > 0
+          "
+        />
+        @if (form.lengthTo().dirty() || form.lengthTo().touched()) {
+          @for (message of form.lengthTo().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="sort">Redosled</label>
+        <select id="sort" [formField]="form.sort" (change)="sortChanged()">
+          <option value="">Najnovije prvo</option>
+          <option value="DifficultyAscending">Težina, najlakše prvo</option>
+          <option value="DifficultyDescending">Težina, najteže prvo</option>
+          <option value="PriceAscending">Cena, rastuće</option>
+          <option value="PriceDescending">Cena, opadajuće</option>
         </select>
       </div>
     </div>
 
     <div class="actions">
-      <button class="button button--primary" type="submit">Search</button>
-      <button class="button" type="button" (click)="clear()">Clear filters</button>
+      <button class="button button--primary" type="submit">Pretraži</button>
+      <button class="button" type="button" (click)="clear()">Obriši filtere</button>
     </div>
   </form>
 
@@ -90,8 +140,8 @@
       <p>No tours match the given criteria.</p>
     } @else {
       <div class="grid">
-        @for (tour of page.items; track tour.id) {
-          <app-tour-card [tour]="tour" />
+        @for (item of page.items; track item.tour.id) {
+          <app-tour-card [tour]="item.tour" [price]="item.price" />
         }
       </div>
     }

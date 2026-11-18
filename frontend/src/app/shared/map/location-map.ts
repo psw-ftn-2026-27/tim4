@@ -32,6 +32,8 @@ const DEFAULT_ZOOM = 13;
 const SINGLE_LOCATION_ZOOM = 15;
 const SELECTED_PIN_RADIUS = 14;
 const SELECTED_PANE = 'selected';
+const POSITION_RADIUS = 8;
+const POSITION_PANE = 'position';
 
 // The public OSRM server of the OpenStreetMap community, walking profile: free and without a key.
 const ROUTING_URL = 'https://routing.openstreetmap.de/routed-foot/route/v1/foot';
@@ -72,6 +74,8 @@ export class LocationMap {
   readonly selectable = input(false);
   // The selected pin. The page owns it: it sets this input from what selectedChange sends.
   readonly selected = input<MapCoordinates | null>(null);
+  // The tourist's position, drawn as its own marker. The page owns it, like selected.
+  readonly position = input<MapCoordinates | null>(null);
 
   // The length of the path along the roads, in kilometres, sent once the routes of all
   // segments have arrived after the locations change.
@@ -105,8 +109,15 @@ export class LocationMap {
   // Holds the selected pin apart from the other pins, so moving it never refits the view.
   private readonly selectedLayer = L.layerGroup();
 
+  // Holds the tourist's position apart from the other pins, so moving it never refits the view.
+  private readonly positionLayer = L.layerGroup();
+
   // The accent colour from _tokens.scss, read once the map's element exists.
   private selectedColor = '';
+
+  // The colours of the position marker from _tokens.scss: a dark dot with a light border.
+  private positionColor = '';
+  private positionBorderColor = '';
 
   constructor() {
     afterNextRender(() => {
@@ -122,12 +133,18 @@ export class LocationMap {
       // never hides it (Leaflet's pin pane has z-index 600).
       map.createPane(SELECTED_PANE).style.zIndex = '650';
       this.selectedLayer.addTo(map);
+      // The position gets its own pane above the selected pin, so neither hides it.
+      map.createPane(POSITION_PANE).style.zIndex = '660';
+      this.positionLayer.addTo(map);
       map.on('click', (event: L.LeafletMouseEvent) => {
         if (this.selectable()) {
           this.selectedChange.emit({ latitude: event.latlng.lat, longitude: event.latlng.lng });
         }
       });
-      this.selectedColor = getComputedStyle(element).getPropertyValue('--color-accent').trim();
+      const styles = getComputedStyle(element);
+      this.selectedColor = styles.getPropertyValue('--color-accent').trim();
+      this.positionColor = styles.getPropertyValue('--color-text').trim();
+      this.positionBorderColor = styles.getPropertyValue('--color-surface').trim();
       this.map.set(map);
     });
 
@@ -173,6 +190,14 @@ export class LocationMap {
         return;
       }
       this.drawSelected(this.selected());
+    });
+
+    // The position marker follows the position input, the same way.
+    effect(() => {
+      if (this.map() === undefined) {
+        return;
+      }
+      this.drawPosition(this.position());
     });
 
     inject(DestroyRef).onDestroy(() => {
@@ -271,5 +296,24 @@ export class LocationMap {
       fillColor: this.selectedColor,
       fillOpacity: 0.8,
     }).addTo(this.selectedLayer);
+  }
+
+  // A small dark dot with a light border, so the position looks different from the pins and
+  // from the green selected circle.
+  private drawPosition(position: MapCoordinates | null): void {
+    this.positionLayer.clearLayers();
+    if (position === null) {
+      return;
+    }
+    L.circleMarker([position.latitude, position.longitude], {
+      pane: POSITION_PANE,
+      // A click on the marker goes through to the map, so it still moves the position.
+      interactive: false,
+      radius: POSITION_RADIUS,
+      weight: 3,
+      color: this.positionBorderColor,
+      fillColor: this.positionColor,
+      fillOpacity: 1,
+    }).addTo(this.positionLayer);
   }
 }

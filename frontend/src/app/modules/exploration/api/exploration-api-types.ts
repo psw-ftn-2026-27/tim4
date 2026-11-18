@@ -92,12 +92,25 @@ export interface TourPreferenceDto {
   openSearchWithPreferences: boolean;
 }
 
-export type DifficultySort = 'Ascending' | 'Descending';
+export type TourSort =
+  | 'DifficultyAscending'
+  | 'DifficultyDescending'
+  | 'PriceAscending'
+  | 'PriceDescending';
 
 export interface PublishedTourSearchDto {
   name: string | null;
   difficulties: TourDifficulty[] | null;
   tags: string[] | null;
   transport: TransportMode | null;
-  sortByDifficulty: DifficultySort | null;
+  priceFrom: number | null;
+  priceTo: number | null;
+  lengthFrom: number | null;
+  lengthTo: number | null;
+  sort: TourSort | null;
+}
+
+export interface PublishedTourDto {
+  tour: TourDto;
+  price: number | null;
 }

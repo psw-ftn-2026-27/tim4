@@ -24,7 +24,7 @@ internal sealed class TourReadRepository : ITourReadRepository
     public async Task<PageResult<TourDto>> GetPublishedAsync(PublishedTourSearchDto search, int page, int pageSize)
     {
         var published = Filter(_dbContext.Tours.Where(tour => tour.Status == TourStatus.Published), search);
-        var ordered = Sort(published, search.SortByDifficulty);
+        var ordered = Sort(published, search.Sort);
 
         var totalCount = await published.CountAsync();
         var items = await ProjectToDtos(ordered)
@@ -33,6 +33,12 @@ internal sealed class TourReadRepository : ITourReadRepository
             .ToListAsync();
 
         return new PageResult<TourDto>(items, totalCount);
+    }
+
+    public Task<List<TourDto>> GetAllPublishedAsync(PublishedTourSearchDto search)
+    {
+        var published = Filter(_dbContext.Tours.Where(tour => tour.Status == TourStatus.Published), search);
+        return ProjectToDtos(Sort(published, search.Sort)).ToListAsync();
     }
 
     public Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId)
@@ -112,19 +118,36 @@ internal sealed class TourReadRepository : ITourReadRepository
             var transport = search.Transport.Value;
             tours = tours.Where(tour => tour.TransportTimes.Any(time => time.Transport == transport));
         }
+        var lengthFrom = search.LengthFrom;
+        var lengthTo = search.LengthTo;
+        // Bounds entered in the wrong order are swapped, so 5 to 2 km means 2 to 5 km.
+        if (lengthFrom > lengthTo)
+        {
+            (lengthFrom, lengthTo) = (lengthTo, lengthFrom);
+        }
+        if (lengthFrom is not null)
+        {
+            tours = tours.Where(tour => tour.LengthInKm >= lengthFrom);
+        }
+        if (lengthTo is not null)
+        {
+            tours = tours.Where(tour => tour.LengthInKm <= lengthTo);
+        }
         return tours;
     }
 
-    private static IQueryable<Tour> Sort(IQueryable<Tour> tours, DifficultySort? sortByDifficulty)
+    // Price sorting happens in TourBrowsingQueries, because prices live in Payment; here a price
+    // sort leaves the tours newest first.
+    private static IQueryable<Tour> Sort(IQueryable<Tour> tours, TourSort? sort)
     {
         // Difficulty is stored as text, so ordering by the column would be alphabetical
         // (Easy, Hard, Moderate). The rank below restores the order Easy, Moderate, Hard.
-        return sortByDifficulty switch
+        return sort switch
         {
-            DifficultySort.Ascending => tours
+            TourSort.DifficultyAscending => tours
                 .OrderBy(tour => tour.Difficulty == TourDifficulty.Easy ? 0 : tour.Difficulty == TourDifficulty.Moderate ? 1 : 2)
                 .ThenByDescending(tour => tour.PublishedAt),
-            DifficultySort.Descending => tours
+            TourSort.DifficultyDescending => tours
                 .OrderByDescending(tour => tour.Difficulty == TourDifficulty.Easy ? 0 : tour.Difficulty == TourDifficulty.Moderate ? 1 : 2)
                 .ThenByDescending(tour => tour.PublishedAt),
             _ => tours.OrderByDescending(tour => tour.PublishedAt)

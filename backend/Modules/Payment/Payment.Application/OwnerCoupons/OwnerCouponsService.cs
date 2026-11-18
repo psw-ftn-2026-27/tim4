@@ -24,7 +24,7 @@ public sealed class OwnerCouponsService
     {
         var ownerProducts = await _products.GetByOwnerAsync(ownerId);
         var coupon = _couponIssuing.Issue(ownerId, ownerProducts, dto.ProductId, dto.DiscountPercent,
-            dto.ValidUntil, DateOnly.FromDateTime(DateTime.UtcNow));
+            dto.ValidUntil, DateTime.UtcNow);
         _coupons.Add(coupon);
         await _unitOfWork.SaveChangesAsync();
     }

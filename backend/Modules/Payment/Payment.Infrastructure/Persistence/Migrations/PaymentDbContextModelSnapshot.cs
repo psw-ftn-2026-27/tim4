@@ -28,6 +28,9 @@ namespace Payment.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("DiscountPercent")
                         .HasColumnType("integer");
 
