@@ -24,6 +24,29 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Exploration.Domain.LocationSearchRecords.LocationSearchRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("RadiusKm")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ResultCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SearchedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TouristId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LocationSearchRecords", "exploration");
+                });
+
             modelBuilder.Entity("Exploration.Domain.TourPreferences.TourPreference", b =>
                 {
                     b.Property<Guid>("Id")
@@ -88,6 +111,68 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tours", "exploration");
+                });
+
+            modelBuilder.Entity("Exploration.Domain.LocationSearchRecords.LocationSearchRecord", b =>
+                {
+                    b.OwnsOne("Exploration.Domain.LocationSearchRecords.LocationSearchCriteria", "Criteria", b1 =>
+                        {
+                            b1.Property<Guid>("LocationSearchRecordId");
+
+                            b1.PrimitiveCollection<string>("Difficulties")
+                                .IsRequired();
+
+                            b1.Property<double?>("LengthFrom");
+
+                            b1.Property<double?>("LengthTo");
+
+                            b1.Property<string>("Name");
+
+                            b1.Property<long?>("PriceFrom");
+
+                            b1.Property<long?>("PriceTo");
+
+                            b1.PrimitiveCollection<string>("Tags")
+                                .IsRequired();
+
+                            b1.Property<string>("Transport");
+
+                            b1.HasKey("LocationSearchRecordId");
+
+                            b1.ToTable("LocationSearchRecords", "exploration");
+
+                            b1
+                                .ToJson("Criteria")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LocationSearchRecordId");
+                        });
+
+                    b.OwnsOne("Exploration.Domain.Tours.Location", "Center", b1 =>
+                        {
+                            b1.Property<Guid>("LocationSearchRecordId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("LocationSearchRecordId");
+
+                            b1.ToTable("LocationSearchRecords", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LocationSearchRecordId");
+                        });
+
+                    b.Navigation("Center")
+                        .IsRequired();
+
+                    b.Navigation("Criteria")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Exploration.Domain.TourPreferences.TourPreference", b =>

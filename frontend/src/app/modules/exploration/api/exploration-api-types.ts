@@ -123,3 +123,18 @@ export interface PublishedTourDto {
   price: number | null;
   pinLocation: LocationDto | null;
 }
+
+export interface RecordLocationSearchDto {
+  latitude: number;
+  longitude: number;
+  radiusInKm: number;
+  name: string | null;
+  difficulties: TourDifficulty[] | null;
+  tags: string[] | null;
+  transport: TransportMode | null;
+  priceFrom: number | null;
+  priceTo: number | null;
+  lengthFrom: number | null;
+  lengthTo: number | null;
+  resultCount: number;
+}

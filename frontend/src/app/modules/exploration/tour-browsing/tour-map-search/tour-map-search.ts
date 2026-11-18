@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormField, form, min, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
@@ -7,10 +7,12 @@ import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map
 import {
   PublishedTourDto,
   PublishedTourSearchDto,
+  RecordLocationSearchDto,
   TourDifficulty,
   TourSort,
   TransportMode,
 } from '../../api/exploration-api-types';
+import { TourBrowsing } from '../tour-browsing';
 import { TourCard } from '../tour-card/tour-card';
 
 const EMPTY_FORM = {
@@ -51,6 +53,8 @@ const NO_CRITERIA: PublishedTourSearchDto = {
   templateUrl: './tour-map-search.html',
 })
 export class TourMapSearch {
+  private readonly tourBrowsing = inject(TourBrowsing);
+
   protected readonly form = form(signal({ ...EMPTY_FORM }), (path) => {
     min(path.lengthFrom, 0, { message: 'Granica ne može biti negativna.' });
     min(path.lengthTo, 0, { message: 'Granica ne može biti negativna.' });
@@ -84,6 +88,30 @@ export class TourMapSearch {
   protected readonly tours = httpResource<PageResult<PublishedTourDto>>(
     () => `/api/exploration/tours/published?${this.toQuery(this.applied(), this.page())}`,
   );
+
+  // The circle and criteria of a "Pretraži" with a circle, waiting for its search to load.
+  // Only search() sets it; a sort or page change is not a new search and records nothing.
+  private readonly pendingRecord = signal<Omit<RecordLocationSearchDto, 'resultCount'> | null>(
+    null,
+  );
+
+  // The search resource has no other way to say that its load is done, and that moment must
+  // drive a request to the server: recording the search with the total number of tours found.
+  // pendingRecord is cleared first, so one search is never recorded twice. A repeated
+  // "Pretraži" with the same criteria keeps the same URL, so the resource does not reload; the
+  // already loaded result is recorded again, which is a new record, as the spec asks.
+  private readonly recordSearch = effect(() => {
+    const pending = this.pendingRecord();
+    if (pending === null || this.tours.isLoading()) {
+      return;
+    }
+    this.pendingRecord.set(null);
+    // A failed search records nothing, because the number of tours found is not known.
+    if (this.tours.error() || !this.tours.hasValue()) {
+      return;
+    }
+    void this.record({ ...pending, resultCount: this.tours.value().totalCount });
+  });
 
   protected readonly pageCount = computed(() =>
     Math.max(1, Math.ceil((this.tours.value()?.totalCount ?? 0) / this.pageSize)),
@@ -128,8 +156,25 @@ export class TourMapSearch {
       this.form().markAsTouched();
       return;
     }
-    this.applied.set(this.toDto());
+    const dto = this.toDto();
+    this.applied.set(dto);
     this.page.set(1);
+    // Only a search with a circle is recorded; the form lets through both or neither.
+    if (dto.latitude !== null && dto.longitude !== null && dto.radiusInKm !== null) {
+      this.pendingRecord.set({
+        latitude: dto.latitude,
+        longitude: dto.longitude,
+        radiusInKm: dto.radiusInKm,
+        name: dto.name,
+        difficulties: dto.difficulties,
+        tags: dto.tags,
+        transport: dto.transport,
+        priceFrom: dto.priceFrom,
+        priceTo: dto.priceTo,
+        lengthFrom: dto.lengthFrom,
+        lengthTo: dto.lengthTo,
+      });
+    }
   }
 
   // A new sort reloads the tours at once, with the criteria of the last search.
@@ -151,6 +196,15 @@ export class TourMapSearch {
     this.form().reset({ ...EMPTY_FORM });
     this.applied.set(NO_CRITERIA);
     this.page.set(1);
+    this.pendingRecord.set(null);
+  }
+
+  private async record(dto: RecordLocationSearchDto): Promise<void> {
+    try {
+      await this.tourBrowsing.recordLocationSearch(dto);
+    } catch {
+      // The tourist does not know that searches are recorded, so a failure shows nothing.
+    }
   }
 
   private toDto(): PublishedTourSearchDto {
