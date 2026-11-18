@@ -10,6 +10,7 @@ namespace Payment.Tests.Unit;
 public sealed class CouponTests
 {
     private static readonly DateOnly Today = new(2026, 11, 18);
+    private static readonly DateTime Now = Today.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
     [Theory]
     [InlineData(false)]
@@ -82,7 +83,7 @@ public sealed class CouponTests
     }
 
     private static Coupon Issue(Guid ownerId, IReadOnlyCollection<Product> products, Guid? productId, int discountPercent) =>
-        new CouponIssuing().Issue(ownerId, products, productId, discountPercent, Today, Today);
+        new CouponIssuing().Issue(ownerId, products, productId, discountPercent, Today, Now);
 
     private static ShoppingCart Cart(params Product[] products)
     {

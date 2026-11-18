@@ -158,9 +158,10 @@ public sealed class ShoppingCartTests
     }
 
     private static readonly DateOnly Today = new(2026, 11, 18);
+    private static readonly DateTime Now = Today.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
     private static Coupon Coupon(Product product, int discountPercent) => new CouponIssuing()
-        .Issue(product.OwnerId, [product], product.Id, discountPercent, Today, Today);
+        .Issue(product.OwnerId, [product], product.Id, discountPercent, Today, Now);
 
     private static Product Product(long price) => new(Guid.NewGuid(), "Resource", Guid.NewGuid(), price);
 }

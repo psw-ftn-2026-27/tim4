@@ -74,7 +74,7 @@ public sealed class PurchasingTests
     {
         var ownerId = Guid.NewGuid();
         var product = new Product(Guid.NewGuid(), "Resource", ownerId, 100);
-        var coupon = new CouponIssuing().Issue(ownerId, [product], null, 10, Today, Today);
+        var coupon = new CouponIssuing().Issue(ownerId, [product], null, 10, Today, Now);
         var cart = PreparedCart(Guid.NewGuid(), product, out var checkout);
         var purchasing = new Purchasing();
         purchasing.ApplyCoupon(cart, checkout, coupon, [], Today);
@@ -91,7 +91,7 @@ public sealed class PurchasingTests
     {
         var ownerId = Guid.NewGuid();
         var product = new Product(Guid.NewGuid(), "Resource", ownerId, 100);
-        var coupon = new CouponIssuing().Issue(ownerId, [product], null, 10, Today, Today);
+        var coupon = new CouponIssuing().Issue(ownerId, [product], null, 10, Today, Now);
         var cart = PreparedCart(Guid.NewGuid(), product, out var checkout);
         var purchasing = new Purchasing();
         purchasing.ApplyCoupon(cart, checkout, coupon, [], Today);
@@ -106,13 +106,14 @@ public sealed class PurchasingTests
     }
 
     private static readonly DateOnly Today = new(2026, 11, 18);
+    private static readonly DateTime Now = Today.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
     private static (Coupon Coupon, Product NextProduct, Purchase Purchase) PurchaseWithCoupon()
     {
         var ownerId = Guid.NewGuid();
         var bought = new Product(Guid.NewGuid(), "Bought", ownerId, 100);
         var next = new Product(Guid.NewGuid(), "Next", ownerId, 50);
-        var coupon = new CouponIssuing().Issue(ownerId, [bought, next], null, 10, Today, Today);
+        var coupon = new CouponIssuing().Issue(ownerId, [bought, next], null, 10, Today, Now);
         var cart = PreparedCart(Guid.NewGuid(), bought, out var checkout);
         var purchasing = new Purchasing();
         purchasing.ApplyCoupon(cart, checkout, coupon, [], Today);
