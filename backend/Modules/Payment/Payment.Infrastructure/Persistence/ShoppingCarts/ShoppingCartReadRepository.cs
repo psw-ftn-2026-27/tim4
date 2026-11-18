@@ -23,5 +23,10 @@ internal sealed class ShoppingCartReadRepository : IShoppingCartReadRepository
                 item.Id, item.ProductId, item.EntityId, item.Name, item.Price)).ToList(),
             cart.Items.Sum(item => item.Price),
             _context.Wallets.Where(wallet => wallet.UserId == userId)
-                .Select(wallet => (long?)wallet.Balance).SingleOrDefault() ?? 0)).SingleOrDefaultAsync();
+                .Select(wallet => (long?)wallet.Balance).SingleOrDefault() ?? 0,
+            cart.AppliedCoupon == null ? null : new CheckoutCouponDto(cart.AppliedCoupon.CouponId,
+                cart.AppliedCoupon.Code, cart.AppliedCoupon.ProductId, cart.AppliedCoupon.DiscountPercent,
+                cart.AppliedCoupon.Discount, true, null),
+            cart.Items.Sum(item => item.Price) - (cart.AppliedCoupon == null ? 0 : cart.AppliedCoupon.Discount)))
+        .SingleOrDefaultAsync();
 }

@@ -20,4 +20,6 @@ public sealed record CouponCode
     }
 
     public static CouponCode Generate() => new(RandomNumberGenerator.GetString(Characters, Length));
+
+    public static string Normalize(string typedCode) => typedCode.Trim().ToUpperInvariant();
 }

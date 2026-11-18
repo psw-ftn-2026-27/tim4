@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Payment.Domain.Coupons;
 using Payment.Domain.Products;
+using Payment.Domain.Purchases;
 using Payment.Domain.ShoppingCarts;
 using Shared.Domain.Exceptions;
 using Xunit;
@@ -104,6 +106,62 @@ public sealed class ShoppingCartTests
         cart.Total.Should().Be(long.MaxValue);
         cart.Items.Should().ContainSingle();
     }
+
+    [Fact]
+    public void A_second_coupon_replaces_the_first_and_the_price_to_pay_follows_it()
+    {
+        var product = Product(100);
+        var cart = new ShoppingCart(Guid.NewGuid());
+        cart.Add(product);
+        var checkout = cart.PrepareCheckout([product]);
+        var purchasing = new Purchasing();
+        purchasing.ApplyCoupon(cart, checkout, Coupon(product, 10), [], Today);
+        var second = Coupon(product, 30);
+
+        purchasing.ApplyCoupon(cart, checkout, second, [], Today);
+
+        cart.AppliedCoupon!.CouponId.Should().Be(second.Id);
+        cart.AppliedCoupon.Discount.Should().Be(30);
+        cart.TotalToPay.Should().Be(70);
+    }
+
+    [Fact]
+    public void Adding_an_item_removes_the_applied_coupon()
+    {
+        var cart = CartWithCoupon();
+
+        cart.Add(Product(20));
+
+        cart.AppliedCoupon.Should().BeNull();
+        cart.TotalToPay.Should().Be(cart.Total);
+    }
+
+    [Fact]
+    public void Removing_an_item_removes_the_applied_coupon()
+    {
+        var cart = CartWithCoupon();
+
+        cart.Remove(cart.Items.Single().Id);
+
+        cart.AppliedCoupon.Should().BeNull();
+        cart.TotalToPay.Should().Be(cart.Total);
+    }
+
+    private static ShoppingCart CartWithCoupon()
+    {
+        var product = Product(100);
+        var cart = new ShoppingCart(Guid.NewGuid());
+        cart.Add(product);
+        var checkout = cart.PrepareCheckout([product]);
+        new Purchasing().ApplyCoupon(cart, checkout, Coupon(product, 10), [], Today);
+        return cart;
+    }
+
+    private static readonly DateOnly Today = new(2026, 11, 18);
+    private static readonly DateTime Now = Today.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+    private static Coupon Coupon(Product product, int discountPercent) => new CouponIssuing()
+        .Issue(product.OwnerId, [product], product.Id, discountPercent, Today, Now);
 
     private static Product Product(long price) => new(Guid.NewGuid(), "Resource", Guid.NewGuid(), price);
 }

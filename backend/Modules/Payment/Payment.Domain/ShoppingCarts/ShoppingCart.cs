@@ -1,3 +1,4 @@
+using Payment.Domain.Coupons;
 using Payment.Domain.Products;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
@@ -10,8 +11,10 @@ public sealed class ShoppingCart : AggregateRoot
     public Guid UserId { get; private set; }
     public Guid Version { get; private set; }
     public Guid? CheckoutId { get; private set; }
+    public AppliedCoupon? AppliedCoupon { get; private set; }
     public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
     public long Total => _items.Sum(item => item.Price);
+    public long TotalToPay => Total - (AppliedCoupon?.Discount ?? 0);
 
     private ShoppingCart() { }
 
@@ -28,7 +31,7 @@ public sealed class ShoppingCart : AggregateRoot
             throw new DomainException("Ne možeš da kupiš sopstveni proizvod.");
         if (_items.Any(item => item.ProductId == product.Id))
             throw new DomainException("Proizvod je već u korpi.");
-        var item = new OrderItem(product.Id, product.EntityId, product.Name, product.Price);
+        var item = new OrderItem(product.Id, product.EntityId, product.OwnerId, product.Name, product.Price);
         EnsureTotalWithinRange(_items.Append(item));
         _items.Add(item);
         InvalidateCheckout();
@@ -47,13 +50,34 @@ public sealed class ShoppingCart : AggregateRoot
         if (_items.Count == 0) throw new DomainException("Nije moguće kupiti praznu korpu.");
         var refreshed = _items.Select(item => products.SingleOrDefault(product => product.Id == item.ProductId)
             ?? throw new NotFoundException("Proizvod u korpi više ne postoji."))
-            .Select(product => new OrderItem(product.Id, product.EntityId, product.Name, product.Price)).ToList();
+            .Select(product => new OrderItem(product.Id, product.EntityId, product.OwnerId, product.Name, product.Price)).ToList();
         EnsureTotalWithinRange(refreshed);
         _items.Clear();
         _items.AddRange(refreshed);
         CheckoutId = Guid.NewGuid();
+        AppliedCoupon = null;
         Version = Guid.NewGuid();
         return CheckoutId.Value;
+    }
+
+    internal void ApplyCoupon(Guid checkoutId, AppliedCoupon appliedCoupon)
+    {
+        EnsureCheckout(checkoutId);
+        AppliedCoupon = appliedCoupon;
+        Version = Guid.NewGuid();
+    }
+
+    public void RemoveCoupon(Guid checkoutId)
+    {
+        EnsureCheckout(checkoutId);
+        AppliedCoupon = null;
+        Version = Guid.NewGuid();
+    }
+
+    public void EnsureTotalToPay(long seenTotal)
+    {
+        if (seenTotal != TotalToPay)
+            throw new DomainException("Cena za plaćanje se promenila. Osvežite prikaz i proverite novu cenu.");
     }
 
     public void EnsureCheckout(Guid checkoutId)
@@ -72,6 +96,7 @@ public sealed class ShoppingCart : AggregateRoot
     private void InvalidateCheckout()
     {
         CheckoutId = null;
+        AppliedCoupon = null;
         Version = Guid.NewGuid();
     }
 

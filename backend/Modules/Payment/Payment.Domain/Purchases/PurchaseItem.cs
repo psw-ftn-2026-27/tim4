@@ -13,12 +13,12 @@ public sealed class PurchaseItem : Entity
 
     private PurchaseItem() { Name = null!; }
 
-    internal PurchaseItem(Guid buyerId, OrderItem item) : base(Guid.NewGuid())
+    internal PurchaseItem(Guid buyerId, OrderItem item, long price) : base(Guid.NewGuid())
     {
         BuyerId = buyerId;
         ProductId = item.ProductId;
         EntityId = item.EntityId;
         Name = item.Name;
-        Price = item.Price;
+        Price = price;
     }
 }

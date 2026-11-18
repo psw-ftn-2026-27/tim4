@@ -54,6 +54,57 @@ public sealed class CartCheckoutQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task A_checkout_with_a_valid_coupon_shows_the_discount_and_the_price_to_pay()
+    {
+        var client = Factory.CreateClientFor(ShoppingCartSeed.CouponBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithCoupon;
+
+        var checkout = await client.GetFromJsonAsync<CartCheckoutDto>(
+            $"/api/payment/cart/checkouts/{seededCart.CheckoutId}", JsonOptions);
+
+        checkout!.AppliedCoupon!.Code.Should().Be(CouponSeed.ExplorerForExpensiveOffer.Code.Value);
+        checkout.AppliedCoupon.ProductId.Should().Be(seededCart.AppliedCoupon!.ProductId);
+        checkout.AppliedCoupon.DiscountPercent.Should().Be(CouponSeed.ExplorerForExpensiveOffer.DiscountPercent);
+        checkout.AppliedCoupon.Discount.Should().Be(seededCart.AppliedCoupon.Discount);
+        checkout.AppliedCoupon.IsValid.Should().BeTrue();
+        checkout.AppliedCoupon.InvalidReason.Should().BeNull();
+        checkout.Total.Should().Be(seededCart.Total);
+        checkout.TotalToPay.Should().Be(seededCart.TotalToPay);
+    }
+
+    [Fact]
+    public async Task A_checkout_with_a_coupon_that_expired_shows_the_reason_and_the_price_without_discount()
+    {
+        var client = Factory.CreateClientFor(ShoppingCartSeed.ExpiredCouponBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithCouponExpiredAfterApplying;
+
+        var checkout = await client.GetFromJsonAsync<CartCheckoutDto>(
+            $"/api/payment/cart/checkouts/{seededCart.CheckoutId}", JsonOptions);
+
+        checkout!.AppliedCoupon!.Code.Should().Be(CouponSeed.ExplorerExpiredYesterday.Code.Value);
+        checkout.AppliedCoupon.IsValid.Should().BeFalse();
+        checkout.AppliedCoupon.InvalidReason.Should().NotBeNullOrWhiteSpace();
+        checkout.TotalToPay.Should().Be(seededCart.Total);
+    }
+
+    [Fact]
+    public async Task A_receipt_shows_the_applied_coupon_and_its_discount()
+    {
+        var client = Factory.CreateClientFor(PurchaseSeed.CouponBuyer, "explorer");
+        var seeded = PurchaseSeed.CompletedWithCoupon;
+
+        var purchase = await client.GetFromJsonAsync<CompletedPurchaseDto>(
+            $"/api/payment/cart/purchases/{seeded.Id}", JsonOptions);
+
+        purchase!.AppliedCoupon!.Code.Should().Be(CouponSeed.SecondExplorerForAllProducts.Code.Value);
+        purchase.AppliedCoupon.ProductId.Should().Be(seeded.AppliedCoupon!.ProductId);
+        purchase.AppliedCoupon.DiscountPercent.Should().Be(seeded.AppliedCoupon.DiscountPercent);
+        purchase.AppliedCoupon.Discount.Should().Be(seeded.AppliedCoupon.Discount);
+        purchase.Items.Select(item => item.Price).Should().Equal(seeded.Items.Select(item => item.Price));
+        purchase.Total.Should().Be(seeded.Total);
+    }
+
+    [Fact]
     public async Task A_receipt_is_not_visible_to_another_buyer()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");

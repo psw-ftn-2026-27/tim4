@@ -3,7 +3,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { CompletedPurchaseDto } from '../../api/payment-api-types';
+import { CompletedPurchaseDto, PurchasedItemDto } from '../../api/payment-api-types';
 
 @Component({
   selector: 'app-completed-purchase',
@@ -23,6 +23,10 @@ export class CompletedPurchase {
   protected readonly loadError = computed(() =>
     serverMessage(this.purchase.error(), 'Nije moguce ucitati detalje kupovine.'),
   );
+
+  protected productName(items: PurchasedItemDto[], productId: string): string {
+    return items.find((item) => item.productId === productId)?.name ?? '';
+  }
 
   protected formatTime(value: string): string {
     return new Date(value).toLocaleString('sr-Latn-RS');

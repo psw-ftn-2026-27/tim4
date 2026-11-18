@@ -14,15 +14,66 @@
     <button class="button" type="button" (click)="reload()">Pokusaj ponovo</button>
   } @else if (checkout.value(); as summary) {
     <app-cart-items [items]="summary.items" />
+    <section class="card stack" aria-labelledby="checkout-coupon-heading">
+      <h2 id="checkout-coupon-heading">Kupon</h2>
+      @if (summary.appliedCoupon; as coupon) {
+        @if (coupon.isValid) {
+          <p>
+            Primenjen kupon <code>{{ coupon.code }}</code
+            >: {{ coupon.discountPercent }}% popusta na „{{ couponProductName() }}“, popust
+            <span class="badge badge--ec">{{ coupon.discount }} EC</span>
+          </p>
+        } @else {
+          <p class="error" role="alert">
+            Kupon <code>{{ coupon.code }}</code> ne važi: {{ coupon.invalidReason }} Cena je
+            prikazana bez popusta.
+          </p>
+        }
+      }
+      <form class="stack" (submit)="applyCoupon($event)">
+        <div class="field">
+          <label for="coupon-code">Kod kupona</label>
+          <input
+            id="coupon-code"
+            type="text"
+            [formField]="couponForm.code"
+            [attr.aria-invalid]="
+              ((couponForm.code().dirty() || couponForm.code().touched()) &&
+                couponForm.code().errors().length > 0) ||
+              !!couponError()
+            "
+          />
+          @if (couponForm.code().dirty() || couponForm.code().touched()) {
+            @for (message of couponForm.code().errors().slice(0, 1); track $index) {
+              <p class="error">{{ message.message }}</p>
+            }
+          }
+          @if (couponError()) {
+            <p class="error" role="alert">{{ couponError() }}</p>
+          }
+        </div>
+        <div class="form-actions">
+          <button class="button" type="submit" [disabled]="pending()">Primeni</button>
+          @if (summary.appliedCoupon) {
+            <button class="button" type="button" [disabled]="pending()" (click)="removeCoupon()">
+              Ukloni kupon
+            </button>
+          }
+        </div>
+      </form>
+    </section>
     <section class="card stack" aria-labelledby="checkout-summary-heading">
-      <h2 id="checkout-summary-heading">Ukupno za placanje: {{ summary.total }} EC</h2>
+      <h2 id="checkout-summary-heading">Ukupno za plaćanje: {{ summary.totalToPay }} EC</h2>
+      @if (summary.totalToPay !== summary.total) {
+        <p>Cena bez popusta: {{ summary.total }} EC</p>
+      }
       <p>
         Raspolozivo stanje: <span class="badge badge--ec">{{ summary.availableBalance }} EC</span>
       </p>
       <p class="meta">
         Potvrdjujes prikazane cene i stavke. Izmena korpe zahteva novu pripremu checkouta.
       </p>
-      @if (summary.availableBalance < summary.total) {
+      @if (summary.availableBalance < summary.totalToPay) {
         <p class="error" role="alert">
           Nemas dovoljno EC za ovu kupovinu. Korpa i novcanik ostaju nepromenjeni.
         </p>

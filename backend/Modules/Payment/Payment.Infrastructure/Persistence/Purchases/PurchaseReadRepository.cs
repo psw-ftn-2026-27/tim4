@@ -24,5 +24,8 @@ internal sealed class PurchaseReadRepository : IPurchaseReadRepository
         .Select(purchase => new CompletedPurchaseDto(purchase.Id, purchase.PurchasedAt,
             purchase.Items.OrderBy(item => item.Id).Select(item => new PurchasedItemDto(
                 item.Id, item.ProductId, item.EntityId, item.Name, item.Price)).ToList(),
-            purchase.Items.Sum(item => item.Price))).SingleOrDefaultAsync();
+            purchase.Items.Sum(item => item.Price),
+            purchase.AppliedCoupon == null ? null : new PurchaseCouponDto(purchase.AppliedCoupon.Code,
+                purchase.AppliedCoupon.ProductId, purchase.AppliedCoupon.DiscountPercent,
+                purchase.AppliedCoupon.Discount))).SingleOrDefaultAsync();
 }

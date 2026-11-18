@@ -44,9 +44,23 @@ public sealed class CartCheckoutController : ControllerBase
     public async Task<ActionResult<CartCheckoutDto>> GetCheckout(Guid checkoutId) =>
         await _queries.GetCartCheckoutAsync(User.GetUserId(), checkoutId);
 
+    [HttpPut("checkouts/{checkoutId:guid}/coupon")]
+    public async Task<ActionResult> ApplyCoupon(Guid checkoutId, ApplyCouponDto dto)
+    {
+        await _service.ApplyCouponAsync(User.GetUserId(), checkoutId, dto);
+        return NoContent();
+    }
+
+    [HttpDelete("checkouts/{checkoutId:guid}/coupon")]
+    public async Task<ActionResult> RemoveCoupon(Guid checkoutId)
+    {
+        await _service.RemoveCouponAsync(User.GetUserId(), checkoutId);
+        return NoContent();
+    }
+
     [HttpPost("checkouts/{checkoutId:guid}/confirm")]
-    public async Task<ActionResult<Guid>> ConfirmCheckout(Guid checkoutId) =>
-        await _service.ConfirmCartCheckoutAsync(User.GetUserId(), checkoutId);
+    public async Task<ActionResult<Guid>> ConfirmCheckout(Guid checkoutId, ConfirmCheckoutDto dto) =>
+        await _service.ConfirmCartCheckoutAsync(User.GetUserId(), checkoutId, dto);
 
     [HttpGet("purchases/{purchaseId:guid}")]
     public async Task<ActionResult<CompletedPurchaseDto>> GetPurchase(Guid purchaseId) =>

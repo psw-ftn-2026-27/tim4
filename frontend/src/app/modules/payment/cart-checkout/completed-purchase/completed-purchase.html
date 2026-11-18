@@ -38,6 +38,15 @@
         </tbody>
       </table>
     </div>
+    @if (receipt.appliedCoupon; as coupon) {
+      <p>
+        Primenjen kupon <code>{{ coupon.code }}</code
+        >: {{ coupon.discountPercent }}% popusta na „{{
+          productName(receipt.items, coupon.productId)
+        }}“, popust
+        <span class="badge badge--ec">{{ coupon.discount }} EC</span>
+      </p>
+    }
     <p class="total">
       Ukupno placeno: <strong>{{ receipt.total }} EC</strong>
     </p>

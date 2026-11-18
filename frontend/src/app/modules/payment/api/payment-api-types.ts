@@ -55,6 +55,26 @@ export interface CartCheckoutDto {
   items: CartItemDto[];
   total: number;
   availableBalance: number;
+  appliedCoupon: CheckoutCouponDto | null;
+  totalToPay: number;
+}
+
+export interface CheckoutCouponDto {
+  couponId: string;
+  code: string;
+  productId: string;
+  discountPercent: number;
+  discount: number;
+  isValid: boolean;
+  invalidReason: string | null;
+}
+
+export interface ApplyCouponDto {
+  code: string;
+}
+
+export interface ConfirmCheckoutDto {
+  totalToPay: number;
 }
 
 export interface PurchasedItemDto {
@@ -70,6 +90,14 @@ export interface CompletedPurchaseDto {
   purchasedAt: string;
   items: PurchasedItemDto[];
   total: number;
+  appliedCoupon: PurchaseCouponDto | null;
+}
+
+export interface PurchaseCouponDto {
+  code: string;
+  productId: string;
+  discountPercent: number;
+  discount: number;
 }
 
 export interface OwnerCouponDto {
