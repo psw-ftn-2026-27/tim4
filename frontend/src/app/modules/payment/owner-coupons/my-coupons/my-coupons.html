@@ -1,0 +1,145 @@
+<div class="stack">
+  <div class="page-header">
+    <h1>Moji kuponi</h1>
+  </div>
+
+  @if (!auth.isLoggedIn()) {
+    <div class="state">
+      Prijavite se da vidite svoje kupone.
+      <a routerLink="/login">Prijava</a>
+    </div>
+  } @else if (!isExplorer()) {
+    <div class="state">Ova stranica je dostupna istraživaču.</div>
+  } @else if (coupons.isLoading() || products.isLoading()) {
+    <div class="state" role="status">Učitavanje kupona…</div>
+  } @else if (coupons.error() || products.error()) {
+    <div class="state state--error" role="alert">
+      ⚠ Kuponi nisu učitani.
+      <button class="button" type="button" (click)="reload()">Pokušaj ponovo</button>
+    </div>
+  } @else {
+    <section class="card stack page--narrow" aria-labelledby="new-coupon-title">
+      <h2 id="new-coupon-title">Nov kupon</h2>
+      <form class="stack" (submit)="submit($event)">
+        <div class="field">
+          <label for="coupon-discount">Popust (%)</label>
+          <input
+            id="coupon-discount"
+            type="number"
+            step="1"
+            [formField]="couponForm.discountPercent"
+            [attr.aria-invalid]="
+              (couponForm.discountPercent().dirty() ||
+                couponForm.discountPercent().touched() ||
+                couponForm.discountPercent().errors()[0]?.kind === 'parse') &&
+              couponForm.discountPercent().errors().length > 0
+            "
+          />
+          @if (
+            couponForm.discountPercent().dirty() ||
+            couponForm.discountPercent().touched() ||
+            couponForm.discountPercent().errors()[0]?.kind === 'parse'
+          ) {
+            @for (message of couponForm.discountPercent().errors().slice(0, 1); track $index) {
+              <p class="error">
+                ⚠ {{ message.kind === 'parse' ? 'Unesite broj.' : message.message }}
+              </p>
+            }
+          }
+        </div>
+
+        <div class="field">
+          <label for="coupon-valid-until">Važi do</label>
+          <input
+            id="coupon-valid-until"
+            type="date"
+            [formField]="couponForm.validUntil"
+            [attr.aria-invalid]="
+              (couponForm.validUntil().dirty() || couponForm.validUntil().touched()) &&
+              couponForm.validUntil().errors().length > 0
+            "
+          />
+          @if (couponForm.validUntil().dirty() || couponForm.validUntil().touched()) {
+            @for (message of couponForm.validUntil().errors().slice(0, 1); track $index) {
+              <p class="error">⚠ {{ message.message }}</p>
+            }
+          }
+        </div>
+
+        <div class="field">
+          <label for="coupon-product">Proizvod</label>
+          <select id="coupon-product" [formField]="couponForm.productId">
+            <option value="">Svi moji proizvodi</option>
+            @for (product of products.value() ?? []; track product.id) {
+              <option [value]="product.id">{{ product.name }}</option>
+            }
+          </select>
+        </div>
+
+        @if (error()) {
+          <p class="error" role="alert">⚠ {{ error() }}</p>
+        }
+
+        <div class="form-actions">
+          <button class="button button--primary" type="submit" [disabled]="pending()">
+            Napravi kupon
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="stack" aria-labelledby="coupon-list-title">
+      <h2 id="coupon-list-title">Spisak kupona</h2>
+      @if ((coupons.value()?.totalCount ?? 0) === 0) {
+        <div class="state">Još nemate kupona.</div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Kod</th>
+                <th scope="col" class="col-fit">Popust</th>
+                <th scope="col" class="col-fit">Važi do</th>
+                <th scope="col">Proizvod</th>
+                <th scope="col" class="col-fit">Stanje</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (coupon of coupons.value()?.items ?? []; track coupon.code) {
+                <tr [class.row--muted]="!coupon.isValid">
+                  <td>
+                    <code>{{ coupon.code }}</code>
+                  </td>
+                  <td class="col-fit">{{ coupon.discountPercent }}%</td>
+                  <td class="col-fit">{{ formatDate(coupon.validUntil) }}</td>
+                  <td>{{ coupon.productName ?? 'Svi moji proizvodi' }}</td>
+                  <td class="col-fit">
+                    @if (coupon.isValid) {
+                      <span class="badge badge--published">● Važeći</span>
+                    } @else {
+                      <span class="badge badge--retired">⊘ Istekao</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <nav class="pagination" aria-label="Stranice spiska kupona">
+          <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
+            Prethodna
+          </button>
+          <p class="meta" aria-live="polite">Stranica {{ page() }} od {{ pageCount() }}</p>
+          <button
+            class="button"
+            type="button"
+            [disabled]="page() >= pageCount()"
+            (click)="nextPage()"
+          >
+            Sledeća
+          </button>
+        </nav>
+      }
+    </section>
+  }
+</div>

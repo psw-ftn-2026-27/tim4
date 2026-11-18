@@ -18,5 +18,8 @@ internal sealed class ProductRepository : IProductRepository
     public Task<Product?> GetByEntityIdAsync(Guid entityId) => _dbContext.Products
         .SingleOrDefaultAsync(product => product.EntityId == entityId);
 
+    public Task<List<Product>> GetByOwnerAsync(Guid ownerId) => _dbContext.Products
+        .Where(product => product.OwnerId == ownerId).ToListAsync();
+
     public void Add(Product product) => _dbContext.Products.Add(product);
 }
