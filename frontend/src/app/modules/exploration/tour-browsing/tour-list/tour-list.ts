@@ -73,17 +73,17 @@ export class TourList {
 
   // The text of the closed difficulty dropdown. Nothing checked means all difficulties.
   protected readonly difficultySummary = computed(() => {
-    const checked: TourDifficulty[] = [];
+    const checked: string[] = [];
     if (this.form.easy().value()) {
-      checked.push('Easy');
+      checked.push('Lako');
     }
     if (this.form.moderate().value()) {
-      checked.push('Moderate');
+      checked.push('Srednje');
     }
     if (this.form.hard().value()) {
-      checked.push('Hard');
+      checked.push('Teško');
     }
-    return checked.length === 0 ? 'All' : checked.join(', ');
+    return checked.length === 0 ? 'Sve' : checked.join(', ');
   });
 
   // True after "Use my preferences" until "Clear filters".

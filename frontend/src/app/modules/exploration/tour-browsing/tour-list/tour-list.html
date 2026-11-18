@@ -25,43 +25,43 @@
   <form class="card stack" (submit)="search($event)">
     <div class="filters">
       <div class="field">
-        <label for="name-filter">Name contains</label>
+        <label for="name-filter">Naziv sadrži</label>
         <input id="name-filter" type="search" [formField]="form.name" />
       </div>
 
       <div class="field">
-        <span class="label">Difficulty</span>
+        <span class="label">Težina</span>
         <details class="dropdown">
           <summary>{{ difficultySummary() }}</summary>
           <div class="dropdown-options">
             <div class="checkbox">
               <input id="easy-filter" type="checkbox" [formField]="form.easy" />
-              <label for="easy-filter">Easy</label>
+              <label for="easy-filter">Lako</label>
             </div>
             <div class="checkbox">
               <input id="moderate-filter" type="checkbox" [formField]="form.moderate" />
-              <label for="moderate-filter">Moderate</label>
+              <label for="moderate-filter">Srednje</label>
             </div>
             <div class="checkbox">
               <input id="hard-filter" type="checkbox" [formField]="form.hard" />
-              <label for="hard-filter">Hard</label>
+              <label for="hard-filter">Teško</label>
             </div>
           </div>
         </details>
       </div>
 
       <div class="field">
-        <label for="tags-filter">Tags, separated by commas</label>
+        <label for="tags-filter">Oznake, odvojene zarezima</label>
         <input id="tags-filter" type="text" [formField]="form.tags" />
       </div>
 
       <div class="field">
-        <label for="transport-filter">Transport</label>
+        <label for="transport-filter">Prevoz</label>
         <select id="transport-filter" [formField]="form.transport">
-          <option value="">All</option>
-          <option value="Walking">Walking</option>
-          <option value="Bicycle">Bicycle</option>
-          <option value="Car">Car</option>
+          <option value="">Svi</option>
+          <option value="Walking">Peške</option>
+          <option value="Bicycle">Bicikl</option>
+          <option value="Car">Automobil</option>
         </select>
       </div>
 
@@ -76,11 +76,11 @@
       </div>
 
       <div class="field">
-        <label for="sort">Sort</label>
+        <label for="sort">Redosled</label>
         <select id="sort" [formField]="form.sort" (change)="sortChanged()">
-          <option value="">Newest first</option>
-          <option value="DifficultyAscending">Difficulty, easiest first</option>
-          <option value="DifficultyDescending">Difficulty, hardest first</option>
+          <option value="">Najnovije prvo</option>
+          <option value="DifficultyAscending">Težina, najlakše prvo</option>
+          <option value="DifficultyDescending">Težina, najteže prvo</option>
           <option value="PriceAscending">Cena, rastuće</option>
           <option value="PriceDescending">Cena, opadajuće</option>
         </select>
@@ -88,8 +88,8 @@
     </div>
 
     <div class="actions">
-      <button class="button button--primary" type="submit">Search</button>
-      <button class="button" type="button" (click)="clear()">Clear filters</button>
+      <button class="button button--primary" type="submit">Pretraži</button>
+      <button class="button" type="button" (click)="clear()">Obriši filtere</button>
     </div>
   </form>
 
