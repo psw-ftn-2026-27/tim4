@@ -1,8 +1,10 @@
 namespace Payment.Application.CartCheckout;
 
 public sealed record CompletedPurchaseDto(Guid Id, DateTime PurchasedAt, List<PurchasedItemDto> Items, long Total,
-    PurchaseCouponDto? AppliedCoupon);
+    PurchaseCouponDto? AppliedCoupon, PurchaseGiftCardDto? AppliedGiftCard);
 
 public sealed record PurchasedItemDto(Guid Id, Guid ProductId, Guid EntityId, string Name, long Price);
 
 public sealed record PurchaseCouponDto(string Code, Guid ProductId, int DiscountPercent, long Discount);
+
+public sealed record PurchaseGiftCardDto(Guid GiftCardId, int Amount, long Discount);

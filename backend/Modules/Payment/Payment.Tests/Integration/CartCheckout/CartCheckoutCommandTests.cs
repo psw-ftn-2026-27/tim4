@@ -441,6 +441,105 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
         (await context.Purchases.CountAsync()).Should().Be(PurchaseSeed.All.Length);
     }
 
+    [Fact]
+    public async Task Using_a_gift_card_saves_the_buyers_card_on_the_checkout()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.FreeGiftCardBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithUsableGiftCard;
+
+        var response = await client.PutAsync($"/api/payment/cart/checkouts/{seededCart.CheckoutId}/gift-card", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == GiftCardSeed.FreeGiftCardBuyer);
+        cart.AppliedGiftCard!.GiftCardId.Should().Be(GiftCardSeed.LargerThanCartPrice.Id);
+        cart.CheckoutId.Should().Be(seededCart.CheckoutId);
+        cart.TotalToPay.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task A_buyer_without_a_usable_gift_card_cannot_use_one_and_the_checkout_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.ExpiredGiftCardBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithGiftCardExpiredAfterApplying;
+
+        var response = await client.PutAsync($"/api/payment/cart/checkouts/{seededCart.CheckoutId}/gift-card", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.SingleAsync(cart => cart.UserId == GiftCardSeed.ExpiredGiftCardBuyer);
+        cart.AppliedGiftCard.Should().Be(seededCart.AppliedGiftCard);
+        cart.Version.Should().Be(seededCart.Version);
+    }
+
+    [Fact]
+    public async Task Removing_the_gift_card_saves_the_checkout_without_it()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.AppliedGiftCardBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithGiftCard;
+
+        var response = await client.DeleteAsync($"/api/payment/cart/checkouts/{seededCart.CheckoutId}/gift-card");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.SingleAsync(cart => cart.UserId == GiftCardSeed.AppliedGiftCardBuyer);
+        cart.AppliedGiftCard.Should().BeNull();
+        cart.CheckoutId.Should().Be(seededCart.CheckoutId);
+    }
+
+    [Fact]
+    public async Task Buying_with_a_gift_card_redeems_it_records_its_discount_and_charges_only_the_rest()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.AppliedGiftCardBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithGiftCard;
+        var giftCard = GiftCardSeed.SmallerThanCartPrice;
+
+        var response = await client.PostAsJsonAsync($"/api/payment/cart/checkouts/{seededCart.CheckoutId}/confirm",
+            new ConfirmCheckoutDto(seededCart.TotalToPay));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var purchaseId = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var purchase = await context.Purchases.Include(purchase => purchase.Items)
+            .SingleAsync(purchase => purchase.Id == purchaseId);
+        purchase.AppliedGiftCard!.GiftCardId.Should().Be(giftCard.Id);
+        purchase.GiftCardDiscount.Should().Be(giftCard.Amount);
+        purchase.Total.Should().Be(seededCart.Total - giftCard.Amount);
+        var stored = await context.GiftCards.SingleAsync(card => card.Id == giftCard.Id);
+        stored.RedeemedInPurchaseId.Should().Be(purchaseId);
+        var wallet = await context.Wallets.SingleAsync(wallet => wallet.UserId == GiftCardSeed.AppliedGiftCardBuyer);
+        wallet.Balance.Should().Be(WalletSeed.AppliedGiftCardBuyerWithPriceToPay.Balance - seededCart.TotalToPay);
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == GiftCardSeed.AppliedGiftCardBuyer);
+        cart.Items.Should().BeEmpty();
+        cart.AppliedGiftCard.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task A_gift_card_that_expired_after_it_was_applied_blocks_the_purchase_and_changes_nothing()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.ExpiredGiftCardBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithGiftCardExpiredAfterApplying;
+
+        var response = await client.PostAsJsonAsync($"/api/payment/cart/checkouts/{seededCart.CheckoutId}/confirm",
+            new ConfirmCheckoutDto(seededCart.TotalToPay));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var wallet = await context.Wallets.Include(wallet => wallet.Transactions)
+            .SingleAsync(wallet => wallet.UserId == GiftCardSeed.ExpiredGiftCardBuyer);
+        wallet.Balance.Should().Be(WalletSeed.ExpiredGiftCardBuyerWithFullPrice.Balance);
+        wallet.Transactions.Should().HaveCount(WalletSeed.ExpiredGiftCardBuyerWithFullPrice.Transactions.Count);
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == GiftCardSeed.ExpiredGiftCardBuyer);
+        cart.Items.Select(item => item.Id).Should().Equal(seededCart.Items.Select(item => item.Id));
+        cart.AppliedGiftCard.Should().Be(seededCart.AppliedGiftCard);
+        var giftCard = await context.GiftCards.SingleAsync(card => card.Id == GiftCardSeed.ExpiredYesterday.Id);
+        giftCard.RedeemedInPurchaseId.Should().BeNull();
+        (await context.Purchases.CountAsync()).Should().Be(PurchaseSeed.All.Length);
+    }
+
     [Theory]
     [InlineData("POST", "items", false)]
     [InlineData("DELETE", "item", false)]
@@ -448,12 +547,16 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
     [InlineData("POST", "confirm", false)]
     [InlineData("PUT", "coupon", false)]
     [InlineData("DELETE", "coupon", false)]
+    [InlineData("PUT", "gift-card", false)]
+    [InlineData("DELETE", "gift-card", false)]
     [InlineData("POST", "items", true)]
     [InlineData("DELETE", "item", true)]
     [InlineData("POST", "checkouts", true)]
     [InlineData("POST", "confirm", true)]
     [InlineData("PUT", "coupon", true)]
     [InlineData("DELETE", "coupon", true)]
+    [InlineData("PUT", "gift-card", true)]
+    [InlineData("DELETE", "gift-card", true)]
     public async Task Only_signed_in_explorers_can_change_their_cart(string method, string operation, bool administrator)
     {
         var client = administrator ? Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator") : Factory.CreateClient();
@@ -462,6 +565,7 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
             "item" => $"items/{ShoppingCartSeed.Ready.Items.Single().Id}",
             "confirm" => $"checkouts/{ShoppingCartSeed.Ready.CheckoutId}/confirm",
             "coupon" => $"checkouts/{ShoppingCartSeed.Ready.CheckoutId}/coupon",
+            "gift-card" => $"checkouts/{ShoppingCartSeed.Ready.CheckoutId}/gift-card",
             _ => operation
         };
         var request = new HttpRequestMessage(new HttpMethod(method), $"/api/payment/cart/{suffix}")

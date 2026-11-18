@@ -27,6 +27,10 @@ internal sealed class ShoppingCartReadRepository : IShoppingCartReadRepository
             cart.AppliedCoupon == null ? null : new CheckoutCouponDto(cart.AppliedCoupon.CouponId,
                 cart.AppliedCoupon.Code, cart.AppliedCoupon.ProductId, cart.AppliedCoupon.DiscountPercent,
                 cart.AppliedCoupon.Discount, true, null),
-            cart.Items.Sum(item => item.Price) - (cart.AppliedCoupon == null ? 0 : cart.AppliedCoupon.Discount)))
+            cart.Items.Sum(item => item.Price) - (cart.AppliedCoupon == null ? 0 : cart.AppliedCoupon.Discount))
+        {
+            AppliedGiftCard = cart.AppliedGiftCard == null ? null : new CheckoutGiftCardDto(
+                cart.AppliedGiftCard.GiftCardId, cart.AppliedGiftCard.Amount, 0, true, null)
+        })
         .SingleOrDefaultAsync();
 }

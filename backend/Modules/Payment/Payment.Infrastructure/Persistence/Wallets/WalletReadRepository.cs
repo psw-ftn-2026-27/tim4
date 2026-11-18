@@ -44,7 +44,7 @@ internal sealed class WalletReadRepository : IWalletReadRepository
                 transaction.Id, transaction.Amount, transaction.SubmittedAt, transaction.AdministratorId,
                 WalletTransaction.GetStatus(transaction.CancelledAt),
                 transaction.CancelledByAdministratorId, transaction.CancelledAt,
-                transaction.Kind, transaction.PurchaseId, transaction.EntityId))
+                transaction.Kind, transaction.PurchaseId, transaction.EntityId, transaction.GiftCardId))
             .ToListAsync();
 
         return new PageResult<WalletTransactionDto>(items, totalCount);

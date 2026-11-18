@@ -1,0 +1,42 @@
+<section class="card stack" aria-labelledby="checkout-gift-card-heading">
+  <h2 id="checkout-gift-card-heading">Poklon kartica</h2>
+  <label class="choice" for="checkout-use-gift-card">
+    <input
+      id="checkout-use-gift-card"
+      type="checkbox"
+      [formField]="fields.use"
+      (change)="changeUse()"
+    />
+    @if (applied(); as giftCard) {
+      Iskoristi poklon karticu od
+      <span class="badge badge--ec">{{ giftCard.amount }} EC</span>
+    } @else if (available(); as giftCard) {
+      Iskoristi poklon karticu od
+      <span class="badge badge--ec">{{ giftCard.amount }} EC</span>
+      (važi do {{ formatDate(giftCard.validUntil) }})
+    }
+  </label>
+  @if (applied(); as giftCard) {
+    @if (giftCard.isValid) {
+      <p>
+        Kartica umanjuje cenu za
+        <span class="badge badge--ec">{{ giftCard.discount }} EC</span>
+      </p>
+      @if (lostRest() > 0) {
+        <p class="meta">
+          Kartica je veća od cene. Koristi se u celosti, pa se ostatak od {{ lostRest() }} EC gubi.
+        </p>
+      }
+    } @else {
+      <p class="error" role="alert">
+        Poklon kartica ne važi: {{ giftCard.invalidReason }} Cena je prikazana bez kartice. Isključi
+        karticu da bi nastavio kupovinu.
+      </p>
+    }
+  } @else {
+    <p class="meta">Kartica se koristi u celosti i umanjuje cenu posle popusta kupona.</p>
+  }
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+</section>

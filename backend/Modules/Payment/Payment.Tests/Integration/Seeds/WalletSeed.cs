@@ -11,6 +11,8 @@ internal static class WalletSeed
     public static readonly Wallet MultiItemWallet;
     public static readonly Wallet CouponBuyerWalletWithDiscountedPrice;
     public static readonly Wallet ExpiredCouponBuyerWallet;
+    public static readonly Wallet AppliedGiftCardBuyerWithPriceToPay;
+    public static readonly Wallet ExpiredGiftCardBuyerWithFullPrice;
     public static readonly Wallet[] All;
 
     static WalletSeed()
@@ -38,7 +40,15 @@ internal static class WalletSeed
         ExpiredCouponBuyerWallet = new Wallet(ShoppingCartSeed.ExpiredCouponBuyer);
         ExpiredCouponBuyerWallet.Credit((int)ShoppingCartSeed.WithCouponExpiredAfterApplying.Total,
             WellKnownUsers.Administrator, now);
+        AppliedGiftCardBuyerWithPriceToPay = new Wallet(GiftCardSeed.AppliedGiftCardBuyer);
+        AppliedGiftCardBuyerWithPriceToPay.Credit((int)ShoppingCartSeed.WithGiftCard.TotalToPay,
+            WellKnownUsers.Administrator, now);
+        ExpiredGiftCardBuyerWithFullPrice = new Wallet(GiftCardSeed.ExpiredGiftCardBuyer);
+        ExpiredGiftCardBuyerWithFullPrice.Credit((int)ShoppingCartSeed.WithGiftCardExpiredAfterApplying.Total,
+            WellKnownUsers.Administrator, now);
         All = [ExplorerWithPayments, SecondExplorerWithPayment, EmptyAdministratorWallet, PurchaseSeed.CompletedWallet,
-            MultiItemWallet, CouponBuyerWalletWithDiscountedPrice, ExpiredCouponBuyerWallet, PurchaseSeed.CouponWallet];
+            MultiItemWallet, CouponBuyerWalletWithDiscountedPrice, ExpiredCouponBuyerWallet, PurchaseSeed.CouponWallet,
+            GiftCardSeed.GiverWallet, AppliedGiftCardBuyerWithPriceToPay, ExpiredGiftCardBuyerWithFullPrice,
+            PurchaseSeed.GiftCardWallet, PurchaseSeed.GiftCardGiverWallet];
     }
 }

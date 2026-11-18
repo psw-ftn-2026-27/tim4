@@ -11,6 +11,7 @@ public sealed class WalletTransaction : Entity
     public Guid? AdministratorId { get; private set; }
     public Guid? PurchaseId { get; private set; }
     public Guid? EntityId { get; private set; }
+    public Guid? GiftCardId { get; private set; }
     public Guid? CancelledByAdministratorId { get; private set; }
     public DateTime? CancelledAt { get; private set; }
 
@@ -38,6 +39,17 @@ public sealed class WalletTransaction : Entity
         Kind = TransactionKind.Purchase;
         PurchaseId = purchaseId;
         EntityId = entityId;
+        Amount = amount;
+        SubmittedAt = submittedAt;
+    }
+
+    internal WalletTransaction(Guid giftCardId, long amount, DateTime submittedAt)
+        : base(Guid.NewGuid())
+    {
+        if (giftCardId == Guid.Empty || amount <= 0)
+            throw new DomainException("Plaćanje poklon kartice mora da sadrži identifikator kartice i pozitivan iznos.");
+        Kind = TransactionKind.GiftCard;
+        GiftCardId = giftCardId;
         Amount = amount;
         SubmittedAt = submittedAt;
     }

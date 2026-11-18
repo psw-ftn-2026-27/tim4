@@ -18,7 +18,10 @@ internal static class ShoppingCartConfiguration
         builder.Property(cart => cart.Version).IsConcurrencyToken();
         builder.HasIndex(cart => cart.UserId).IsUnique();
         builder.Ignore(cart => cart.Total);
+        builder.Ignore(cart => cart.TotalAfterCoupon);
+        builder.Ignore(cart => cart.GiftCardDiscount);
         builder.Ignore(cart => cart.TotalToPay);
+        builder.OwnsOne(cart => cart.AppliedGiftCard);
         builder.OwnsOne(cart => cart.AppliedCoupon, coupon =>
             coupon.Property(value => value.Code).HasMaxLength(8));
         builder.HasMany(cart => cart.Items).WithOne().HasForeignKey("ShoppingCartId")

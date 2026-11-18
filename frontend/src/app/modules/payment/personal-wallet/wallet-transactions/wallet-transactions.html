@@ -13,10 +13,20 @@
         <tr [class.row--muted]="transaction.status === 'Cancelled'">
           <td>{{ formatTime(transaction.submittedAt) }}</td>
           <td>
-            {{ transaction.kind === 'Purchase' ? 'Kupovina proizvoda' : 'Uplata administratora' }}
+            @switch (transaction.kind) {
+              @case ('Purchase') {
+                Kupovina proizvoda
+              }
+              @case ('GiftCard') {
+                Kupovina poklon kartice
+              }
+              @default {
+                Uplata administratora
+              }
+            }
           </td>
           <td>
-            @if (transaction.kind === 'Purchase') {
+            @if (transaction.kind !== 'Credit') {
               {{ transaction.amount > 0 ? '-' : '' }}{{ transaction.amount }} EC
             } @else {
               +{{ transaction.amount }} EC

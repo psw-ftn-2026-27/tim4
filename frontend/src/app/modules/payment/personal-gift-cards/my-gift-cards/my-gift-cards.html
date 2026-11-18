@@ -1,0 +1,177 @@
+<div class="stack">
+  <div class="page-header">
+    <h1>Poklon kartice</h1>
+  </div>
+
+  @if (!auth.isLoggedIn()) {
+    <div class="state">
+      Prijavite se da poklonite ili vidite poklon kartice.
+      <a routerLink="/login">Prijava</a>
+    </div>
+  } @else if (!isExplorer()) {
+    <div class="state">Ova stranica je dostupna istraživaču.</div>
+  } @else if (bought.error() || received.error()) {
+    <div class="state state--error" role="alert">
+      ⚠ Poklon kartice nisu učitane.
+      <button class="button" type="button" (click)="reload()">Pokušaj ponovo</button>
+    </div>
+  } @else {
+    <section class="card stack page--narrow" aria-labelledby="new-gift-card-title">
+      <h2 id="new-gift-card-title">Nova poklon kartica</h2>
+      <p>
+        Stanje novčanika:
+        @if (balance.value(); as wallet) {
+          <span class="badge badge--ec">{{ wallet.availableBalance }} EC</span>
+        } @else if (balance.isLoading()) {
+          <span role="status">učitavanje…</span>
+        } @else {
+          <span class="badge badge--ec">0 EC</span>
+        }
+      </p>
+      <form class="stack" (submit)="submit($event)">
+        <div class="field">
+          <label for="gift-card-recipient">Korisničko ime primaoca (mejl)</label>
+          <input
+            id="gift-card-recipient"
+            type="email"
+            autocomplete="off"
+            [formField]="giftCardForm.recipientEmail"
+            [attr.aria-invalid]="
+              (giftCardForm.recipientEmail().dirty() || giftCardForm.recipientEmail().touched()) &&
+              giftCardForm.recipientEmail().errors().length > 0
+            "
+          />
+          @if (giftCardForm.recipientEmail().dirty() || giftCardForm.recipientEmail().touched()) {
+            @for (message of giftCardForm.recipientEmail().errors().slice(0, 1); track $index) {
+              <p class="error">⚠ {{ message.message }}</p>
+            }
+          }
+        </div>
+
+        <div class="field">
+          <label for="gift-card-amount">Iznos (EC, od 10 do 1000)</label>
+          <input
+            id="gift-card-amount"
+            type="number"
+            step="1"
+            [formField]="giftCardForm.amount"
+            [attr.aria-invalid]="
+              (giftCardForm.amount().dirty() ||
+                giftCardForm.amount().touched() ||
+                giftCardForm.amount().errors()[0]?.kind === 'parse') &&
+              giftCardForm.amount().errors().length > 0
+            "
+          />
+          @if (
+            giftCardForm.amount().dirty() ||
+            giftCardForm.amount().touched() ||
+            giftCardForm.amount().errors()[0]?.kind === 'parse'
+          ) {
+            @for (message of giftCardForm.amount().errors().slice(0, 1); track $index) {
+              <p class="error">
+                ⚠ {{ message.kind === 'parse' ? 'Unesite broj.' : message.message }}
+              </p>
+            }
+          }
+        </div>
+
+        <div class="field">
+          <label for="gift-card-message">Poruka</label>
+          <textarea
+            id="gift-card-message"
+            rows="3"
+            [formField]="giftCardForm.message"
+            [attr.aria-invalid]="
+              (giftCardForm.message().dirty() || giftCardForm.message().touched()) &&
+              giftCardForm.message().errors().length > 0
+            "
+          ></textarea>
+          <p class="meta">{{ giftCardForm.message().value().length }} / {{ maxMessageLength }}</p>
+          @if (giftCardForm.message().dirty() || giftCardForm.message().touched()) {
+            @for (message of giftCardForm.message().errors().slice(0, 1); track $index) {
+              <p class="error">⚠ {{ message.message }}</p>
+            }
+          }
+        </div>
+
+        @if (error()) {
+          <p class="error" role="alert">⚠ {{ error() }}</p>
+        }
+        @if (success()) {
+          <p class="notice notice--success" role="status">{{ success() }}</p>
+        }
+
+        <div class="form-actions">
+          <button class="button button--primary" type="submit" [disabled]="pending()">
+            {{ pending() ? 'Kupovina je u toku…' : 'Kupi i pokloni' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="stack" aria-labelledby="bought-gift-cards-title">
+      <h2 id="bought-gift-cards-title">Kupljene kartice</h2>
+      @if (bought.isLoading()) {
+        <div class="state" role="status">Učitavanje kupljenih kartica…</div>
+      } @else if ((bought.value()?.totalCount ?? 0) === 0) {
+        <div class="state">Još niste poklonili nijednu karticu.</div>
+      } @else {
+        <app-gift-card-list [cards]="bought.value()?.items ?? []" />
+        <nav class="pagination" aria-label="Stranice kupljenih kartica">
+          <button
+            class="button"
+            type="button"
+            [disabled]="boughtPage() === 1"
+            (click)="changeBoughtPage(-1)"
+          >
+            Prethodna
+          </button>
+          <p class="meta" aria-live="polite">
+            Stranica {{ boughtPage() }} od {{ boughtPageCount() }}
+          </p>
+          <button
+            class="button"
+            type="button"
+            [disabled]="boughtPage() >= boughtPageCount()"
+            (click)="changeBoughtPage(1)"
+          >
+            Sledeća
+          </button>
+        </nav>
+      }
+    </section>
+
+    <section class="stack" aria-labelledby="received-gift-cards-title">
+      <h2 id="received-gift-cards-title">Dobijene kartice</h2>
+      @if (received.isLoading()) {
+        <div class="state" role="status">Učitavanje dobijenih kartica…</div>
+      } @else if ((received.value()?.totalCount ?? 0) === 0) {
+        <div class="state">Još niste dobili nijednu karticu.</div>
+      } @else {
+        <app-gift-card-list [cards]="received.value()?.items ?? []" [showGiver]="true" />
+        <nav class="pagination" aria-label="Stranice dobijenih kartica">
+          <button
+            class="button"
+            type="button"
+            [disabled]="receivedPage() === 1"
+            (click)="changeReceivedPage(-1)"
+          >
+            Prethodna
+          </button>
+          <p class="meta" aria-live="polite">
+            Stranica {{ receivedPage() }} od {{ receivedPageCount() }}
+          </p>
+          <button
+            class="button"
+            type="button"
+            [disabled]="receivedPage() >= receivedPageCount()"
+            (click)="changeReceivedPage(1)"
+          >
+            Sledeća
+          </button>
+        </nav>
+        <p class="meta">Važeću karticu možete da iskoristite pri plaćanju korpe.</p>
+      }
+    </section>
+  }
+</div>

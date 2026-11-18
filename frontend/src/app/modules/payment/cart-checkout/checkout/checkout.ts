@@ -6,11 +6,12 @@ import { Auth } from '../../../../core/auth/auth';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { CartCheckoutDto } from '../../api/payment-api-types';
 import { CartItems } from '../cart-items/cart-items';
+import { CheckoutGiftCard } from '../checkout-gift-card/checkout-gift-card';
 import { CartCheckout } from '../cart-checkout';
 
 @Component({
   selector: 'app-checkout',
-  imports: [CartItems, FormField, RouterLink],
+  imports: [CartItems, CheckoutGiftCard, FormField, RouterLink],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
 })
@@ -25,6 +26,7 @@ export class Checkout {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly couponError = signal<string | null>(null);
+  protected readonly giftCardError = signal<string | null>(null);
   protected readonly couponForm = form(signal({ code: '' }), (path) => {
     required(path.code, { message: 'Unesite kod kupona.' });
   });
@@ -34,13 +36,17 @@ export class Checkout {
   protected readonly hasInvalidCoupon = computed(
     () => this.checkout.value()?.appliedCoupon?.isValid === false,
   );
+  protected readonly hasInvalidGiftCard = computed(
+    () => this.checkout.value()?.appliedGiftCard?.isValid === false,
+  );
   protected readonly canPay = computed(() => {
     const checkout = this.checkout.value();
     return (
       !!checkout &&
       checkout.items.length > 0 &&
       checkout.availableBalance >= checkout.totalToPay &&
-      !this.hasInvalidCoupon()
+      !this.hasInvalidCoupon() &&
+      !this.hasInvalidGiftCard()
     );
   });
   protected readonly couponProductName = computed(() => {
@@ -93,6 +99,28 @@ export class Checkout {
     }
   }
 
+  protected async changeGiftCardUse(use: boolean): Promise<void> {
+    if (this.pending()) return;
+    this.pending.set(true);
+    this.giftCardError.set(null);
+    this.error.set(null);
+    try {
+      if (use) {
+        await this.cartCheckout.useGiftCard(this.checkoutId());
+      } else {
+        await this.cartCheckout.removeGiftCard(this.checkoutId());
+      }
+    } catch (failure) {
+      this.giftCardError.set(
+        serverMessage(failure, 'Izmena poklon kartice nije uspela. Pokušaj ponovo.'),
+      );
+    } finally {
+      this.pending.set(false);
+      // Reloading shows the section again with the checkbox as the server saved it.
+      this.checkout.reload();
+    }
+  }
+
   protected async confirm(): Promise<void> {
     const checkout = this.checkout.value();
     if (this.pending() || !this.canPay() || !checkout) {
@@ -116,6 +144,7 @@ export class Checkout {
   protected reload(): void {
     this.error.set(null);
     this.couponError.set(null);
+    this.giftCardError.set(null);
     this.checkout.reload();
   }
 }

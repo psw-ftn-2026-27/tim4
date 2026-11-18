@@ -105,6 +105,70 @@ public sealed class CartCheckoutQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task A_checkout_offers_the_buyers_usable_gift_card_with_its_amount()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.FreeGiftCardBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithUsableGiftCard;
+
+        var checkout = await client.GetFromJsonAsync<CartCheckoutDto>(
+            $"/api/payment/cart/checkouts/{seededCart.CheckoutId}", JsonOptions);
+
+        checkout!.AvailableGiftCard!.GiftCardId.Should().Be(GiftCardSeed.LargerThanCartPrice.Id);
+        checkout.AvailableGiftCard.Amount.Should().Be(GiftCardSeed.LargerThanCartPrice.Amount);
+        checkout.AvailableGiftCard.ValidUntil.Should().Be(GiftCardSeed.LargerThanCartPrice.ValidUntil);
+        checkout.AppliedGiftCard.Should().BeNull();
+        checkout.TotalToPay.Should().Be(seededCart.Total);
+    }
+
+    [Fact]
+    public async Task A_checkout_with_a_gift_card_shows_its_discount_and_the_price_to_pay()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.AppliedGiftCardBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithGiftCard;
+
+        var checkout = await client.GetFromJsonAsync<CartCheckoutDto>(
+            $"/api/payment/cart/checkouts/{seededCart.CheckoutId}", JsonOptions);
+
+        checkout!.AppliedGiftCard!.GiftCardId.Should().Be(GiftCardSeed.SmallerThanCartPrice.Id);
+        checkout.AppliedGiftCard.Amount.Should().Be(GiftCardSeed.SmallerThanCartPrice.Amount);
+        checkout.AppliedGiftCard.Discount.Should().Be(seededCart.GiftCardDiscount);
+        checkout.AppliedGiftCard.IsValid.Should().BeTrue();
+        checkout.TotalToPay.Should().Be(seededCart.TotalToPay);
+    }
+
+    [Fact]
+    public async Task A_checkout_with_a_gift_card_that_expired_shows_the_reason_and_the_price_without_it()
+    {
+        var client = Factory.CreateClientFor(GiftCardSeed.ExpiredGiftCardBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithGiftCardExpiredAfterApplying;
+
+        var checkout = await client.GetFromJsonAsync<CartCheckoutDto>(
+            $"/api/payment/cart/checkouts/{seededCart.CheckoutId}", JsonOptions);
+
+        checkout!.AppliedGiftCard!.IsValid.Should().BeFalse();
+        checkout.AppliedGiftCard.InvalidReason.Should().NotBeNullOrWhiteSpace();
+        checkout.AppliedGiftCard.Discount.Should().Be(0);
+        checkout.TotalToPay.Should().Be(seededCart.Total);
+    }
+
+    [Fact]
+    public async Task A_receipt_shows_the_redeemed_gift_card_and_its_discount()
+    {
+        var client = Factory.CreateClientFor(PurchaseSeed.GiftCardBuyer, "explorer");
+        var seeded = PurchaseSeed.CompletedWithGiftCard;
+
+        var purchase = await client.GetFromJsonAsync<CompletedPurchaseDto>(
+            $"/api/payment/cart/purchases/{seeded.Id}", JsonOptions);
+
+        purchase!.AppliedGiftCard!.GiftCardId.Should().Be(PurchaseSeed.RedeemedGiftCard.Id);
+        purchase.AppliedGiftCard.Amount.Should().Be(PurchaseSeed.RedeemedGiftCard.Amount);
+        purchase.AppliedGiftCard.Discount.Should().Be(seeded.GiftCardDiscount);
+        purchase.Items.Select(item => new { item.Id, item.Price }).Should()
+            .BeEquivalentTo(seeded.Items.Select(item => new { item.Id, item.Price }));
+        purchase.Total.Should().Be(seeded.Total);
+    }
+
+    [Fact]
     public async Task A_receipt_is_not_visible_to_another_buyer()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");

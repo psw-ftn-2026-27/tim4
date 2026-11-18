@@ -62,10 +62,25 @@
         </div>
       </form>
     </section>
+    @if (summary.appliedGiftCard || summary.availableGiftCard) {
+      <app-checkout-gift-card
+        [applied]="summary.appliedGiftCard"
+        [available]="summary.availableGiftCard"
+        [pending]="pending()"
+        [error]="giftCardError()"
+        (useChange)="changeGiftCardUse($event)"
+      />
+    }
     <section class="card stack" aria-labelledby="checkout-summary-heading">
       <h2 id="checkout-summary-heading">Ukupno za plaćanje: {{ summary.totalToPay }} EC</h2>
       @if (summary.totalToPay !== summary.total) {
-        <p>Cena bez popusta: {{ summary.total }} EC</p>
+        <p>Cena pre umanjenja: {{ summary.total }} EC</p>
+        @if (summary.appliedCoupon?.isValid) {
+          <p>Popust kupona: -{{ summary.appliedCoupon?.discount }} EC</p>
+        }
+        @if (summary.appliedGiftCard?.isValid) {
+          <p>Poklon kartica: -{{ summary.appliedGiftCard?.discount }} EC</p>
+        }
       }
       <p>
         Raspolozivo stanje: <span class="badge badge--ec">{{ summary.availableBalance }} EC</span>

@@ -23,6 +23,10 @@ using Payment.Application.Coupons;
 using Payment.Application.OwnerCoupons;
 using Payment.Domain.Coupons;
 using Payment.Infrastructure.Persistence.Coupons;
+using Payment.Application.GiftCards;
+using Payment.Application.PersonalGiftCards;
+using Payment.Domain.GiftCards;
+using Payment.Infrastructure.Persistence.GiftCards;
 
 namespace Payment.Infrastructure;
 
@@ -58,6 +62,11 @@ public static class PaymentModuleExtensions
         services.AddScoped<CouponIssuing>();
         services.AddScoped<OwnerCouponsService>();
         services.AddScoped<OwnerCouponsQueries>();
+        services.AddScoped<IGiftCardRepository, GiftCardRepository>();
+        services.AddScoped<IGiftCardReadRepository, GiftCardReadRepository>();
+        services.AddScoped<GiftCardGiving>();
+        services.AddScoped<PersonalGiftCardsService>();
+        services.AddScoped<PersonalGiftCardsQueries>();
 
         return services;
     }

@@ -1,5 +1,5 @@
 export type TransactionStatus = 'Available' | 'Cancelled';
-export type TransactionKind = 'Credit' | 'Purchase';
+export type TransactionKind = 'Credit' | 'Purchase' | 'GiftCard';
 
 export interface WalletBalanceDto {
   availableBalance: number;
@@ -16,6 +16,7 @@ export interface WalletTransactionDto {
   kind: TransactionKind;
   purchaseId: string | null;
   entityId: string | null;
+  giftCardId: string | null;
 }
 
 export interface WalletTransactionSearchDto {
@@ -57,6 +58,22 @@ export interface CartCheckoutDto {
   availableBalance: number;
   appliedCoupon: CheckoutCouponDto | null;
   totalToPay: number;
+  appliedGiftCard: CheckoutGiftCardDto | null;
+  availableGiftCard: AvailableGiftCardDto | null;
+}
+
+export interface CheckoutGiftCardDto {
+  giftCardId: string;
+  amount: number;
+  discount: number;
+  isValid: boolean;
+  invalidReason: string | null;
+}
+
+export interface AvailableGiftCardDto {
+  giftCardId: string;
+  amount: number;
+  validUntil: string;
 }
 
 export interface CheckoutCouponDto {
@@ -91,6 +108,13 @@ export interface CompletedPurchaseDto {
   items: PurchasedItemDto[];
   total: number;
   appliedCoupon: PurchaseCouponDto | null;
+  appliedGiftCard: PurchaseGiftCardDto | null;
+}
+
+export interface PurchaseGiftCardDto {
+  giftCardId: string;
+  amount: number;
+  discount: number;
 }
 
 export interface PurchaseCouponDto {
@@ -117,4 +141,25 @@ export interface CreateCouponDto {
   discountPercent: number;
   validUntil: string;
   productId: string | null;
+}
+
+export type GiftCardStatus = 'Valid' | 'Redeemed' | 'Expired';
+
+export interface GiftCardDto {
+  id: string;
+  giverId: string;
+  giverEmail: string | null;
+  recipientId: string;
+  recipientEmail: string | null;
+  amount: number;
+  message: string;
+  createdAt: string;
+  validUntil: string;
+  status: GiftCardStatus;
+}
+
+export interface BuyGiftCardDto {
+  recipientEmail: string;
+  amount: number;
+  message: string;
 }

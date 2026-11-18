@@ -1,3 +1,4 @@
+using Payment.Domain.GiftCards;
 using Payment.Domain.Purchases;
 using Payment.Domain.ShoppingCarts;
 using Payment.Domain.Wallets;
@@ -16,6 +17,13 @@ internal static class PurchaseSeed
     public static readonly ShoppingCart CouponCart;
     public static readonly Wallet CouponWallet;
     public static readonly Purchase CompletedWithCoupon;
+    public static readonly Guid GiftCardBuyer = Guid.Parse("20000000-0000-0000-0000-000000000015");
+    public static readonly Guid GiftCardGiver = Guid.Parse("20000000-0000-0000-0000-000000000016");
+    public static readonly Wallet GiftCardGiverWallet;
+    public static readonly GiftCard RedeemedGiftCard;
+    public static readonly ShoppingCart GiftCardCart;
+    public static readonly Wallet GiftCardWallet;
+    public static readonly Purchase CompletedWithGiftCard;
     public static readonly Purchase[] All;
 
     static PurchaseSeed()
@@ -26,10 +34,10 @@ internal static class PurchaseSeed
         var checkout = CompletedCart.PrepareCheckout([ProductSeed.ExistingOffer]);
         CompletedWallet = new Wallet(Buyer);
         CompletedWallet.Credit(100, WellKnownUsers.Administrator, now.AddHours(-1));
-        Completed = new Purchasing().Complete(CompletedCart, CompletedWallet, checkout, null, CompletedCart.TotalToPay, [], now);
+        Completed = new Purchasing().Complete(CompletedCart, CompletedWallet, checkout, null, null, CompletedCart.TotalToPay, [], now);
         CompletedCart.Add(ProductSeed.FreeOffer);
         var freeCheckout = CompletedCart.PrepareCheckout([ProductSeed.FreeOffer]);
-        CompletedFree = new Purchasing().Complete(CompletedCart, CompletedWallet, freeCheckout, null, CompletedCart.TotalToPay,
+        CompletedFree = new Purchasing().Complete(CompletedCart, CompletedWallet, freeCheckout, null, null, CompletedCart.TotalToPay,
             [Completed], now);
         var today = DateOnly.FromDateTime(now);
         CouponCart = new ShoppingCart(CouponBuyer);
@@ -39,12 +47,25 @@ internal static class PurchaseSeed
         CouponWallet = new Wallet(CouponBuyer);
         CouponWallet.Credit(100, WellKnownUsers.Administrator, now.AddHours(-1));
         CompletedWithCoupon = new Purchasing().Complete(CouponCart, CouponWallet, couponCheckout,
-            CouponSeed.SecondExplorerForAllProducts, CouponCart.TotalToPay, [], now);
+            CouponSeed.SecondExplorerForAllProducts, null, CouponCart.TotalToPay, [], now);
         CouponCart.Add(ProductSeed.ExistingOffer);
         CouponCart.Add(ProductSeed.ExpensiveOffer);
         var nextCheckout = CouponCart.PrepareCheckout([ProductSeed.ExistingOffer, ProductSeed.ExpensiveOffer]);
         new Purchasing().ApplyCoupon(CouponCart, nextCheckout, CouponSeed.ExplorerForExpensiveOffer,
             [CompletedWithCoupon], today);
-        All = [Completed, CompletedFree, CompletedWithCoupon];
+        GiftCardGiverWallet = new Wallet(GiftCardGiver);
+        GiftCardGiverWallet.Credit(100, WellKnownUsers.Administrator, now.AddHours(-1));
+        RedeemedGiftCard = new GiftCardGiving().Give(GiftCardGiverWallet, GiftCardBuyer, 40, "Iskoristi me.",
+            now.AddHours(-1));
+        GiftCardCart = new ShoppingCart(GiftCardBuyer);
+        GiftCardCart.Add(ProductSeed.ExistingOffer);
+        GiftCardCart.Add(ProductSeed.CartOffer);
+        var giftCardCheckout = GiftCardCart.PrepareCheckout([ProductSeed.ExistingOffer, ProductSeed.CartOffer]);
+        new Purchasing().UseGiftCard(GiftCardCart, giftCardCheckout, [RedeemedGiftCard], today);
+        GiftCardWallet = new Wallet(GiftCardBuyer);
+        GiftCardWallet.Credit(100, WellKnownUsers.Administrator, now.AddHours(-1));
+        CompletedWithGiftCard = new Purchasing().Complete(GiftCardCart, GiftCardWallet, giftCardCheckout, null,
+            RedeemedGiftCard, GiftCardCart.TotalToPay, [], now);
+        All = [Completed, CompletedFree, CompletedWithCoupon, CompletedWithGiftCard];
     }
 }
