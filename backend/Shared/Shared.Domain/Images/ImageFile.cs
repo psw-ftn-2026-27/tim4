@@ -23,8 +23,8 @@ public sealed record ImageFile
             throw new DomainException("An image cannot be larger than 5 MB.");
         }
 
-        Content = content;
         Format = FormatOf(content);
+        Content = ImageMetadata.RemoveFrom(content, Format);
     }
 
     private static ImageFormat FormatOf(byte[] content)
