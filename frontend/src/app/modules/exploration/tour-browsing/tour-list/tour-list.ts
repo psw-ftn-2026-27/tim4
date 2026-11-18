@@ -5,11 +5,11 @@ import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
 import {
-  DifficultySort,
+  PublishedTourDto,
   PublishedTourSearchDto,
   TourDifficulty,
-  TourDto,
   TourPreferenceDto,
+  TourSort,
   TransportMode,
 } from '../../api/exploration-api-types';
 import { TourCard } from '../tour-card/tour-card';
@@ -21,7 +21,9 @@ const EMPTY_FORM = {
   hard: false,
   tags: '',
   transport: '' as TransportMode | '',
-  sortByDifficulty: '' as DifficultySort | '',
+  priceFrom: null as number | null,
+  priceTo: null as number | null,
+  sort: '' as TourSort | '',
 };
 
 const NO_CRITERIA: PublishedTourSearchDto = {
@@ -29,7 +31,9 @@ const NO_CRITERIA: PublishedTourSearchDto = {
   difficulties: null,
   tags: null,
   transport: null,
-  sortByDifficulty: null,
+  priceFrom: null,
+  priceTo: null,
+  sort: null,
 };
 
 @Component({
@@ -44,10 +48,10 @@ export class TourList {
   protected readonly form = form(signal({ ...EMPTY_FORM }));
 
   // The criteria of the last search. The resource reads only these, so typing in the form
-  // does not reload the list; clicking "Search" does.
+  // does not reload the list; clicking "Search" or choosing a sort does.
   private readonly applied = signal<PublishedTourSearchDto>(NO_CRITERIA);
 
-  protected readonly tours = httpResource<PageResult<TourDto>>(
+  protected readonly tours = httpResource<PageResult<PublishedTourDto>>(
     () => `/api/exploration/tours/published?${this.toQuery(this.applied())}`,
   );
 
@@ -69,17 +73,17 @@ export class TourList {
 
   // The text of the closed difficulty dropdown. Nothing checked means all difficulties.
   protected readonly difficultySummary = computed(() => {
-    const checked: TourDifficulty[] = [];
+    const checked: string[] = [];
     if (this.form.easy().value()) {
-      checked.push('Easy');
+      checked.push('Lako');
     }
     if (this.form.moderate().value()) {
-      checked.push('Moderate');
+      checked.push('Srednje');
     }
     if (this.form.hard().value()) {
-      checked.push('Hard');
+      checked.push('Teško');
     }
-    return checked.length === 0 ? 'All' : checked.join(', ');
+    return checked.length === 0 ? 'Sve' : checked.join(', ');
   });
 
   // True after "Use my preferences" until "Clear filters".
@@ -88,6 +92,12 @@ export class TourList {
   protected search(event: Event): void {
     event.preventDefault();
     this.applied.set(this.toDto());
+  }
+
+  // A new sort reloads the list at once, with the criteria of the last search.
+  protected sortChanged(): void {
+    const sort = this.form.sort().value();
+    this.applied.update((applied) => ({ ...applied, sort: sort === '' ? null : sort }));
   }
 
   protected usePreferences(preference: TourPreferenceDto): void {
@@ -128,14 +138,21 @@ export class TourList {
       .map((tag) => tag.trim())
       .filter((tag) => tag !== '');
     const transport = this.form.transport().value();
-    const sortByDifficulty = this.form.sortByDifficulty().value();
+    const sort = this.form.sort().value();
     return {
       name: name === '' ? null : name,
       difficulties: difficulties.length === 0 ? null : difficulties,
       tags: tags.length === 0 ? null : tags,
       transport: transport === '' ? null : transport,
-      sortByDifficulty: sortByDifficulty === '' ? null : sortByDifficulty,
+      priceFrom: this.wholePrice(this.form.priceFrom().value()),
+      priceTo: this.wholePrice(this.form.priceTo().value()),
+      sort: sort === '' ? null : sort,
     };
+  }
+
+  // Prices are whole EC, so a typed fraction is cut off. An empty field means no bound.
+  private wholePrice(value: number | null): number | null {
+    return value === null || Number.isNaN(value) ? null : Math.trunc(value);
   }
 
   // Every search starts at the first page. Empty criteria are left out of the URL.
@@ -153,8 +170,14 @@ export class TourList {
     if (search.transport !== null) {
       query.append('transport', search.transport);
     }
-    if (search.sortByDifficulty !== null) {
-      query.append('sortByDifficulty', search.sortByDifficulty);
+    if (search.priceFrom !== null) {
+      query.append('priceFrom', String(search.priceFrom));
+    }
+    if (search.priceTo !== null) {
+      query.append('priceTo', String(search.priceTo));
+    }
+    if (search.sort !== null) {
+      query.append('sort', search.sort);
     }
     return query.toString();
   }

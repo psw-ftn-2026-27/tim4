@@ -22,6 +22,51 @@ export interface TourDto {
   recommendedGroupSizeMin: number;
   recommendedGroupSizeMax: number;
   transportTimes: TransportTimeDto[];
+  lengthInKm: number;
+}
+
+export interface KeyPointDto {
+  id: string;
+  name: string;
+  description: string;
+  imageAddress: string;
+  secret: string | null;
+  latitude: number;
+  longitude: number;
+  isVisibleWithoutPurchase: boolean;
+}
+
+export interface TourKeyPointDto {
+  id: string;
+  name: string;
+  description: string;
+  imageAddress: string;
+  secret: string | null;
+  latitude: number;
+  longitude: number;
+  isVisibleWithoutPurchase: boolean;
+}
+
+export interface TourDetailsDto {
+  id: string;
+  authorId: string;
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+  lengthInKm: number;
+  transportTimes: TransportTimeDto[];
+  keyPoints: TourKeyPointDto[];
+}
+
+export interface KeyPointDetailsDto {
+  name: string;
+  description: string;
+  secret: string | null;
+  latitude: number;
+  longitude: number;
+  isVisibleWithoutPurchase: boolean;
+  tourLengthInKm: number;
 }
 
 export interface CreateTourDto {
@@ -47,12 +92,23 @@ export interface TourPreferenceDto {
   openSearchWithPreferences: boolean;
 }
 
-export type DifficultySort = 'Ascending' | 'Descending';
+export type TourSort =
+  | 'DifficultyAscending'
+  | 'DifficultyDescending'
+  | 'PriceAscending'
+  | 'PriceDescending';
 
 export interface PublishedTourSearchDto {
   name: string | null;
   difficulties: TourDifficulty[] | null;
   tags: string[] | null;
   transport: TransportMode | null;
-  sortByDifficulty: DifficultySort | null;
+  priceFrom: number | null;
+  priceTo: number | null;
+  sort: TourSort | null;
+}
+
+export interface PublishedTourDto {
+  tour: TourDto;
+  price: number | null;
 }

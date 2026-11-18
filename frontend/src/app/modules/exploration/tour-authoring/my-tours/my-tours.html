@@ -20,6 +20,7 @@
           <th scope="col">Status</th>
           <th scope="col">Group size</th>
           <th scope="col">Transport times</th>
+          <th scope="col">Length</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -52,7 +53,11 @@
                 <span class="meta">none</span>
               }
             </td>
+            <td>{{ tour.lengthInKm.toFixed(2) }} km</td>
             <td class="actions">
+              <a class="button" [routerLink]="['/exploration/mine', tour.id, 'key-points']">
+                Key points
+              </a>
               <button class="button" type="button" [disabled]="pending()" (click)="select(tour.id)">
                 Add time
               </button>
@@ -92,7 +97,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="6">You have no tours yet.</td>
+            <td colspan="7">You have no tours yet.</td>
           </tr>
         }
       </tbody>

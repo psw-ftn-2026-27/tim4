@@ -1,0 +1,181 @@
+<div class="stack">
+  <p><a routerLink="/exploration/mine">← My tours</a></p>
+
+  @if (tour(); as tour) {
+    <h1>Key points of {{ tour.name }}</h1>
+    <p class="meta">Length: {{ tour.lengthInKm.toFixed(2) }} km</p>
+    @if (!isDraft()) {
+      <p class="meta">Key points can be changed only while the tour is a draft.</p>
+    }
+  } @else {
+    <h1>Key points</h1>
+  }
+
+  <app-location-map
+    [locations]="mapLocations()"
+    [showPath]="true"
+    [selectable]="formOpen()"
+    [selected]="form.location().value()"
+    (selectedChange)="form.location().value.set($event)"
+    (pathLengthChange)="pathLength.set($event)"
+  />
+  @if (formOpen() || removedKeyPoint()) {
+    <p class="meta">Length after the change: {{ pathLength().toFixed(2) }} km</p>
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (keyPoints.isLoading()) {
+    <p>Loading the key points...</p>
+  } @else if (keyPoints.error()) {
+    <p class="error">Could not load the key points.</p>
+  } @else {
+    <ol class="key-points stack">
+      @for (keyPoint of keyPoints.value() ?? []; track keyPoint.id) {
+        <li class="card key-point">
+          <img [src]="keyPoint.imageAddress" [alt]="keyPoint.name" />
+          <div class="stack">
+            <h2>{{ keyPoint.name }}</h2>
+            <p>{{ keyPoint.description }}</p>
+            @if (keyPoint.secret) {
+              <p class="meta">Secret: {{ keyPoint.secret }}</p>
+            }
+            <p class="meta">
+              {{
+                keyPoint.isVisibleWithoutPurchase
+                  ? 'Visible without purchase'
+                  : 'Visible after purchase'
+              }}
+            </p>
+            @if (isDraft()) {
+              <div class="actions">
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending() || formOpen() || removedKeyPoint() !== null"
+                  (click)="startEdit(keyPoint)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending() || formOpen() || removedKeyPoint() !== null"
+                  (click)="startRemove(keyPoint)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
+          </div>
+        </li>
+      } @empty {
+        <li>The tour has no key points yet.</li>
+      }
+    </ol>
+  }
+
+  @if (removedKeyPoint(); as keyPoint) {
+    <div class="card stack">
+      <p>Remove {{ keyPoint.name }}? The map shows the tour without it.</p>
+      <div class="actions">
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending()"
+          (click)="confirmRemove()"
+        >
+          Remove
+        </button>
+        <button class="button" type="button" [disabled]="pending()" (click)="cancelRemove()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (isDraft() && !formOpen() && removedKeyPoint() === null) {
+    <p>
+      <button class="button button--primary" type="button" (click)="startAdd()">
+        Add key point
+      </button>
+    </p>
+  }
+
+  @if (formOpen()) {
+    <form class="card stack" (submit)="save($event)">
+      <h2>{{ editedKeyPoint() ? 'Edit key point' : 'New key point' }}</h2>
+      <p class="meta">Click the map to choose where the key point is.</p>
+      @if (form.location().touched()) {
+        @for (message of form.location().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+
+      <div class="field">
+        <label for="key-point-name">Name</label>
+        <input
+          id="key-point-name"
+          type="text"
+          [formField]="form.name"
+          [attr.aria-invalid]="
+            (form.name().dirty() || form.name().touched()) && form.name().errors().length > 0
+          "
+        />
+        @if (form.name().dirty() || form.name().touched()) {
+          @for (message of form.name().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="key-point-description">Description</label>
+        <textarea
+          id="key-point-description"
+          rows="3"
+          [formField]="form.description"
+          [attr.aria-invalid]="
+            (form.description().dirty() || form.description().touched()) &&
+            form.description().errors().length > 0
+          "
+        ></textarea>
+        @if (form.description().dirty() || form.description().touched()) {
+          @for (message of form.description().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="key-point-secret">Secret, revealed when the explorer reaches the point</label>
+        <textarea id="key-point-secret" rows="2" [formField]="form.secret"></textarea>
+      </div>
+
+      <div class="field">
+        <label>
+          <input type="checkbox" [formField]="form.isVisibleWithoutPurchase" />
+          Visible without purchase
+        </label>
+      </div>
+
+      <div class="field">
+        <span>Image</span>
+        @if (editedKeyPoint(); as keyPoint) {
+          <img class="stored-image" [src]="keyPoint.imageAddress" [alt]="keyPoint.name" />
+          <p class="meta">Choose a new image only to replace this one.</p>
+        }
+        <app-image-upload (imageChange)="image.set($event)" />
+      </div>
+
+      <div class="actions">
+        <button class="button button--primary" type="submit" [disabled]="pending()">Save</button>
+        <button class="button" type="button" [disabled]="pending()" (click)="closeForm()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  }
+</div>
