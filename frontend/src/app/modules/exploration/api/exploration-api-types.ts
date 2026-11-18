@@ -105,6 +105,8 @@ export interface PublishedTourSearchDto {
   transport: TransportMode | null;
   priceFrom: number | null;
   priceTo: number | null;
+  lengthFrom: number | null;
+  lengthTo: number | null;
   sort: TourSort | null;
 }
 

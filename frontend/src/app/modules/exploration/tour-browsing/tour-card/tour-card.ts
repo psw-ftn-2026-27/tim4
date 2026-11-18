@@ -22,4 +22,7 @@ export class TourCard {
       ? `${description.slice(0, EXCERPT_LENGTH)}...`
       : description;
   });
+
+  // The length in kilometres with one decimal and a decimal comma, for example "3,2".
+  protected readonly length = computed(() => this.tour().lengthInKm.toFixed(1).replace('.', ','));
 }

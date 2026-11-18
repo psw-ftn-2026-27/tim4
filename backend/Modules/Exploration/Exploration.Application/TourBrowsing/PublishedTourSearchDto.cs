@@ -9,4 +9,6 @@ public sealed record PublishedTourSearchDto(
     TransportMode? Transport,
     long? PriceFrom,
     long? PriceTo,
+    double? LengthFrom,
+    double? LengthTo,
     TourSort? Sort);

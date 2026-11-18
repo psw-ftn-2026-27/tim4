@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
+import { FormField, form, min } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
@@ -23,6 +23,8 @@ const EMPTY_FORM = {
   transport: '' as TransportMode | '',
   priceFrom: null as number | null,
   priceTo: null as number | null,
+  lengthFrom: null as number | null,
+  lengthTo: null as number | null,
   sort: '' as TourSort | '',
 };
 
@@ -33,6 +35,8 @@ const NO_CRITERIA: PublishedTourSearchDto = {
   transport: null,
   priceFrom: null,
   priceTo: null,
+  lengthFrom: null,
+  lengthTo: null,
   sort: null,
 };
 
@@ -45,7 +49,10 @@ const NO_CRITERIA: PublishedTourSearchDto = {
 export class TourList {
   protected readonly auth = inject(Auth);
 
-  protected readonly form = form(signal({ ...EMPTY_FORM }));
+  protected readonly form = form(signal({ ...EMPTY_FORM }), (path) => {
+    min(path.lengthFrom, 0, { message: 'Granica ne može biti negativna.' });
+    min(path.lengthTo, 0, { message: 'Granica ne može biti negativna.' });
+  });
 
   // The criteria of the last search. The resource reads only these, so typing in the form
   // does not reload the list; clicking "Search" or choosing a sort does.
@@ -91,6 +98,10 @@ export class TourList {
 
   protected search(event: Event): void {
     event.preventDefault();
+    if (!this.form().valid()) {
+      this.form().markAsTouched();
+      return;
+    }
     this.applied.set(this.toDto());
   }
 
@@ -146,6 +157,8 @@ export class TourList {
       transport: transport === '' ? null : transport,
       priceFrom: this.wholePrice(this.form.priceFrom().value()),
       priceTo: this.wholePrice(this.form.priceTo().value()),
+      lengthFrom: this.length(this.form.lengthFrom().value()),
+      lengthTo: this.length(this.form.lengthTo().value()),
       sort: sort === '' ? null : sort,
     };
   }
@@ -153,6 +166,12 @@ export class TourList {
   // Prices are whole EC, so a typed fraction is cut off. An empty field means no bound.
   private wholePrice(value: number | null): number | null {
     return value === null || Number.isNaN(value) ? null : Math.trunc(value);
+  }
+
+  // Lengths are kilometres and may have decimals, so they are sent as typed. An empty field
+  // means no bound.
+  private length(value: number | null): number | null {
+    return value === null || Number.isNaN(value) ? null : value;
   }
 
   // Every search starts at the first page. Empty criteria are left out of the URL.
@@ -175,6 +194,12 @@ export class TourList {
     }
     if (search.priceTo !== null) {
       query.append('priceTo', String(search.priceTo));
+    }
+    if (search.lengthFrom !== null) {
+      query.append('lengthFrom', String(search.lengthFrom));
+    }
+    if (search.lengthTo !== null) {
+      query.append('lengthTo', String(search.lengthTo));
     }
     if (search.sort !== null) {
       query.append('sort', search.sort);
