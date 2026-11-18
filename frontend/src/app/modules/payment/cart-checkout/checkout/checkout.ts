@@ -26,7 +26,7 @@ export class Checkout {
   protected readonly error = signal<string | null>(null);
   protected readonly couponError = signal<string | null>(null);
   protected readonly couponForm = form(signal({ code: '' }), (path) => {
-    required(path.code, { message: 'Unesi kod kupona.' });
+    required(path.code, { message: 'Unesite kod kupona.' });
   });
   protected readonly checkout = httpResource<CartCheckoutDto>(() =>
     this.isExplorer() ? `/api/payment/cart/checkouts/${this.checkoutId()}` : undefined,
@@ -72,7 +72,7 @@ export class Checkout {
       this.couponForm().reset({ code: '' });
       this.checkout.reload();
     } catch (failure) {
-      this.couponError.set(serverMessage(failure, 'Kupon nije primenjen. Pokušaj ponovo.'));
+      this.couponError.set(serverMessage(failure, 'Kupon nije primenjen. Pokušajte ponovo.'));
     } finally {
       this.pending.set(false);
     }
@@ -87,7 +87,7 @@ export class Checkout {
       await this.cartCheckout.removeCoupon(this.checkoutId());
       this.checkout.reload();
     } catch (failure) {
-      this.couponError.set(serverMessage(failure, 'Kupon nije uklonjen. Pokušaj ponovo.'));
+      this.couponError.set(serverMessage(failure, 'Kupon nije uklonjen. Pokušajte ponovo.'));
     } finally {
       this.pending.set(false);
     }

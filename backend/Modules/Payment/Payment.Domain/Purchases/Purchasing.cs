@@ -56,7 +56,7 @@ public sealed class Purchasing
     {
         if (!coupon.IsValidOn(today)) throw new DomainException("Kupon je istekao.");
         if (purchases.Any(purchase => purchase.UserId == userId && purchase.AppliedCoupon?.CouponId == coupon.Id))
-            throw new DomainException("Već si iskoristio ovaj kupon.");
+            throw new DomainException("Već ste iskoristili ovaj kupon.");
     }
 
     private static void EnsureNotOwned(Guid userId, IEnumerable<Guid> entityIds, IReadOnlyCollection<Purchase> purchases)

@@ -77,7 +77,7 @@ public sealed class ShoppingCart : AggregateRoot
     public void EnsureTotalToPay(long seenTotal)
     {
         if (seenTotal != TotalToPay)
-            throw new DomainException("Cena za plaćanje se promenila. Osveži prikaz i proveri novu cenu.");
+            throw new DomainException("Cena za plaćanje se promenila. Osvežite prikaz i proverite novu cenu.");
     }
 
     public void EnsureCheckout(Guid checkoutId)
