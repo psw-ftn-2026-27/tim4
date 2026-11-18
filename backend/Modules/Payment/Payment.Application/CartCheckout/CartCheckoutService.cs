@@ -3,6 +3,7 @@ using Payment.Application.Products;
 using Payment.Application.Purchases;
 using Payment.Application.ShoppingCarts;
 using Payment.Application.Wallets;
+using Payment.Domain.Coupons;
 using Payment.Domain.Purchases;
 using Payment.Domain.Wallets;
 using Shared.Domain.Exceptions;
@@ -67,7 +68,7 @@ public sealed class CartCheckoutService
     public async Task ApplyCouponAsync(Guid userId, Guid checkoutId, ApplyCouponDto dto)
     {
         var cart = await GetCartAsync(userId);
-        var coupon = await _coupons.GetByCodeAsync(dto.Code)
+        var coupon = await _coupons.GetByCodeAsync(CouponCode.Normalize(dto.Code))
             ?? throw new NotFoundException("Kod kupona ne postoji.");
         var used = await _purchases.GetByCouponAsync(userId, coupon.Id);
         _purchasing.ApplyCoupon(cart, checkoutId, coupon, used, DateOnly.FromDateTime(DateTime.UtcNow));
@@ -93,11 +94,15 @@ public sealed class CartCheckoutService
             _wallets.Add(wallet);
         }
         var owned = await _purchases.GetByContentAsync(userId, cart.Items.Select(item => item.EntityId).ToList());
-        var couponId = cart.AppliedCoupon?.CouponId ?? Guid.Empty;
-        var coupon = await _coupons.GetByIdAsync(couponId);
-        var used = await _purchases.GetByCouponAsync(userId, couponId);
-        var purchase = _purchasing.Complete(cart, wallet, checkoutId, coupon, dto.TotalToPay, [.. owned, .. used],
-            DateTime.UtcNow);
+        Coupon? coupon = null;
+        List<Purchase> couponPurchases = [];
+        if (cart.AppliedCoupon is not null)
+        {
+            coupon = await _coupons.GetByIdAsync(cart.AppliedCoupon.CouponId);
+            couponPurchases = await _purchases.GetByCouponAsync(userId, cart.AppliedCoupon.CouponId);
+        }
+        var purchase = _purchasing.Complete(cart, wallet, checkoutId, coupon, dto.TotalToPay,
+            [.. owned, .. couponPurchases], DateTime.UtcNow);
         _purchases.Add(purchase);
         await _unitOfWork.SaveChangesAsync();
         return purchase.Id;

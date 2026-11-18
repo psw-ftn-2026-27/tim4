@@ -22,6 +22,7 @@ public sealed class Purchasing
     public void ApplyCoupon(ShoppingCart cart, Guid checkoutId, Coupon coupon,
         IReadOnlyCollection<Purchase> existingPurchases, DateOnly today)
     {
+        cart.EnsureCheckout(checkoutId);
         EnsureCouponUsable(cart.UserId, coupon, existingPurchases, today);
         var item = coupon.AppliesTo(cart.Items);
         cart.ApplyCoupon(checkoutId, new AppliedCoupon(coupon, item.ProductId, coupon.DiscountFor(item.Price)));

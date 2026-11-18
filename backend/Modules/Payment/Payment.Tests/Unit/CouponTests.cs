@@ -71,6 +71,16 @@ public sealed class CouponTests
         valid.Should().Be(expected);
     }
 
+    [Theory]
+    [InlineData("abcd1234")]
+    [InlineData(" AbCd1234 ")]
+    public void A_typed_code_matches_regardless_of_letter_case_and_surrounding_spaces(string typedCode)
+    {
+        var normalized = CouponCode.Normalize(typedCode);
+
+        normalized.Should().Be("ABCD1234");
+    }
+
     private static Coupon Issue(Guid ownerId, IReadOnlyCollection<Product> products, Guid? productId, int discountPercent) =>
         new CouponIssuing().Issue(ownerId, products, productId, discountPercent, Today, Today);
 

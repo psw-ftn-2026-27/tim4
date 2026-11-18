@@ -26,7 +26,7 @@ export class Checkout {
   protected readonly error = signal<string | null>(null);
   protected readonly couponError = signal<string | null>(null);
   protected readonly couponForm = form(signal({ code: '' }), (path) => {
-    required(path.code, { message: 'Unesite kod kupona.' });
+    required(path.code, { message: 'Unesi kod kupona.' });
   });
   protected readonly checkout = httpResource<CartCheckoutDto>(() =>
     this.isExplorer() ? `/api/payment/cart/checkouts/${this.checkoutId()}` : undefined,
@@ -69,9 +69,10 @@ export class Checkout {
       await this.cartCheckout.applyCoupon(this.checkoutId(), {
         code: this.couponForm.code().value().trim(),
       });
+      this.couponForm().reset({ code: '' });
       this.checkout.reload();
     } catch (failure) {
-      this.couponError.set(serverMessage(failure, 'Kupon nije primenjen. Pokušajte ponovo.'));
+      this.couponError.set(serverMessage(failure, 'Kupon nije primenjen. Pokušaj ponovo.'));
     } finally {
       this.pending.set(false);
     }
@@ -86,7 +87,7 @@ export class Checkout {
       await this.cartCheckout.removeCoupon(this.checkoutId());
       this.checkout.reload();
     } catch (failure) {
-      this.couponError.set(serverMessage(failure, 'Kupon nije uklonjen. Pokušajte ponovo.'));
+      this.couponError.set(serverMessage(failure, 'Kupon nije uklonjen. Pokušaj ponovo.'));
     } finally {
       this.pending.set(false);
     }
@@ -105,7 +106,7 @@ export class Checkout {
       });
       await this.router.navigate(['/payment/purchases', purchaseId]);
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Kupovina nije uspela. Pokušajte ponovo.'));
+      this.error.set(serverMessage(failure, 'Kupovina nije uspela. Pokusaj ponovo.'));
       this.checkout.reload();
     } finally {
       this.pending.set(false);

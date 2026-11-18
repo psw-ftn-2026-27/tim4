@@ -317,13 +317,13 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Applying_a_valid_code_saves_the_coupon_and_discount_on_the_checkout()
+    public async Task Applying_a_valid_code_typed_in_lowercase_saves_the_coupon_and_discount_on_the_checkout()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var coupon = CouponSeed.SecondExplorerForAllProducts;
 
         var response = await client.PutAsJsonAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.Ready.CheckoutId}/coupon",
-            new ApplyCouponDto(coupon.Code.Value));
+            new ApplyCouponDto(coupon.Code.Value.ToLowerInvariant()));
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var context = Factory.CreateContext<PaymentDbContext>();

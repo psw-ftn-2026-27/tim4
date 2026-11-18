@@ -125,22 +125,36 @@ public sealed class ShoppingCartTests
         cart.TotalToPay.Should().Be(70);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void Changing_items_removes_the_applied_coupon(bool addItem)
+    [Fact]
+    public void Adding_an_item_removes_the_applied_coupon()
+    {
+        var cart = CartWithCoupon();
+
+        cart.Add(Product(20));
+
+        cart.AppliedCoupon.Should().BeNull();
+        cart.TotalToPay.Should().Be(cart.Total);
+    }
+
+    [Fact]
+    public void Removing_an_item_removes_the_applied_coupon()
+    {
+        var cart = CartWithCoupon();
+
+        cart.Remove(cart.Items.Single().Id);
+
+        cart.AppliedCoupon.Should().BeNull();
+        cart.TotalToPay.Should().Be(cart.Total);
+    }
+
+    private static ShoppingCart CartWithCoupon()
     {
         var product = Product(100);
         var cart = new ShoppingCart(Guid.NewGuid());
         cart.Add(product);
         var checkout = cart.PrepareCheckout([product]);
         new Purchasing().ApplyCoupon(cart, checkout, Coupon(product, 10), [], Today);
-
-        if (addItem) cart.Add(Product(20));
-        else cart.Remove(cart.Items.Single().Id);
-
-        cart.AppliedCoupon.Should().BeNull();
-        cart.TotalToPay.Should().Be(cart.Total);
+        return cart;
     }
 
     private static readonly DateOnly Today = new(2026, 11, 18);
