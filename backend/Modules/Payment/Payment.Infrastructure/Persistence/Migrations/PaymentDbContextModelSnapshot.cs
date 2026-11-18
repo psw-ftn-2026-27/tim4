@@ -139,6 +139,9 @@ namespace Payment.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
                     b.Property<long>("Price")
                         .HasColumnType("bigint");
 
@@ -271,6 +274,41 @@ namespace Payment.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Payment.Domain.Purchases.Purchase", b =>
+                {
+                    b.OwnsOne("Payment.Domain.Coupons.AppliedCoupon", "AppliedCoupon", b1 =>
+                        {
+                            b1.Property<Guid>("PurchaseId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Code")
+                                .IsRequired()
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)");
+
+                            b1.Property<Guid>("CouponId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<long>("Discount")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("DiscountPercent")
+                                .HasColumnType("integer");
+
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("PurchaseId");
+
+                            b1.ToTable("Purchases", "payment");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PurchaseId");
+                        });
+
+                    b.Navigation("AppliedCoupon");
+                });
+
             modelBuilder.Entity("Payment.Domain.Purchases.PurchaseItem", b =>
                 {
                     b.HasOne("Payment.Domain.Purchases.Purchase", null)
@@ -287,6 +325,41 @@ namespace Payment.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ShoppingCartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Payment.Domain.ShoppingCarts.ShoppingCart", b =>
+                {
+                    b.OwnsOne("Payment.Domain.Coupons.AppliedCoupon", "AppliedCoupon", b1 =>
+                        {
+                            b1.Property<Guid>("ShoppingCartId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Code")
+                                .IsRequired()
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)");
+
+                            b1.Property<Guid>("CouponId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<long>("Discount")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("DiscountPercent")
+                                .HasColumnType("integer");
+
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("ShoppingCartId");
+
+                            b1.ToTable("ShoppingCarts", "payment");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ShoppingCartId");
+                        });
+
+                    b.Navigation("AppliedCoupon");
                 });
 
             modelBuilder.Entity("Payment.Domain.Wallets.WalletTransaction", b =>

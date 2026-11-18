@@ -17,5 +17,10 @@ internal sealed class PurchaseRepository : IPurchaseRepository
             .Where(purchase => purchase.UserId == userId && purchase.Items.Any(item => entityIds.Contains(item.EntityId)))
             .ToListAsync();
 
+    public Task<List<Purchase>> GetByCouponAsync(Guid userId, Guid couponId) =>
+        _context.Purchases.Include(purchase => purchase.Items)
+            .Where(purchase => purchase.UserId == userId && purchase.AppliedCoupon!.CouponId == couponId)
+            .ToListAsync();
+
     public void Add(Purchase purchase) => _context.Purchases.Add(purchase);
 }

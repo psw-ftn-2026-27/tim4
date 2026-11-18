@@ -20,6 +20,8 @@ internal static class PurchaseConfiguration
         builder.HasMany(purchase => purchase.Items).WithOne().HasForeignKey("PurchaseId")
             .IsRequired().OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(purchase => purchase.Items).UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.OwnsOne(purchase => purchase.AppliedCoupon, coupon =>
+            coupon.Property(value => value.Code).HasMaxLength(8));
     }
 
     private static void ConfigureItem(EntityTypeBuilder<PurchaseItem> builder)

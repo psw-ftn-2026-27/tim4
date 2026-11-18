@@ -159,7 +159,8 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
         var beforeCount = PurchaseSeed.All.Length;
         var beforeTime = DateTime.UtcNow;
 
-        var response = await client.PostAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.MultipleItems.CheckoutId}/confirm", null);
+        var response = await client.PostAsJsonAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.MultipleItems.CheckoutId}/confirm",
+            new ConfirmCheckoutDto(ShoppingCartSeed.MultipleItems.TotalToPay));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var purchaseId = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
@@ -191,7 +192,8 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
 
-        var response = await client.PostAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.TooExpensive.CheckoutId}/confirm", null);
+        var response = await client.PostAsJsonAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.TooExpensive.CheckoutId}/confirm",
+            new ConfirmCheckoutDto(ShoppingCartSeed.TooExpensive.TotalToPay));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var context = Factory.CreateContext<PaymentDbContext>();
@@ -212,7 +214,8 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(ShoppingCartSeed.FreeBuyer, "explorer");
 
-        var response = await client.PostAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.Free.CheckoutId}/confirm", null);
+        var response = await client.PostAsJsonAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.Free.CheckoutId}/confirm",
+            new ConfirmCheckoutDto(ShoppingCartSeed.Free.TotalToPay));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var purchaseId = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
@@ -231,7 +234,8 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(PurchaseSeed.Buyer, "explorer");
 
-        var response = await client.PostAsync($"/api/payment/cart/checkouts/{PurchaseSeed.Completed.CheckoutId}/confirm", null);
+        var response = await client.PostAsJsonAsync($"/api/payment/cart/checkouts/{PurchaseSeed.Completed.CheckoutId}/confirm",
+            new ConfirmCheckoutDto(PurchaseSeed.Completed.Total));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var context = Factory.CreateContext<PaymentDbContext>();
@@ -265,7 +269,8 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
         var second = Factory.CreateClientFor(seededCart.UserId, "explorer");
         var path = $"/api/payment/cart/checkouts/{seededCart.CheckoutId}/confirm";
 
-        var responses = await Task.WhenAll(first.PostAsync(path, null), second.PostAsync(path, null));
+        var responses = await Task.WhenAll(first.PostAsJsonAsync(path, new ConfirmCheckoutDto(seededCart.TotalToPay)),
+            second.PostAsJsonAsync(path, new ConfirmCheckoutDto(seededCart.TotalToPay)));
 
         responses.Count(response => response.StatusCode == HttpStatusCode.OK).Should().Be(1);
         responses.Should().ContainSingle(response => response.StatusCode == HttpStatusCode.BadRequest
@@ -290,7 +295,8 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
         var administrator = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
         var responses = await Task.WhenAll(
-            buyer.PostAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.Ready.CheckoutId}/confirm", null),
+            buyer.PostAsJsonAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.Ready.CheckoutId}/confirm",
+                new ConfirmCheckoutDto(ShoppingCartSeed.Ready.TotalToPay)),
             administrator.PostAsJsonAsync($"/api/payment/wallet/users/{WellKnownUsers.Explorer}/payments", new CreditWalletDto(50)));
 
         responses.Should().OnlyContain(response => response.IsSuccessStatusCode
@@ -310,15 +316,144 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
         cart.Items.Count.Should().Be(charged ? 0 : ShoppingCartSeed.Ready.Items.Count);
     }
 
+    [Fact]
+    public async Task Applying_a_valid_code_saves_the_coupon_and_discount_on_the_checkout()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var coupon = CouponSeed.SecondExplorerForAllProducts;
+
+        var response = await client.PutAsJsonAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.Ready.CheckoutId}/coupon",
+            new ApplyCouponDto(coupon.Code.Value));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == WellKnownUsers.Explorer);
+        cart.CheckoutId.Should().Be(ShoppingCartSeed.Ready.CheckoutId);
+        cart.AppliedCoupon!.CouponId.Should().Be(coupon.Id);
+        cart.AppliedCoupon.Code.Should().Be(coupon.Code.Value);
+        cart.AppliedCoupon.ProductId.Should().Be(ProductSeed.CartOffer.Id);
+        cart.AppliedCoupon.DiscountPercent.Should().Be(coupon.DiscountPercent);
+        cart.AppliedCoupon.Discount.Should().Be(ProductSeed.CartOffer.Price * coupon.DiscountPercent / 100);
+    }
+
+    [Fact]
+    public async Task A_missing_code_is_rejected_and_the_checkout_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.PutAsJsonAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.Ready.CheckoutId}/coupon",
+            new ApplyCouponDto("missing"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.SingleAsync(cart => cart.UserId == WellKnownUsers.Explorer);
+        cart.AppliedCoupon.Should().BeNull();
+        cart.CheckoutId.Should().Be(ShoppingCartSeed.Ready.CheckoutId);
+        cart.Version.Should().Be(ShoppingCartSeed.Ready.Version);
+    }
+
+    [Fact]
+    public async Task A_buyer_cannot_apply_again_a_coupon_from_a_confirmed_purchase_and_keeps_the_previous_coupon()
+    {
+        var client = Factory.CreateClientFor(PurchaseSeed.CouponBuyer, "explorer");
+
+        var response = await client.PutAsJsonAsync($"/api/payment/cart/checkouts/{PurchaseSeed.CouponCart.CheckoutId}/coupon",
+            new ApplyCouponDto(CouponSeed.SecondExplorerForAllProducts.Code.Value));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.SingleAsync(cart => cart.UserId == PurchaseSeed.CouponBuyer);
+        cart.AppliedCoupon.Should().Be(PurchaseSeed.CouponCart.AppliedCoupon);
+        cart.CheckoutId.Should().Be(PurchaseSeed.CouponCart.CheckoutId);
+        cart.Version.Should().Be(PurchaseSeed.CouponCart.Version);
+    }
+
+    [Fact]
+    public async Task Removing_the_coupon_saves_the_checkout_without_a_coupon()
+    {
+        var client = Factory.CreateClientFor(ShoppingCartSeed.CouponBuyer, "explorer");
+
+        var response = await client.DeleteAsync($"/api/payment/cart/checkouts/{ShoppingCartSeed.WithCoupon.CheckoutId}/coupon");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == ShoppingCartSeed.CouponBuyer);
+        cart.AppliedCoupon.Should().BeNull();
+        cart.CheckoutId.Should().Be(ShoppingCartSeed.WithCoupon.CheckoutId);
+        cart.Items.Select(item => item.Id).Should().Equal(ShoppingCartSeed.WithCoupon.Items.Select(item => item.Id));
+    }
+
+    [Fact]
+    public async Task Buying_with_a_coupon_charges_the_discounted_price_that_the_wallet_exactly_covers()
+    {
+        var client = Factory.CreateClientFor(ShoppingCartSeed.CouponBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithCoupon;
+        var applied = seededCart.AppliedCoupon!;
+        var beforeCount = PurchaseSeed.All.Length;
+
+        var response = await client.PostAsJsonAsync($"/api/payment/cart/checkouts/{seededCart.CheckoutId}/confirm",
+            new ConfirmCheckoutDto(seededCart.TotalToPay));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var purchaseId = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var purchase = await context.Purchases.Include(purchase => purchase.Items).SingleAsync(purchase => purchase.Id == purchaseId);
+        purchase.AppliedCoupon.Should().Be(applied);
+        purchase.Items.Single(item => item.ProductId == applied.ProductId).Price
+            .Should().Be(ProductSeed.ExpensiveOffer.Price - applied.Discount);
+        purchase.Total.Should().Be(seededCart.TotalToPay);
+        var wallet = await context.Wallets.Include(wallet => wallet.Transactions)
+            .SingleAsync(wallet => wallet.UserId == ShoppingCartSeed.CouponBuyer);
+        wallet.Balance.Should().Be(WalletSeed.CouponBuyerWalletWithDiscountedPrice.Balance - seededCart.TotalToPay);
+        wallet.Transactions.Where(transaction => transaction.Kind == TransactionKind.Purchase)
+            .Sum(transaction => transaction.Amount).Should().Be(seededCart.TotalToPay);
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == ShoppingCartSeed.CouponBuyer);
+        cart.Items.Should().BeEmpty();
+        cart.CheckoutId.Should().BeNull();
+        cart.AppliedCoupon.Should().BeNull();
+        (await context.Purchases.CountAsync()).Should().Be(beforeCount + 1);
+    }
+
+    [Fact]
+    public async Task A_coupon_that_expired_after_it_was_applied_blocks_the_purchase_and_changes_nothing()
+    {
+        var client = Factory.CreateClientFor(ShoppingCartSeed.ExpiredCouponBuyer, "explorer");
+        var seededCart = ShoppingCartSeed.WithCouponExpiredAfterApplying;
+
+        var response = await client.PostAsJsonAsync($"/api/payment/cart/checkouts/{seededCart.CheckoutId}/confirm",
+            new ConfirmCheckoutDto(seededCart.TotalToPay));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var context = Factory.CreateContext<PaymentDbContext>();
+        var wallet = await context.Wallets.Include(wallet => wallet.Transactions)
+            .SingleAsync(wallet => wallet.UserId == ShoppingCartSeed.ExpiredCouponBuyer);
+        wallet.Balance.Should().Be(WalletSeed.ExpiredCouponBuyerWallet.Balance);
+        wallet.Transactions.Select(transaction => transaction.Id).Should().BeEquivalentTo(
+            WalletSeed.ExpiredCouponBuyerWallet.Transactions.Select(transaction => transaction.Id));
+        var cart = await context.ShoppingCarts.Include(cart => cart.Items)
+            .SingleAsync(cart => cart.UserId == ShoppingCartSeed.ExpiredCouponBuyer);
+        cart.Items.Select(item => item.Id).Should().Equal(seededCart.Items.Select(item => item.Id));
+        cart.CheckoutId.Should().Be(seededCart.CheckoutId);
+        cart.AppliedCoupon.Should().Be(seededCart.AppliedCoupon);
+        (await context.Purchases.CountAsync()).Should().Be(PurchaseSeed.All.Length);
+    }
+
     [Theory]
     [InlineData("POST", "items", false)]
     [InlineData("DELETE", "item", false)]
     [InlineData("POST", "checkouts", false)]
     [InlineData("POST", "confirm", false)]
+    [InlineData("PUT", "coupon", false)]
+    [InlineData("DELETE", "coupon", false)]
     [InlineData("POST", "items", true)]
     [InlineData("DELETE", "item", true)]
     [InlineData("POST", "checkouts", true)]
     [InlineData("POST", "confirm", true)]
+    [InlineData("PUT", "coupon", true)]
+    [InlineData("DELETE", "coupon", true)]
     public async Task Only_signed_in_explorers_can_change_their_cart(string method, string operation, bool administrator)
     {
         var client = administrator ? Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator") : Factory.CreateClient();
@@ -326,6 +461,7 @@ public sealed class CartCheckoutCommandTests : BaseIntegrationTest
         {
             "item" => $"items/{ShoppingCartSeed.Ready.Items.Single().Id}",
             "confirm" => $"checkouts/{ShoppingCartSeed.Ready.CheckoutId}/confirm",
+            "coupon" => $"checkouts/{ShoppingCartSeed.Ready.CheckoutId}/coupon",
             _ => operation
         };
         var request = new HttpRequestMessage(new HttpMethod(method), $"/api/payment/cart/{suffix}")

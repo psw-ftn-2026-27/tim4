@@ -1,3 +1,4 @@
+using Payment.Application.Coupons;
 using Payment.Application.Products;
 using Payment.Application.Purchases;
 using Payment.Application.ShoppingCarts;
@@ -15,16 +16,19 @@ public sealed class CartCheckoutService
     private readonly IProductRepository _products;
     private readonly IPurchaseRepository _purchases;
     private readonly IWalletRepository _wallets;
+    private readonly ICouponRepository _coupons;
     private readonly Purchasing _purchasing;
     private readonly IUnitOfWork _unitOfWork;
 
     public CartCheckoutService(IShoppingCartRepository carts, IProductRepository products,
-        IPurchaseRepository purchases, IWalletRepository wallets, Purchasing purchasing, IUnitOfWork unitOfWork)
+        IPurchaseRepository purchases, IWalletRepository wallets, ICouponRepository coupons, Purchasing purchasing,
+        IUnitOfWork unitOfWork)
     {
         _carts = carts;
         _products = products;
         _purchases = purchases;
         _wallets = wallets;
+        _coupons = coupons;
         _purchasing = purchasing;
         _unitOfWork = unitOfWork;
     }
@@ -60,7 +64,24 @@ public sealed class CartCheckoutService
         return checkoutId;
     }
 
-    public async Task<Guid> ConfirmCartCheckoutAsync(Guid userId, Guid checkoutId)
+    public async Task ApplyCouponAsync(Guid userId, Guid checkoutId, ApplyCouponDto dto)
+    {
+        var cart = await GetCartAsync(userId);
+        var coupon = await _coupons.GetByCodeAsync(dto.Code)
+            ?? throw new NotFoundException("Kod kupona ne postoji.");
+        var used = await _purchases.GetByCouponAsync(userId, coupon.Id);
+        _purchasing.ApplyCoupon(cart, checkoutId, coupon, used, DateOnly.FromDateTime(DateTime.UtcNow));
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task RemoveCouponAsync(Guid userId, Guid checkoutId)
+    {
+        var cart = await GetCartAsync(userId);
+        cart.RemoveCoupon(checkoutId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<Guid> ConfirmCartCheckoutAsync(Guid userId, Guid checkoutId, ConfirmCheckoutDto dto)
     {
         var completed = await _purchases.GetByCheckoutAsync(userId, checkoutId);
         _purchasing.EnsureNotCompleted(completed);
@@ -72,7 +93,11 @@ public sealed class CartCheckoutService
             _wallets.Add(wallet);
         }
         var owned = await _purchases.GetByContentAsync(userId, cart.Items.Select(item => item.EntityId).ToList());
-        var purchase = _purchasing.Complete(cart, wallet, checkoutId, owned, DateTime.UtcNow);
+        var couponId = cart.AppliedCoupon?.CouponId ?? Guid.Empty;
+        var coupon = await _coupons.GetByIdAsync(couponId);
+        var used = await _purchases.GetByCouponAsync(userId, couponId);
+        var purchase = _purchasing.Complete(cart, wallet, checkoutId, coupon, dto.TotalToPay, [.. owned, .. used],
+            DateTime.UtcNow);
         _purchases.Add(purchase);
         await _unitOfWork.SaveChangesAsync();
         return purchase.Id;

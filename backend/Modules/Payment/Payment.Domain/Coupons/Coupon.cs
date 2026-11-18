@@ -1,3 +1,4 @@
+using Payment.Domain.ShoppingCarts;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -30,4 +31,16 @@ public sealed class Coupon : AggregateRoot
         DiscountPercent = discountPercent;
         ValidUntil = validUntil;
     }
+
+    public bool IsValidOn(DateOnly today) => today <= ValidUntil;
+
+    public OrderItem AppliesTo(IReadOnlyCollection<OrderItem> items)
+    {
+        var item = ProductId is not null
+            ? items.FirstOrDefault(item => item.ProductId == ProductId)
+            : items.Where(item => item.OwnerId == OwnerId).MaxBy(item => item.Price);
+        return item ?? throw new DomainException("U korpi nema proizvoda za koji ovaj kupon važi.");
+    }
+
+    public long DiscountFor(long price) => (long)((decimal)price * DiscountPercent / 100);
 }
