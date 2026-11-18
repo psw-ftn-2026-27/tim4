@@ -23,7 +23,7 @@ public sealed class PurchasingTests
         wallet.Credit(10, Guid.NewGuid(), DateTime.UtcNow);
         var purchasing = new Purchasing();
 
-        var purchase = purchasing.Complete(cart, wallet, checkout, null, cart.TotalToPay, [], DateTime.UtcNow);
+        var purchase = purchasing.Complete(cart, wallet, checkout, null, null, cart.TotalToPay, [], DateTime.UtcNow);
 
         purchase.Total.Should().Be(10);
         wallet.Balance.Should().Be(0);
@@ -38,7 +38,7 @@ public sealed class PurchasingTests
         cart.Add(product);
         var checkout = cart.PrepareCheckout([product]);
         var purchasing = new Purchasing();
-        var purchased = purchasing.Complete(cart, new Wallet(cart.UserId), checkout, null, 0, [], DateTime.UtcNow);
+        var purchased = purchasing.Complete(cart, new Wallet(cart.UserId), checkout, null, null, 0, [], DateTime.UtcNow);
 
         var add = () => purchasing.AddToCart(cart, product, [purchased]);
 
@@ -80,7 +80,7 @@ public sealed class PurchasingTests
         purchasing.ApplyCoupon(cart, checkout, coupon, [], Today);
         var wallet = FundedWallet(cart.UserId, 100);
 
-        var complete = () => purchasing.Complete(cart, wallet, checkout, coupon, cart.TotalToPay, [],
+        var complete = () => purchasing.Complete(cart, wallet, checkout, coupon, null, cart.TotalToPay, [],
             Today.AddDays(1).ToDateTime(TimeOnly.MinValue));
 
         complete.Should().Throw<DomainException>();
@@ -97,7 +97,7 @@ public sealed class PurchasingTests
         purchasing.ApplyCoupon(cart, checkout, coupon, [], Today);
         var wallet = FundedWallet(cart.UserId, 100);
 
-        var complete = () => purchasing.Complete(cart, wallet, checkout, coupon, cart.Total, [],
+        var complete = () => purchasing.Complete(cart, wallet, checkout, coupon, null, cart.Total, [],
             Today.ToDateTime(TimeOnly.MinValue));
 
         complete.Should().Throw<DomainException>();
@@ -117,7 +117,7 @@ public sealed class PurchasingTests
         var cart = PreparedCart(Guid.NewGuid(), bought, out var checkout);
         var purchasing = new Purchasing();
         purchasing.ApplyCoupon(cart, checkout, coupon, [], Today);
-        var purchase = purchasing.Complete(cart, FundedWallet(cart.UserId, 100), checkout, coupon, cart.TotalToPay, [],
+        var purchase = purchasing.Complete(cart, FundedWallet(cart.UserId, 100), checkout, coupon, null, cart.TotalToPay, [],
             Today.ToDateTime(TimeOnly.MinValue));
         return (coupon, next, purchase);
     }

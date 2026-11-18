@@ -27,5 +27,7 @@ internal sealed class PurchaseReadRepository : IPurchaseReadRepository
             purchase.Items.Sum(item => item.Price),
             purchase.AppliedCoupon == null ? null : new PurchaseCouponDto(purchase.AppliedCoupon.Code,
                 purchase.AppliedCoupon.ProductId, purchase.AppliedCoupon.DiscountPercent,
-                purchase.AppliedCoupon.Discount))).SingleOrDefaultAsync();
+                purchase.AppliedCoupon.Discount),
+            purchase.AppliedGiftCard == null ? null : new PurchaseGiftCardDto(purchase.AppliedGiftCard.GiftCardId,
+                purchase.AppliedGiftCard.Amount, purchase.GiftCardDiscount))).SingleOrDefaultAsync();
 }

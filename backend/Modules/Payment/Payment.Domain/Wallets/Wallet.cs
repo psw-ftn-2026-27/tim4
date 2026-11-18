@@ -61,5 +61,14 @@ public sealed class Wallet : AggregateRoot
         Version = Guid.NewGuid();
     }
 
+    public void PayForGiftCard(Guid giftCardId, long amount, DateTime submittedAt)
+    {
+        var transaction = new WalletTransaction(giftCardId, amount, submittedAt);
+        if (transaction.Amount > Balance) throw new DomainException("Nemaš dovoljno EC za ovu poklon karticu.");
+        Balance -= transaction.Amount;
+        _transactions.Add(transaction);
+        Version = Guid.NewGuid();
+    }
+
     public long GetAvailableBalance() => Balance;
 }

@@ -48,6 +48,47 @@ namespace Payment.Infrastructure.Persistence.Migrations
                     b.ToTable("Coupons", "payment");
                 });
 
+            modelBuilder.Entity("Payment.Domain.GiftCards.GiftCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GiverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("RecipientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RedeemedInPurchaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("ValidUntil")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GiverId");
+
+                    b.HasIndex("RecipientId");
+
+                    b.ToTable("GiftCards", "payment");
+                });
+
             modelBuilder.Entity("Payment.Domain.Products.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -81,6 +122,9 @@ namespace Payment.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("CheckoutId")
                         .HasColumnType("uuid");
+
+                    b.Property<long>("GiftCardDiscount")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("PurchasedAt")
                         .HasColumnType("timestamp with time zone");
@@ -228,6 +272,9 @@ namespace Payment.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("EntityId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("GiftCardId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Kind")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -309,7 +356,28 @@ namespace Payment.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("PurchaseId");
                         });
 
+                    b.OwnsOne("Payment.Domain.GiftCards.AppliedGiftCard", "AppliedGiftCard", b1 =>
+                        {
+                            b1.Property<Guid>("PurchaseId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Amount")
+                                .HasColumnType("integer");
+
+                            b1.Property<Guid>("GiftCardId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("PurchaseId");
+
+                            b1.ToTable("Purchases", "payment");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PurchaseId");
+                        });
+
                     b.Navigation("AppliedCoupon");
+
+                    b.Navigation("AppliedGiftCard");
                 });
 
             modelBuilder.Entity("Payment.Domain.Purchases.PurchaseItem", b =>
@@ -362,7 +430,28 @@ namespace Payment.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("ShoppingCartId");
                         });
 
+                    b.OwnsOne("Payment.Domain.GiftCards.AppliedGiftCard", "AppliedGiftCard", b1 =>
+                        {
+                            b1.Property<Guid>("ShoppingCartId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Amount")
+                                .HasColumnType("integer");
+
+                            b1.Property<Guid>("GiftCardId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("ShoppingCartId");
+
+                            b1.ToTable("ShoppingCarts", "payment");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ShoppingCartId");
+                        });
+
                     b.Navigation("AppliedCoupon");
+
+                    b.Navigation("AppliedGiftCard");
                 });
 
             modelBuilder.Entity("Payment.Domain.Wallets.WalletTransaction", b =>

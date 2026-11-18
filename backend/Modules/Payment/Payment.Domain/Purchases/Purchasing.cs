@@ -1,4 +1,5 @@
 using Payment.Domain.Coupons;
+using Payment.Domain.GiftCards;
 using Payment.Domain.Products;
 using Payment.Domain.ShoppingCarts;
 using Payment.Domain.Wallets;
@@ -28,18 +29,40 @@ public sealed class Purchasing
         cart.ApplyCoupon(checkoutId, new AppliedCoupon(coupon, item.ProductId, coupon.DiscountFor(item.Price)));
     }
 
-    public Purchase Complete(ShoppingCart cart, Wallet wallet, Guid checkoutId, Coupon? coupon, long seenTotal,
-        IReadOnlyCollection<Purchase> existingPurchases, DateTime now)
+    // The buyer only marks that a gift card should be used; the system picks which one.
+    public void UseGiftCard(ShoppingCart cart, Guid checkoutId, IReadOnlyCollection<GiftCard> buyerGiftCards,
+        DateOnly today)
     {
+        cart.EnsureCheckout(checkoutId);
+        var giftCard = GiftCard.FirstToExpire(buyerGiftCards, cart.UserId, today)
+            ?? throw new DomainException("Nemaš važeću poklon karticu.");
+        cart.ApplyGiftCard(checkoutId, new AppliedGiftCard(giftCard));
+    }
+
+    public Purchase Complete(ShoppingCart cart, Wallet wallet, Guid checkoutId, Coupon? coupon, GiftCard? giftCard,
+        long seenTotal, IReadOnlyCollection<Purchase> existingPurchases, DateTime now)
+    {
+        var today = DateOnly.FromDateTime(now);
         cart.EnsureCheckout(checkoutId);
         EnsureNotOwned(cart.UserId, cart.Items.Select(item => item.EntityId), existingPurchases);
         if (cart.UserId != wallet.UserId) throw new DomainException("Novčanik mora da pripada vlasniku korpe.");
-        EnsureAppliedCouponUsable(cart, coupon, existingPurchases, DateOnly.FromDateTime(now));
+        EnsureAppliedCouponUsable(cart, coupon, existingPurchases, today);
+        EnsureAppliedGiftCardUsable(cart, giftCard, today);
         cart.EnsureTotalToPay(seenTotal);
-        var purchase = new Purchase(cart.UserId, checkoutId, cart.Items, cart.AppliedCoupon, now);
+        var purchase = new Purchase(cart.UserId, checkoutId, cart.Items, cart.AppliedCoupon, cart.AppliedGiftCard,
+            cart.GiftCardDiscount, now);
         wallet.Pay(purchase.Id, purchase.Items.Select(item => new PurchasePayment(item.EntityId, item.Price)).ToList(), now);
+        if (cart.AppliedGiftCard is not null) giftCard!.Redeem(cart.UserId, purchase.Id, today);
         cart.CompleteCheckout(checkoutId);
         return purchase;
+    }
+
+    private static void EnsureAppliedGiftCardUsable(ShoppingCart cart, GiftCard? giftCard, DateOnly today)
+    {
+        if (cart.AppliedGiftCard is null) return;
+        if (giftCard is null || giftCard.Id != cart.AppliedGiftCard.GiftCardId)
+            throw new DomainException("Poklon kartica više ne važi.");
+        giftCard.EnsureUsableBy(cart.UserId, today);
     }
 
     private static void EnsureAppliedCouponUsable(ShoppingCart cart, Coupon? coupon,

@@ -1,9 +1,11 @@
 using Payment.Application.Coupons;
+using Payment.Application.GiftCards;
 using Payment.Application.Products;
 using Payment.Application.Purchases;
 using Payment.Application.ShoppingCarts;
 using Payment.Application.Wallets;
 using Payment.Domain.Coupons;
+using Payment.Domain.GiftCards;
 using Payment.Domain.Purchases;
 using Payment.Domain.Wallets;
 using Shared.Domain.Exceptions;
@@ -18,18 +20,20 @@ public sealed class CartCheckoutService
     private readonly IPurchaseRepository _purchases;
     private readonly IWalletRepository _wallets;
     private readonly ICouponRepository _coupons;
+    private readonly IGiftCardRepository _giftCards;
     private readonly Purchasing _purchasing;
     private readonly IUnitOfWork _unitOfWork;
 
     public CartCheckoutService(IShoppingCartRepository carts, IProductRepository products,
-        IPurchaseRepository purchases, IWalletRepository wallets, ICouponRepository coupons, Purchasing purchasing,
-        IUnitOfWork unitOfWork)
+        IPurchaseRepository purchases, IWalletRepository wallets, ICouponRepository coupons, IGiftCardRepository giftCards,
+        Purchasing purchasing, IUnitOfWork unitOfWork)
     {
         _carts = carts;
         _products = products;
         _purchases = purchases;
         _wallets = wallets;
         _coupons = coupons;
+        _giftCards = giftCards;
         _purchasing = purchasing;
         _unitOfWork = unitOfWork;
     }
@@ -82,6 +86,21 @@ public sealed class CartCheckoutService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task UseGiftCardAsync(Guid userId, Guid checkoutId)
+    {
+        var cart = await GetCartAsync(userId);
+        var giftCards = await _giftCards.GetByRecipientAsync(userId);
+        _purchasing.UseGiftCard(cart, checkoutId, giftCards, DateOnly.FromDateTime(DateTime.UtcNow));
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task RemoveGiftCardAsync(Guid userId, Guid checkoutId)
+    {
+        var cart = await GetCartAsync(userId);
+        cart.RemoveGiftCard(checkoutId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task<Guid> ConfirmCartCheckoutAsync(Guid userId, Guid checkoutId, ConfirmCheckoutDto dto)
     {
         var completed = await _purchases.GetByCheckoutAsync(userId, checkoutId);
@@ -101,7 +120,10 @@ public sealed class CartCheckoutService
             coupon = await _coupons.GetByIdAsync(cart.AppliedCoupon.CouponId);
             couponPurchases = await _purchases.GetByCouponAsync(userId, cart.AppliedCoupon.CouponId);
         }
-        var purchase = _purchasing.Complete(cart, wallet, checkoutId, coupon, dto.TotalToPay,
+        GiftCard? giftCard = null;
+        if (cart.AppliedGiftCard is not null)
+            giftCard = await _giftCards.GetByIdAsync(cart.AppliedGiftCard.GiftCardId);
+        var purchase = _purchasing.Complete(cart, wallet, checkoutId, coupon, giftCard, dto.TotalToPay,
             [.. owned, .. couponPurchases], DateTime.UtcNow);
         _purchases.Add(purchase);
         await _unitOfWork.SaveChangesAsync();

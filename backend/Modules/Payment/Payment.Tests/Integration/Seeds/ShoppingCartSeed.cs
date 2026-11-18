@@ -17,6 +17,9 @@ internal static class ShoppingCartSeed
     public static readonly ShoppingCart Unprepared;
     public static readonly ShoppingCart WithCoupon;
     public static readonly ShoppingCart WithCouponExpiredAfterApplying;
+    public static readonly ShoppingCart WithUsableGiftCard;
+    public static readonly ShoppingCart WithGiftCard;
+    public static readonly ShoppingCart WithGiftCardExpiredAfterApplying;
     public static readonly ShoppingCart[] All;
 
     static ShoppingCartSeed()
@@ -46,7 +49,20 @@ internal static class ShoppingCartSeed
         var expiredCheckout = WithCouponExpiredAfterApplying.PrepareCheckout([ProductSeed.ExpensiveOffer]);
         new Purchasing().ApplyCoupon(WithCouponExpiredAfterApplying, expiredCheckout,
             CouponSeed.ExplorerExpiredYesterday, [], today.AddDays(-1));
+        WithUsableGiftCard = new ShoppingCart(GiftCardSeed.FreeGiftCardBuyer);
+        WithUsableGiftCard.Add(ProductSeed.CartOffer);
+        WithUsableGiftCard.PrepareCheckout([ProductSeed.CartOffer]);
+        WithGiftCard = new ShoppingCart(GiftCardSeed.AppliedGiftCardBuyer);
+        WithGiftCard.Add(ProductSeed.CartOffer);
+        var giftCardCheckout = WithGiftCard.PrepareCheckout([ProductSeed.CartOffer]);
+        new Purchasing().UseGiftCard(WithGiftCard, giftCardCheckout, [GiftCardSeed.SmallerThanCartPrice], today);
+        WithGiftCardExpiredAfterApplying = new ShoppingCart(GiftCardSeed.ExpiredGiftCardBuyer);
+        WithGiftCardExpiredAfterApplying.Add(ProductSeed.ExpensiveOffer);
+        var expiredGiftCardCheckout = WithGiftCardExpiredAfterApplying.PrepareCheckout([ProductSeed.ExpensiveOffer]);
+        new Purchasing().UseGiftCard(WithGiftCardExpiredAfterApplying, expiredGiftCardCheckout,
+            [GiftCardSeed.ExpiredYesterday], today.AddDays(-1));
         All = [Ready, TooExpensive, Free, MultipleItems, Unprepared, WithCoupon, WithCouponExpiredAfterApplying,
-            PurchaseSeed.CompletedCart, PurchaseSeed.CouponCart];
+            WithUsableGiftCard, WithGiftCard, WithGiftCardExpiredAfterApplying,
+            PurchaseSeed.CompletedCart, PurchaseSeed.CouponCart, PurchaseSeed.GiftCardCart];
     }
 }

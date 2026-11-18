@@ -58,6 +58,20 @@ public sealed class CartCheckoutController : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("checkouts/{checkoutId:guid}/gift-card")]
+    public async Task<ActionResult> UseGiftCard(Guid checkoutId)
+    {
+        await _service.UseGiftCardAsync(User.GetUserId(), checkoutId);
+        return NoContent();
+    }
+
+    [HttpDelete("checkouts/{checkoutId:guid}/gift-card")]
+    public async Task<ActionResult> RemoveGiftCard(Guid checkoutId)
+    {
+        await _service.RemoveGiftCardAsync(User.GetUserId(), checkoutId);
+        return NoContent();
+    }
+
     [HttpPost("checkouts/{checkoutId:guid}/confirm")]
     public async Task<ActionResult<Guid>> ConfirmCheckout(Guid checkoutId, ConfirmCheckoutDto dto) =>
         await _service.ConfirmCartCheckoutAsync(User.GetUserId(), checkoutId, dto);

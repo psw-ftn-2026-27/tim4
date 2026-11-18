@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Payment.Application;
 using Payment.Domain.Coupons;
+using Payment.Domain.GiftCards;
 using Payment.Domain.Wallets;
 using Payment.Domain.Products;
 using Payment.Infrastructure.Persistence.Coupons;
+using Payment.Infrastructure.Persistence.GiftCards;
 using Payment.Infrastructure.Persistence.Products;
 using Payment.Infrastructure.Persistence.Wallets;
 using Payment.Domain.Purchases;
@@ -22,6 +24,7 @@ internal sealed class PaymentDbContext : DbContext, IUnitOfWork
     public DbSet<ShoppingCart> ShoppingCarts => Set<ShoppingCart>();
     public DbSet<Purchase> Purchases => Set<Purchase>();
     public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<GiftCard> GiftCards => Set<GiftCard>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -31,6 +34,7 @@ internal sealed class PaymentDbContext : DbContext, IUnitOfWork
         builder.ConfigureShoppingCarts();
         builder.ConfigurePurchases();
         builder.ConfigureCoupons();
+        builder.ConfigureGiftCards();
     }
 
 }

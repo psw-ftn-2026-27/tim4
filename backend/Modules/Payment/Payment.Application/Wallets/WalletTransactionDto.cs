@@ -12,4 +12,5 @@ public sealed record WalletTransactionDto(
     DateTime? CancelledAt,
     TransactionKind Kind,
     Guid? PurchaseId,
-    Guid? EntityId);
+    Guid? EntityId,
+    Guid? GiftCardId);

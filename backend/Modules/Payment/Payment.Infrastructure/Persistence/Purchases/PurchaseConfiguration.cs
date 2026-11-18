@@ -22,6 +22,7 @@ internal static class PurchaseConfiguration
         builder.Navigation(purchase => purchase.Items).UsePropertyAccessMode(PropertyAccessMode.Field);
         builder.OwnsOne(purchase => purchase.AppliedCoupon, coupon =>
             coupon.Property(value => value.Code).HasMaxLength(8));
+        builder.OwnsOne(purchase => purchase.AppliedGiftCard);
     }
 
     private static void ConfigureItem(EntityTypeBuilder<PurchaseItem> builder)

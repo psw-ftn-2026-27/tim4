@@ -1,4 +1,5 @@
 using Payment.Domain.Coupons;
+using Payment.Domain.GiftCards;
 using Payment.Domain.Products;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
@@ -12,9 +13,12 @@ public sealed class ShoppingCart : AggregateRoot
     public Guid Version { get; private set; }
     public Guid? CheckoutId { get; private set; }
     public AppliedCoupon? AppliedCoupon { get; private set; }
+    public AppliedGiftCard? AppliedGiftCard { get; private set; }
     public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
     public long Total => _items.Sum(item => item.Price);
-    public long TotalToPay => Total - (AppliedCoupon?.Discount ?? 0);
+    public long TotalAfterCoupon => Total - (AppliedCoupon?.Discount ?? 0);
+    public long GiftCardDiscount => AppliedGiftCard?.DiscountOn(TotalAfterCoupon) ?? 0;
+    public long TotalToPay => TotalAfterCoupon - GiftCardDiscount;
 
     private ShoppingCart() { }
 
@@ -56,6 +60,7 @@ public sealed class ShoppingCart : AggregateRoot
         _items.AddRange(refreshed);
         CheckoutId = Guid.NewGuid();
         AppliedCoupon = null;
+        AppliedGiftCard = null;
         Version = Guid.NewGuid();
         return CheckoutId.Value;
     }
@@ -71,6 +76,20 @@ public sealed class ShoppingCart : AggregateRoot
     {
         EnsureCheckout(checkoutId);
         AppliedCoupon = null;
+        Version = Guid.NewGuid();
+    }
+
+    internal void ApplyGiftCard(Guid checkoutId, AppliedGiftCard appliedGiftCard)
+    {
+        EnsureCheckout(checkoutId);
+        AppliedGiftCard = appliedGiftCard;
+        Version = Guid.NewGuid();
+    }
+
+    public void RemoveGiftCard(Guid checkoutId)
+    {
+        EnsureCheckout(checkoutId);
+        AppliedGiftCard = null;
         Version = Guid.NewGuid();
     }
 
@@ -97,6 +116,7 @@ public sealed class ShoppingCart : AggregateRoot
     {
         CheckoutId = null;
         AppliedCoupon = null;
+        AppliedGiftCard = null;
         Version = Guid.NewGuid();
     }
 
