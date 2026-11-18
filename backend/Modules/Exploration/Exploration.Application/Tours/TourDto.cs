@@ -14,4 +14,5 @@ public sealed record TourDto(
     DateTime? ArchivedAt,
     int RecommendedGroupSizeMin,
     int RecommendedGroupSizeMax,
-    List<TransportTimeDto> TransportTimes);
+    List<TransportTimeDto> TransportTimes,
+    double LengthInKm);
