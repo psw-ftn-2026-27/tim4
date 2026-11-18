@@ -19,14 +19,14 @@
       @if (summary.appliedCoupon; as coupon) {
         @if (coupon.isValid) {
           <p>
-            Primenjen kupon <code>{{ coupon.code }}</code>: {{ coupon.discountPercent }}% popusta
-            na „{{ couponProductName() }}“, popust
+            Primenjen kupon <code>{{ coupon.code }}</code
+            >: {{ coupon.discountPercent }}% popusta na „{{ couponProductName() }}“, popust
             <span class="badge badge--ec">{{ coupon.discount }} EC</span>
           </p>
         } @else {
           <p class="error" role="alert">
-            Kupon <code>{{ coupon.code }}</code> ne važi: {{ coupon.invalidReason }} Cena je prikazana
-            bez popusta.
+            Kupon <code>{{ coupon.code }}</code> ne važi: {{ coupon.invalidReason }} Cena je
+            prikazana bez popusta.
           </p>
         }
       }
