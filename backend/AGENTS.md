@@ -105,7 +105,13 @@ A module that needs to know who the users are goes through `IIdentityApi` in
 `Identity.Contracts`: `GetExplorersAsync(page, pageSize)` returns one page of the users
 with the `explorer` role as `ExplorerPage` (items of `ExplorerSummary`, ID and email only,
 sorted by email, plus the total count; clamped like any list query), and
-`ExplorerExistsAsync(userId)` is true only for an explorer. The contract is read-only and
+`ExplorerExistsAsync(userId)` is true only for an explorer.
+`FindExplorerByEmailAsync(email)` matches the exact email regardless of letter case and
+returns the explorer's `ExplorerSummary`, or `null` for an unknown or administrator email
+(no exception; the caller decides what the user sees). `GetExplorersByIdsAsync(userIds)`
+returns one `ExplorerSummary` per explorer among the given IDs, in no guaranteed order,
+and silently leaves out unknown and administrator IDs; it is unpaged because the input is
+already one page of the caller's list. The contract is read-only and
 has no HTTP endpoint. A module injects `IIdentityApi` into its queries class or command
 service like any other module's contract and maps `ExplorerSummary` into its own DTO. The
 reference to `Identity.Contracts` sits in the module's `Application` project and is added
