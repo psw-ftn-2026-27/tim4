@@ -1,5 +1,7 @@
+using System.Net;
 using System.Net.Http.Json;
 using Exploration.Application.TourBrowsing;
+using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
 using Exploration.Tests.Integration.Seeds;
 using FluentAssertions;
@@ -183,5 +185,42 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
 
         tours!.Items.Should().ContainSingle(tour => tour.Tour.Id == TourSeed.PublishedVineyards.Id);
         tours.TotalCount.Should().Be(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
+    }
+
+    [Fact]
+    public async Task Visitor_sees_only_the_key_points_open_without_purchase_and_none_of_their_secrets()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var tour = TourSeed.PublishedVineyards;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.Name.Should().Be(tour.Name);
+        details.LengthInKm.Should().Be(tour.LengthInKm);
+        details.KeyPoints.Select(keyPoint => keyPoint.Id).Should()
+            .Equal(tour.KeyPoints.Where(keyPoint => keyPoint.IsVisibleWithoutPurchase).Select(keyPoint => keyPoint.Id));
+        details.KeyPoints.Should().OnlyContain(keyPoint => keyPoint.Secret == null);
+    }
+
+    [Fact]
+    public async Task Author_sees_every_key_point_of_their_published_tour_with_its_secret()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tour = TourSeed.PublishedVineyards;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.KeyPoints.Select(keyPoint => keyPoint.Id).Should().Equal(tour.KeyPoints.Select(keyPoint => keyPoint.Id));
+        details.KeyPoints.Select(keyPoint => keyPoint.Secret).Should().Equal(tour.KeyPoints.Select(keyPoint => keyPoint.Secret));
+    }
+
+    [Fact]
+    public async Task Draft_tour_cannot_be_opened_by_a_visitor()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+
+        var response = await client.GetAsync($"/api/exploration/tours/{TourSeed.FortressWalk.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

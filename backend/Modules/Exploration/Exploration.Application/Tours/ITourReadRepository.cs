@@ -1,3 +1,4 @@
+using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Shared.Domain;
 
@@ -10,4 +11,10 @@ public interface ITourReadRepository
 
     // Every published tour meeting the search criteria other than price, without paging.
     Task<List<TourDto>> GetAllPublishedAsync(PublishedTourSearchDto search);
+
+    // Null when the tour does not exist or is not published. Holds every key point with its secret.
+    Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId);
+
+    // Null when the tour does not exist or belongs to another author.
+    Task<List<KeyPointDto>?> GetKeyPointsOfAuthoredTourAsync(Guid tourId, Guid authorId);
 }

@@ -1,0 +1,26 @@
+.key-points {
+  list-style: none;
+  padding: 0;
+}
+
+.key-point {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.key-point img,
+.stored-image {
+  border-radius: var(--radius);
+  height: 6rem;
+  object-fit: cover;
+  width: 8rem;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+form.card {
+  max-width: 32rem;
+}

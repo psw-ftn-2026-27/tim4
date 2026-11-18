@@ -1,6 +1,7 @@
 using Exploration.Application.Tours;
 using Payment.Contracts;
 using Shared.Domain;
+using Shared.Domain.Exceptions;
 
 namespace Exploration.Application.TourBrowsing;
 
@@ -83,5 +84,24 @@ public sealed class TourBrowsingQueries
                 .ToList(),
             _ => tours
         };
+    }
+
+    public async Task<TourDetailsDto> GetPublishedDetailsAsync(Guid tourId, Guid viewerId)
+    {
+        var tour = await _tourReadRepository.GetPublishedDetailsAsync(tourId)
+            ?? throw new NotFoundException($"Tour {tourId} does not exist.");
+
+        // The author sees the whole tour. Once Payment exposes purchases, a buyer will too.
+        if (tour.AuthorId == viewerId)
+        {
+            return tour;
+        }
+
+        // Everyone else sees only the key points open without purchase, and no secret.
+        var openKeyPoints = tour.KeyPoints
+            .Where(keyPoint => keyPoint.IsVisibleWithoutPurchase)
+            .Select(keyPoint => keyPoint with { Secret = null })
+            .ToList();
+        return tour with { KeyPoints = openKeyPoints };
     }
 }
