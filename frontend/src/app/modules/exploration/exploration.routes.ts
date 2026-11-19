@@ -5,6 +5,7 @@ import { TourKeyPoints } from './tour-authoring/tour-key-points/tour-key-points'
 import { TourDetails } from './tour-browsing/tour-details/tour-details';
 import { TourList } from './tour-browsing/tour-list/tour-list';
 import { TourMapSearch } from './tour-browsing/tour-map-search/tour-map-search';
+import { ActiveTour } from './tour-executions/active-tour/active-tour';
 import { Preferences } from './tour-preferences/preferences/preferences';
 
 export const explorationRoutes: Routes = [
@@ -14,5 +15,6 @@ export const explorationRoutes: Routes = [
   { path: 'mine/:id/key-points', component: TourKeyPoints },
   { path: 'create', component: CreateTour },
   { path: 'preferences', component: Preferences },
+  { path: 'active', component: ActiveTour },
   { path: 'tours/:id', component: TourDetails },
 ];
