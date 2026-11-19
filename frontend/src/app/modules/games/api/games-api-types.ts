@@ -55,3 +55,61 @@ export interface SocialChallengeDto extends SocialChallengeDetailsDto {
   id: string;
   status: SocialChallengeStatus;
 }
+
+export interface LocationChallengeDto {
+  id: string;
+  name: string;
+  startLatitude: number;
+  startLongitude: number;
+  xpReward: number;
+  pointCount: number;
+}
+
+export interface LocationChallengeDetailsDto {
+  challenge: LocationChallengeDto;
+  points: HiddenLocationDto[];
+}
+
+export interface HiddenLocationDto {
+  id: string;
+  latitude: number;
+  longitude: number;
+  imageAddress: string;
+}
+
+export interface LocationChallengeContentDto {
+  name: string;
+  startLatitude: number;
+  startLongitude: number;
+  xpReward: number;
+  points: HiddenLocationContentDto[];
+}
+
+export interface HiddenLocationContentDto {
+  latitude: number | null;
+  longitude: number | null;
+  image: File;
+}
+
+export interface CheckLocationDto {
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export interface LocationChallengePlayDto {
+  challenge: LocationChallengeDto;
+  attempt: LocationChallengeProgressDto | null;
+}
+
+export interface LocationChallengeProgressDto {
+  radiusInMeters: number;
+  completedAt: string | null;
+  awardedXp: number;
+  points: LocationChallengePointProgressDto[];
+}
+
+export interface LocationChallengePointProgressDto {
+  id: string;
+  discovered: boolean;
+  imageAddress: string;
+}

@@ -29,6 +29,14 @@
           >Ture</a
         >
       }
+      @if (role() === 'administrator' || role() === 'explorer') {
+        <a
+          routerLink="/games/location-challenges"
+          routerLinkActive="nav-active"
+          (click)="closeMenu()"
+          >Lokacijski izazovi</a
+        >
+      }
       @switch (role()) {
         @case ('explorer') {
           <a

@@ -1,0 +1,91 @@
+<div class="page--narrow">
+  <a class="back-link" routerLink="/games/location-challenges">← Lokacijski izazovi</a>
+  <header class="page-header"><h1>Novi lokacijski izazov</h1></header>
+
+  @if (!user()) {
+    <p class="state">Prijavite se da biste kreirali izazov.</p>
+  } @else if (!isAdministrator()) {
+    <p class="state">Pristup je dozvoljen administratorima.</p>
+  } @else {
+    <form novalidate (submit)="$event.preventDefault(); save()">
+      <fieldset class="field-group" [disabled]="pending()">
+        <div class="field">
+          <label for="challenge-name">Naziv</label>
+          <input
+            id="challenge-name"
+            [formField]="challengeForm.name"
+            [attr.aria-invalid]="
+              (challengeForm.name().dirty() || challengeForm.name().touched()) &&
+              challengeForm.name().invalid()
+            "
+          />
+          @if (challengeForm.name().dirty() || challengeForm.name().touched()) {
+            @for (error of challengeForm.name().errors(); track error.kind) {
+              <p class="error">{{ error.message }}</p>
+            }
+          }
+        </div>
+        <div class="field">
+          <label for="challenge-xp">XP nagrada</label>
+          <input
+            id="challenge-xp"
+            type="number"
+            step="1"
+            [formField]="challengeForm.xpReward"
+            [attr.aria-invalid]="
+              (challengeForm.xpReward().dirty() || challengeForm.xpReward().touched()) &&
+              challengeForm.xpReward().invalid()
+            "
+          />
+          @if (challengeForm.xpReward().dirty() || challengeForm.xpReward().touched()) {
+            @for (error of challengeForm.xpReward().errors(); track error.kind) {
+              <p class="error">{{ error.message }}</p>
+            }
+          }
+        </div>
+        <h2>Početna lokacija</h2>
+        <app-location-map
+          [locations]="[]"
+          [selectable]="!pending()"
+          [selected]="challengeForm.start().value()"
+          (selectedChange)="challengeForm.start().value.set($event)"
+        />
+        @if (submitted() && !challengeForm.start().value()) {
+          <p class="error">Izaberite početnu lokaciju.</p>
+        }
+
+        @for (point of points(); track point.key; let index = $index) {
+          <fieldset class="field-group">
+            <legend>Skrivena tačka {{ index + 1 }}</legend>
+            <app-location-map
+              [locations]="[]"
+              [selectable]="!pending()"
+              [selected]="point.location"
+              (selectedChange)="setLocation(point.key, $event)"
+            />
+            @if (submitted() && !point.location) {
+              <p class="error">Izaberite lokaciju skrivene tačke.</p>
+            }
+            <app-image-upload (imageChange)="setImage(point.key, $event)" />
+            @if (submitted() && !point.image) {
+              <p class="error">Dodajte fotografiju skrivene tačke.</p>
+            }
+            @if (points().length > 1) {
+              <button class="button" type="button" (click)="removePoint(point.key)">
+                Ukloni tačku
+              </button>
+            }
+          </fieldset>
+        }
+
+        @if (error(); as message) {
+          <p class="state state--error" role="alert">{{ message }}</p>
+        }
+        <div class="form-actions">
+          <button class="button" type="button" (click)="addPoint()">Dodaj tačku</button>
+          <button class="button button--primary" type="submit">Sačuvaj</button>
+        </div>
+      </fieldset>
+    </form>
+  }
+</div>
