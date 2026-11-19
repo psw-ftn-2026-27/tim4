@@ -1,8 +1,11 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Auth } from '../../../../core/auth/auth';
 import { LocationMap, MapLocation } from '../../../../shared/map/location-map';
+import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDetailsDto } from '../../api/exploration-api-types';
+import { TourBrowsing } from '../tour-browsing';
 
 @Component({
   imports: [LocationMap, RouterLink],
@@ -11,6 +14,9 @@ import { TourDetailsDto } from '../../api/exploration-api-types';
   templateUrl: './tour-details.html',
 })
 export class TourDetails {
+  private readonly auth = inject(Auth);
+  private readonly tourBrowsing = inject(TourBrowsing);
+
   // The tour ID from the route tours/:id.
   readonly id = input.required<string>();
 
@@ -20,6 +26,20 @@ export class TourDetails {
     () => `/api/exploration/tours/${this.id()}`,
   );
 
+  protected readonly pending = signal(false);
+  protected readonly added = signal(false);
+  protected readonly error = signal<string | null>(null);
+
+  // Only a signed-in explorer who is not the author and has not bought the tour may add it.
+  protected readonly canAddToCart = computed(() => {
+    const user = this.auth.user();
+    const tour = this.tour.value();
+    if (user === null || tour === undefined) {
+      return false;
+    }
+    return user.roles.includes('explorer') && user.id !== tour.authorId && !tour.isPurchased;
+  });
+
   protected readonly mapLocations = computed<MapLocation[]>(() =>
     (this.tour.value()?.keyPoints ?? []).map((keyPoint) => ({
       latitude: keyPoint.latitude,
@@ -27,4 +47,20 @@ export class TourDetails {
       name: keyPoint.name,
     })),
   );
+
+  // The tourist stays on the page; the cart is Payment's screen, reached only by a link.
+  protected async addToCart(): Promise<void> {
+    this.pending.set(true);
+    this.added.set(false);
+    this.error.set(null);
+    try {
+      await this.tourBrowsing.addToCart(this.id());
+      this.added.set(true);
+      this.tour.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Dodavanje u korpu nije uspelo. Pokušajte ponovo.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
 }

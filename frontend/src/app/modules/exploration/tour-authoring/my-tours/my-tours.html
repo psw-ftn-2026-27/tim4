@@ -175,7 +175,31 @@
       @if (publishForm.pricingType().value() === 'Paid') {
         <div class="field">
           <label for="price">Price</label>
-          <input id="price" type="number" step="any" [formField]="publishForm.amount" />
+          <input
+            id="price"
+            type="number"
+            step="1"
+            [formField]="publishForm.amount"
+            [attr.aria-invalid]="
+              (publishForm.amount().dirty() ||
+                publishForm.amount().touched() ||
+                publishForm.amount().errors()[0]?.kind === 'parse') &&
+              publishForm.amount().errors().length > 0
+            "
+          />
+          @if (
+            publishForm.amount().dirty() ||
+            publishForm.amount().touched() ||
+            publishForm.amount().errors()[0]?.kind === 'parse'
+          ) {
+            @for (message of publishForm.amount().errors().slice(0, 1); track $index) {
+              <p class="error">
+                {{
+                  message.kind === 'parse' ? 'Cena mora biti ceo broj EC veći od nule.' : message.message
+                }}
+              </p>
+            }
+          }
         </div>
       }
 

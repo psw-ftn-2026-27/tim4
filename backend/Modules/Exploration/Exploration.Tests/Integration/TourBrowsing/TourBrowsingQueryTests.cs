@@ -317,6 +317,28 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Buyer_is_told_the_tour_is_bought()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tour = TourSeed.PublishedVineyardsByBicycleEasy;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.IsPurchased.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Visitor_who_did_not_buy_the_tour_is_told_it_is_not_bought()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var tour = TourSeed.PublishedVineyards;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.IsPurchased.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Draft_tour_cannot_be_opened_by_a_visitor()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");

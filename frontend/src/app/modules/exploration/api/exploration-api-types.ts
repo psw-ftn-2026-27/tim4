@@ -57,6 +57,7 @@ export interface TourDetailsDto {
   lengthInKm: number;
   transportTimes: TransportTimeDto[];
   keyPoints: TourKeyPointDto[];
+  isPurchased: boolean;
 }
 
 export interface KeyPointDetailsDto {
