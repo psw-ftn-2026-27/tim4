@@ -19,7 +19,7 @@ public sealed class SocialChallengePreparationService
     {
         var activityTime = new ActivityTime(details.Start, details.End);
         var challenge = new SocialChallenge(details.Name, activityTime, details.RequiredParticipants,
-            details.RangeInMeters, details.XpReward, details.CompletionMessage);
+            details.RangeInMeters, details.XpReward, details.CompletionMessage, details.Latitude, details.Longitude);
         _repository.Add(challenge);
         await _unitOfWork.SaveChangesAsync();
         return challenge.Id;
@@ -30,7 +30,7 @@ public sealed class SocialChallengePreparationService
         var challenge = await GetChallengeAsync(id);
         var activityTime = new ActivityTime(details.Start, details.End);
         challenge.UpdateDetails(details.Name, activityTime, details.RequiredParticipants,
-            details.RangeInMeters, details.XpReward, details.CompletionMessage);
+            details.RangeInMeters, details.XpReward, details.CompletionMessage, details.Latitude, details.Longitude);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -39,6 +39,25 @@ public sealed class SocialChallengePreparationService
         var challenge = await GetChallengeAsync(id);
         challenge.EnsureCanBeDeleted();
         _repository.Remove(challenge);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task PublishAsync(Guid id)
+    {
+        var challenge = await GetChallengeAsync(id);
+        challenge.Publish();
+        await _unitOfWork.SaveChangesAsync();
+    }
+    public async Task RetireAsync(Guid id)
+    {
+        var challenge = await GetChallengeAsync(id);
+        challenge.Retire();
+        await _unitOfWork.SaveChangesAsync();
+    }
+    public async Task ArchiveAsync(Guid id)
+    {
+        var challenge = await GetChallengeAsync(id);
+        challenge.Archive();
         await _unitOfWork.SaveChangesAsync();
     }
 
