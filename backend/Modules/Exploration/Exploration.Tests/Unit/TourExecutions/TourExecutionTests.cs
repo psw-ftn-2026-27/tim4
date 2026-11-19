@@ -47,4 +47,17 @@ public class TourExecutionTests
 
         next.Should().Be(keyPointIds[1]);
     }
+
+    [Fact]
+    public void Key_point_that_is_already_reached_cannot_be_reached_again()
+    {
+        var keyPointId = Guid.NewGuid();
+        var execution = new TourExecution(Guid.NewGuid(), Guid.NewGuid(), new Location(45.25, 19.85), DateTime.UtcNow);
+        execution.ReachKeyPoint(keyPointId, false, DateTime.UtcNow);
+
+        var reachAgain = () => execution.ReachKeyPoint(keyPointId, false, DateTime.UtcNow);
+
+        reachAgain.Should().Throw<DomainException>();
+        execution.ReachedKeyPointCount.Should().Be(1);
+    }
 }

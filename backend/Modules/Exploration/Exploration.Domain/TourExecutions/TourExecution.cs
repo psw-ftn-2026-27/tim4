@@ -64,6 +64,10 @@ public sealed class TourExecution : AggregateRoot
     public void ReachKeyPoint(Guid keyPointId, bool isLast, DateTime now)
     {
         EnsureInProgress();
+        if (HasReached(keyPointId))
+        {
+            throw new DomainException("Ova ključna tačka je već dostignuta.");
+        }
 
         _reachedKeyPoints.Add(new ReachedKeyPoint(keyPointId, now));
         if (isLast)
