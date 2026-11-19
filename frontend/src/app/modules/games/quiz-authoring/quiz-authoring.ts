@@ -16,4 +16,20 @@ export class QuizAuthoring {
   async edit(id: string, dto: QuizContentDto): Promise<void> {
     await firstValueFrom(this.http.put<void>(`${BASE_URL}/${id}`, dto));
   }
+
+  async publish(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/publish`, null));
+  }
+
+  async retire(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/retire`, null));
+  }
+
+  async archive(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/archive`, null));
+  }
+
+  async remove(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${BASE_URL}/${id}`));
+  }
 }
