@@ -7,4 +7,5 @@ public sealed record ActiveTourDto(
     string TourName,
     List<ActiveKeyPointDto> KeyPoints,
     Guid NextKeyPointId,
-    int ReachedKeyPointCount);
+    int ReachedKeyPointCount,
+    List<ReachedKeyPointDto> ReachedKeyPoints);

@@ -6,7 +6,13 @@ namespace Exploration.Tests.Integration.Seeds;
 
 internal static class TourExecutionSeed
 {
-    public static readonly TourExecution ExplorersVineyardsByBicycleInProgress = new(TourSeed.PublishedVineyardsByBicycleEasy.Id, WellKnownUsers.Explorer, new Location(45.2, 19.93), DateTime.UtcNow);
+    public static readonly TourExecution ExplorersVineyardsByBicycleWithFirstKeyPointReached;
 
-    public static TourExecution[] All => [ExplorersVineyardsByBicycleInProgress];
+    static TourExecutionSeed()
+    {
+        ExplorersVineyardsByBicycleWithFirstKeyPointReached = new(TourSeed.PublishedVineyardsByBicycleEasy.Id, WellKnownUsers.Explorer, new Location(45.2, 19.93), DateTime.UtcNow.AddMinutes(-30));
+        ExplorersVineyardsByBicycleWithFirstKeyPointReached.ReachKeyPoint(TourSeed.PublishedVineyardsByBicycleEasy.KeyPoints[0].Id, false, DateTime.UtcNow.AddMinutes(-20));
+    }
+
+    public static TourExecution[] All => [ExplorersVineyardsByBicycleWithFirstKeyPointReached];
 }

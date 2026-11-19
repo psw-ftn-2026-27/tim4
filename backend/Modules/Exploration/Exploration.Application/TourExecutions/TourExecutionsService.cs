@@ -12,15 +12,17 @@ public sealed class TourExecutionsService
     private readonly ITourRepository _tourRepository;
     private readonly IPaymentApi _paymentApi;
     private readonly TourStarting _tourStarting;
+    private readonly TourWalking _tourWalking;
     private readonly IUnitOfWork _unitOfWork;
 
     public TourExecutionsService(ITourExecutionRepository executionRepository, ITourRepository tourRepository,
-        IPaymentApi paymentApi, TourStarting tourStarting, IUnitOfWork unitOfWork)
+        IPaymentApi paymentApi, TourStarting tourStarting, TourWalking tourWalking, IUnitOfWork unitOfWork)
     {
         _executionRepository = executionRepository;
         _tourRepository = tourRepository;
         _paymentApi = paymentApi;
         _tourStarting = tourStarting;
+        _tourWalking = tourWalking;
         _unitOfWork = unitOfWork;
     }
 
@@ -39,5 +41,18 @@ public sealed class TourExecutionsService
             _executionRepository.Add(execution);
         }
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<PositionCheckResultDto> CheckPositionAsync(Guid touristId, CheckPositionDto dto)
+    {
+        var execution = await _executionRepository.GetInProgressByTouristAsync(touristId)
+            ?? throw new NotFoundException("Nemate turu u toku.");
+        var tour = await _tourRepository.GetByIdAsync(execution.TourId)
+            ?? throw new NotFoundException($"Tour {execution.TourId} does not exist.");
+        var position = new Location(dto.Latitude, dto.Longitude);
+
+        var outcome = _tourWalking.CheckPosition(tour, execution, position, DateTime.UtcNow);
+        await _unitOfWork.SaveChangesAsync();
+        return new PositionCheckResultDto(outcome);
     }
 }

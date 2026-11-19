@@ -53,6 +53,9 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("LastActivityAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -209,6 +212,29 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Exploration.Domain.TourExecutions.TourExecution", b =>
                 {
+                    b.OwnsMany("Exploration.Domain.TourExecutions.ReachedKeyPoint", "ReachedKeyPoints", b1 =>
+                        {
+                            b1.Property<Guid>("TourExecutionId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<Guid>("KeyPointId");
+
+                            b1.Property<DateTime>("ReachedAt");
+
+                            b1.HasKey("TourExecutionId", "__synthesizedOrdinal");
+
+                            b1.ToTable("TourExecutions", "exploration");
+
+                            b1
+                                .ToJson("ReachedKeyPoints")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourExecutionId");
+                        });
+
                     b.OwnsOne("Exploration.Domain.Tours.Location", "StartLocation", b1 =>
                         {
                             b1.Property<Guid>("TourExecutionId")
@@ -227,6 +253,8 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TourExecutionId");
                         });
+
+                    b.Navigation("ReachedKeyPoints");
 
                     b.Navigation("StartLocation")
                         .IsRequired();

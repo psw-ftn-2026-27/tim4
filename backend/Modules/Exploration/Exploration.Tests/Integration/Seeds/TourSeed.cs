@@ -48,8 +48,9 @@ internal static class TourSeed
 
         PublishedVineyardsByBicycleEasy = new(WellKnownUsers.SecondExplorer, "Laka vožnja kroz vinograde", "Laka vožnja biciklom vodi ravnim putem kroz vinograde podno Fruške gore, uz kratko zadržavanje kod vidikovca i povratak istim putem do polazne tačke.", TourDifficulty.Easy, ["vino", "priroda"], new RecommendedGroupSize(1, 10));
         PublishedVineyardsByBicycleEasy.AddTransportTime(TransportMode.Bicycle, 40);
-        PublishedVineyardsByBicycleEasy.AddKeyPoint(new KeyPoint("Polazna tačka", "Početak vožnje kroz vinograde.", "/images/seed-publishedvineyardsbybicycleeasy-1.jpg", null, new Location(45.199, 19.93), true), 0);
-        PublishedVineyardsByBicycleEasy.AddKeyPoint(new KeyPoint("Vidikovac", "Kratko zadržavanje kod vidikovca.", "/images/seed-publishedvineyardsbybicycleeasy-2.jpg", null, new Location(45.19, 19.92), true), 1.3);
+        PublishedVineyardsByBicycleEasy.AddKeyPoint(new KeyPoint("Polazna tačka", "Početak vožnje kroz vinograde.", "/images/seed-publishedvineyardsbybicycleeasy-1.jpg", "Prva loza je zasađena pre sto godina.", new Location(45.199, 19.93), true), 0);
+        PublishedVineyardsByBicycleEasy.AddKeyPoint(new KeyPoint("Stari podrum", "Kratak predah kod starog podruma.", "/images/seed-publishedvineyardsbybicycleeasy-2.jpg", "Ključ podruma visi iza vrata.", new Location(45.195, 19.925), true), 0.7);
+        PublishedVineyardsByBicycleEasy.AddKeyPoint(new KeyPoint("Vidikovac", "Kratko zadržavanje kod vidikovca.", "/images/seed-publishedvineyardsbybicycleeasy-3.jpg", "Sa vidikovca se po vedrom danu vidi Beograd.", new Location(45.19, 19.92), true), 1.3);
         PublishedVineyardsByBicycleEasy.Publish(new TourPricing(TourPricingType.Paid, 60));
 
         PublishedWineAndHeritageWalk = new(WellKnownUsers.SecondExplorer, "Vino i nasleđe Karlovaca", "Šetnja vodi od Saborne crkve i Patrijaršijskog dvora do Stražilova, uz obilazak starog podruma i priču o istoriji vinarstva u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "istorija"], new RecommendedGroupSize(1, 10));

@@ -35,4 +35,16 @@ public class TourExecutionTests
 
         next.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void Next_key_point_is_the_first_one_in_tour_order_that_is_not_reached()
+    {
+        var keyPointIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        var execution = new TourExecution(Guid.NewGuid(), Guid.NewGuid(), new Location(45.25, 19.85), DateTime.UtcNow);
+        execution.ReachKeyPoint(keyPointIds[0], false, DateTime.UtcNow);
+
+        var next = execution.NextKeyPointId(keyPointIds);
+
+        next.Should().Be(keyPointIds[1]);
+    }
 }

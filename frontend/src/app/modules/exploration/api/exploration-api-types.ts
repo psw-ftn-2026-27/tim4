@@ -159,4 +159,31 @@ export interface ActiveTourDto {
   keyPoints: ActiveKeyPointDto[];
   nextKeyPointId: string;
   reachedKeyPointCount: number;
+  reachedKeyPoints: ReachedKeyPointDto[];
+}
+
+export interface ReachedKeyPointDto {
+  id: string;
+  name: string;
+  secret: string | null;
+}
+
+export interface CheckPositionDto {
+  latitude: number;
+  longitude: number;
+}
+
+export type PositionCheckOutcome = 'NotNear' | 'ReachedKeyPoint' | 'CompletedTour';
+
+export interface PositionCheckResultDto {
+  outcome: PositionCheckOutcome;
+}
+
+export type TourExecutionStatus = 'InProgress' | 'Completed' | 'Abandoned';
+
+export interface TourExecutionDto {
+  executionId: string;
+  tourName: string;
+  status: TourExecutionStatus;
+  reachedKeyPoints: ReachedKeyPointDto[];
 }

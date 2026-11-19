@@ -1,10 +1,13 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
-import { LocationMap, MapLocation } from '../../../../shared/map/location-map';
-import { ActiveTourDto } from '../../api/exploration-api-types';
+import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
+import { PositionSimulation } from '../../../../shared/position/position-simulation';
+import { serverMessage } from '../../../../shared/util/server-message';
+import { ActiveTourDto, TourExecutionDto } from '../../api/exploration-api-types';
+import { TourExecutions } from '../tour-executions';
 
 // The active tour screen. It asks the server for the tourist's tour in progress, so it shows
 // the same after a refresh or a return.
@@ -16,6 +19,8 @@ import { ActiveTourDto } from '../../api/exploration-api-types';
 })
 export class ActiveTour {
   protected readonly auth = inject(Auth);
+  private readonly positionSimulation = inject(PositionSimulation);
+  private readonly tourExecutions = inject(TourExecutions);
 
   // Only a tourist has a tour in progress and a position, so the requests are made only for one.
   protected readonly isExplorer = computed(
@@ -31,6 +36,22 @@ export class ActiveTour {
   protected readonly position = httpResource<CoordinatesDto | null>(() =>
     this.isExplorer() ? '/api/positions/mine' : undefined,
   );
+
+  // Set once a check completes the tour. The session is no longer in progress, so the page
+  // reads it by its ID instead of through the active tour.
+  protected readonly completedExecutionId = signal<string | null>(null);
+
+  protected readonly completedExecution = httpResource<TourExecutionDto>(() => {
+    const id = this.completedExecutionId();
+    return id === null ? undefined : `/api/exploration/tour-executions/${id}`;
+  });
+
+  protected readonly pending = signal(false);
+  protected readonly positionError = signal<string | null>(null);
+  protected readonly checkError = signal<string | null>(null);
+
+  // True once a check reached a key point; the notice stays until another one is reached.
+  private readonly justReached = signal(false);
 
   protected readonly savedPosition = computed(() =>
     this.position.hasValue() ? this.position.value() : null,
@@ -51,8 +72,57 @@ export class ActiveTour {
     return active?.keyPoints.find((keyPoint) => keyPoint.id === active.nextKeyPointId) ?? null;
   });
 
+  // The newly reached key point is the last one in the reloaded active tour, so the notice
+  // waits until the reload has finished.
+  protected readonly reachedKeyPoint = computed(() => {
+    if (!this.justReached() || this.activeTour.status() !== 'resolved') {
+      return null;
+    }
+    return this.activeTour.value()?.reachedKeyPoints.at(-1) ?? null;
+  });
+
   protected reload(): void {
     this.activeTour.reload();
     this.position.reload();
+  }
+
+  // A click on the map saves the position; the marker moves only once the resource reloads.
+  protected async setPosition(coordinates: MapCoordinates): Promise<void> {
+    const active = this.activeTour.hasValue() ? this.activeTour.value() : null;
+    if (active === null || this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.positionError.set(null);
+    this.checkError.set(null);
+    try {
+      await this.positionSimulation.setPosition(coordinates);
+      this.position.reload();
+      // Until the platform team provides the pattern for the 10-second timer, the page checks
+      // the position right after it is saved. The timer is added once the pattern exists.
+      await this.checkPosition(coordinates, active.executionId);
+    } catch (failure) {
+      this.positionError.set(serverMessage(failure, 'Poziciju nije moguće sačuvati.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  // Sends the saved coordinates; the server decides whether the next key point is reached.
+  private async checkPosition(coordinates: MapCoordinates, executionId: string): Promise<void> {
+    try {
+      const result = await this.tourExecutions.checkPosition({
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+      });
+      if (result.outcome === 'ReachedKeyPoint') {
+        this.justReached.set(true);
+        this.activeTour.reload();
+      } else if (result.outcome === 'CompletedTour') {
+        this.completedExecutionId.set(executionId);
+      }
+    } catch (failure) {
+      this.checkError.set(serverMessage(failure, 'Provera pozicije nije uspela.'));
+    }
   }
 }
