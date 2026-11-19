@@ -25,6 +25,9 @@ export interface QuizDto {
   instructions: string;
   status: QuizStatus;
   questions: QuestionDto[];
+  latitude: number;
+  longitude: number;
+  rangeInMeters: number;
 }
 
 export interface QuestionContentDto {
@@ -37,6 +40,9 @@ export interface QuizContentDto {
   name: string;
   instructions: string;
   questions: QuestionContentDto[];
+  latitude: number;
+  longitude: number;
+  rangeInMeters: number;
 }
 
 export type SocialChallengeStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';

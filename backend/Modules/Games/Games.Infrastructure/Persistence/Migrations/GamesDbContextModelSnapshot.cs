@@ -38,6 +38,9 @@ namespace Games.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int>("RangeInMeters")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -82,6 +85,27 @@ namespace Games.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Games.Domain.Quizzes.Quiz", b =>
                 {
+                    b.OwnsOne("Games.Domain.Quizzes.Location", "Location", b1 =>
+                        {
+                            b1.Property<Guid>("QuizId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision")
+                                .HasColumnName("Latitude");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision")
+                                .HasColumnName("Longitude");
+
+                            b1.HasKey("QuizId");
+
+                            b1.ToTable("Quizzes", "games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("QuizId");
+                        });
+
                     b.OwnsMany("Games.Domain.Quizzes.Question", "Questions", b1 =>
                         {
                             b1.Property<Guid>("QuizId");
@@ -131,6 +155,9 @@ namespace Games.Infrastructure.Persistence.Migrations
 
                             b1.Navigation("Options");
                         });
+
+                    b.Navigation("Location")
+                        .IsRequired();
 
                     b.Navigation("Questions");
                 });
