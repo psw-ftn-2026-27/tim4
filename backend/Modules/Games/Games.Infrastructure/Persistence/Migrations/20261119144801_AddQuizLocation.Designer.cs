@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Games.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(GamesDbContext))]
-    [Migration("20261119213734_AddSocialChallengeLocations")]
-    partial class AddSocialChallengeLocations
+    [Migration("20261119144801_AddQuizLocation")]
+    partial class AddQuizLocation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,67 +25,6 @@ namespace Games.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Games.Domain.LocationChallenges.LocationChallenge", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<double>("StartLatitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("StartLongitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("XpReward")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LocationChallenges", "games");
-                });
-
-            modelBuilder.Entity("Games.Domain.LocationChallenges.LocationChallengeAttempt", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("AwardedXp")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("ChallengeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double>("DiameterInMeters")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("integer");
-
-                    b.PrimitiveCollection<Guid[]>("_discoveredPointIds")
-                        .IsRequired()
-                        .HasColumnType("uuid[]")
-                        .HasColumnName("DiscoveredPointIds");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChallengeId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("LocationChallengeAttempts", "games");
-                });
 
             modelBuilder.Entity("Games.Domain.Quizzes.Quiz", b =>
                 {
@@ -101,6 +40,9 @@ namespace Games.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<int>("RangeInMeters")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -120,12 +62,6 @@ namespace Games.Infrastructure.Persistence.Migrations
                     b.Property<string>("CompletionMessage")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("double precision");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -150,49 +86,29 @@ namespace Games.Infrastructure.Persistence.Migrations
                     b.ToTable("SocialChallenges", "games");
                 });
 
-            modelBuilder.Entity("Games.Domain.LocationChallenges.LocationChallenge", b =>
-                {
-                    b.OwnsMany("Games.Domain.LocationChallenges.HiddenLocation", "HiddenLocations", b1 =>
-                        {
-                            b1.Property<Guid>("LocationChallengeId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<Guid>("PointId")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("ImageAddress")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<double>("Latitude")
-                                .HasColumnType("double precision");
-
-                            b1.Property<double>("Longitude")
-                                .HasColumnType("double precision");
-
-                            b1.HasKey("LocationChallengeId", "PointId");
-
-                            b1.ToTable("HiddenLocations", "games");
-
-                            b1.WithOwner()
-                                .HasForeignKey("LocationChallengeId");
-                        });
-
-                    b.Navigation("HiddenLocations");
-                });
-
-            modelBuilder.Entity("Games.Domain.LocationChallenges.LocationChallengeAttempt", b =>
-                {
-                    b.HasOne("Games.Domain.LocationChallenges.LocationChallenge", null)
-                        .WithMany()
-                        .HasForeignKey("ChallengeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Games.Domain.Quizzes.Quiz", b =>
                 {
+                    b.OwnsOne("Games.Domain.Quizzes.Location", "Location", b1 =>
+                        {
+                            b1.Property<Guid>("QuizId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision")
+                                .HasColumnName("Latitude");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision")
+                                .HasColumnName("Longitude");
+
+                            b1.HasKey("QuizId");
+
+                            b1.ToTable("Quizzes", "games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("QuizId");
+                        });
+
                     b.OwnsMany("Games.Domain.Quizzes.Question", "Questions", b1 =>
                         {
                             b1.Property<Guid>("QuizId");
@@ -242,6 +158,9 @@ namespace Games.Infrastructure.Persistence.Migrations
 
                             b1.Navigation("Options");
                         });
+
+                    b.Navigation("Location")
+                        .IsRequired();
 
                     b.Navigation("Questions");
                 });

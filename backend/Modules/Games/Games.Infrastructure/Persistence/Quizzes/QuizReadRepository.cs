@@ -1,5 +1,7 @@
 using Games.Application.QuizAuthoring;
+using Games.Application.QuizSolving;
 using Games.Application.Quizzes;
+using Games.Domain.Quizzes;
 using Microsoft.EntityFrameworkCore;
 
 namespace Games.Infrastructure.Persistence.Quizzes;
@@ -42,7 +44,49 @@ internal sealed class QuizReadRepository : IQuizReadRepository
                         question.Options
                             .Select(option => new AnswerOptionDto(option.Text, option.IsCorrect))
                             .ToList()))
-                    .ToList()))
+                    .ToList(),
+                quiz.Location.Latitude,
+                quiz.Location.Longitude,
+                quiz.RangeInMeters))
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<List<QuizMapItemDto>> GetQuizMapAsync(Guid playerId)
+    {
+        var quizzes = await _dbContext.Quizzes
+            .Where(quiz => quiz.Status == QuizStatus.Published)
+            .OrderBy(quiz => quiz.Name)
+            .Select(quiz => new
+            {
+                quiz.Id,
+                quiz.Name,
+                quiz.Instructions,
+                quiz.Location.Latitude,
+                quiz.Location.Longitude
+            })
+            .ToListAsync();
+
+        var quizIds = quizzes.Select(quiz => quiz.Id).ToList();
+        var attempts = await _dbContext.QuizAttempts
+            .Where(attempt => attempt.PlayerId == playerId && quizIds.Contains(attempt.QuizId))
+            .Select(attempt => new
+            {
+                attempt.QuizId,
+                attempt.CompletedAt,
+                EarnedXp = attempt.Answers.Sum(answer => answer.EarnedXp)
+            })
+            .ToDictionaryAsync(attempt => attempt.QuizId);
+
+        return quizzes
+            .Select(quiz =>
+            {
+                var attempt = attempts.GetValueOrDefault(quiz.Id);
+                var progress = attempt is null
+                    ? QuizProgress.NotStarted
+                    : attempt.CompletedAt is null ? QuizProgress.Started : QuizProgress.Solved;
+                return new QuizMapItemDto(quiz.Id, quiz.Name, quiz.Instructions, quiz.Latitude, quiz.Longitude,
+                    progress, progress == QuizProgress.Solved ? attempt!.EarnedXp : null);
+            })
+            .ToList();
     }
 }

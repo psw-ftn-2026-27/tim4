@@ -1,0 +1,73 @@
+<div class="stack">
+  <a class="back-link" routerLink="/games/map">← Mapa izazova</a>
+  <header class="page-header">
+    <h1>{{ attempt.hasValue() ? attempt.value().name : 'Rešavanje kviza' }}</h1>
+  </header>
+
+  @if (!user()) {
+    <p class="state">Prijavite se da biste rešavali kvizove.</p>
+  } @else if (!isExplorer()) {
+    <p class="state">Rešavanje kvizova dostupno je istraživačima.</p>
+  } @else if (notStarted()) {
+    <div class="state">
+      <p>Ovaj kviz niste započeli. Započnite ga sa mape izazova.</p>
+      <a routerLink="/games/map">← Mapa izazova</a>
+    </div>
+  } @else if (attempt.error()) {
+    <div class="state state--error" role="alert">
+      <p>Učitavanje kviza nije uspelo.</p>
+      <button class="button" type="button" (click)="attempt.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else if (attempt.value(); as data) {
+    <p>{{ data.instructions }}</p>
+    <div class="progress">
+      <span class="progress__bar" aria-hidden="true">
+        <span
+          class="progress__fill"
+          [style.width.%]="(data.answeredCount / data.questionCount) * 100"
+        ></span>
+      </span>
+      <span>{{ data.answeredCount }} od {{ data.questionCount }}</span>
+    </div>
+
+    @if (data.result; as result) {
+      <section class="card stack" role="status">
+        <h2>Kviz je rešen</h2>
+        <p>
+          <span class="badge badge--xp">★ {{ earnedXpText() }} od {{ result.totalXp }} XP</span>
+          {{ percentageText() }}
+        </p>
+      </section>
+    } @else if (data.currentQuestion; as question) {
+      <fieldset class="field-group">
+        <legend>{{ question.text }}</legend>
+        @for (option of question.options; track $index) {
+          <label class="choice" [for]="'option-' + $index">
+            <input
+              [id]="'option-' + $index"
+              type="checkbox"
+              [checked]="selected().includes($index)"
+              (change)="toggle($index)"
+            />
+            {{ option }}
+          </label>
+        }
+      </fieldset>
+      @if (error(); as message) {
+        <p class="error" role="alert">{{ message }}</p>
+      }
+      <div class="form-actions">
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending() || attempt.isLoading()"
+          (click)="answer(question.id)"
+        >
+          Sledeće
+        </button>
+      </div>
+    }
+  } @else if (attempt.isLoading()) {
+    <p class="state" role="status">Učitavanje kviza…</p>
+  }
+</div>

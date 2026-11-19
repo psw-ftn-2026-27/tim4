@@ -57,6 +57,7 @@ export interface TourDetailsDto {
   lengthInKm: number;
   transportTimes: TransportTimeDto[];
   keyPoints: TourKeyPointDto[];
+  isPurchased: boolean;
 }
 
 export interface KeyPointDetailsDto {
@@ -136,4 +137,26 @@ export interface RecordLocationSearchDto {
   priceTo: number | null;
   lengthFrom: number | null;
   lengthTo: number | null;
+}
+
+export interface StartTourDto {
+  tourId: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface ActiveKeyPointDto {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface ActiveTourDto {
+  executionId: string;
+  tourId: string;
+  tourName: string;
+  keyPoints: ActiveKeyPointDto[];
+  nextKeyPointId: string;
+  reachedKeyPointCount: number;
 }

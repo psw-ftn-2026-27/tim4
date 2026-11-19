@@ -6,7 +6,41 @@
   } @else if (tour.error()) {
     <p class="error">Could not load the tour.</p>
   } @else if (tour.value(); as tour) {
-    <h1>{{ tour.name }}</h1>
+    <!-- One primary action at a time: a buyer starts the tour, anyone else who may buy adds it to the cart. -->
+    <div class="page-header">
+      <h1>{{ tour.name }}</h1>
+      @if (tour.isPurchased) {
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending() || savedPosition() === null"
+          (click)="startTour(tour.id)"
+        >
+          Pokreni turu
+        </button>
+      } @else if (canAddToCart()) {
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending()"
+          (click)="addToCart()"
+        >
+          Dodaj u korpu
+        </button>
+      }
+    </div>
+
+    @if (added()) {
+      <p class="notice notice--success">
+        ✓ Tura je dodata u korpu. <a routerLink="/payment/cart">Otvori korpu</a>
+      </p>
+    }
+    @if (error(); as message) {
+      <p class="error" role="alert">⚠ {{ message }}</p>
+    }
+    @if (startError(); as message) {
+      <p class="error" role="alert">⚠ {{ message }}</p>
+    }
     <p>{{ tour.description }}</p>
     <p class="meta">
       Difficulty: {{ tour.difficulty }} · Length: {{ tour.lengthInKm.toFixed(2) }} km
@@ -27,7 +61,30 @@
     </ul>
 
     <h2>Key points</h2>
-    <app-location-map [locations]="mapLocations()" />
+    @if (tour.isPurchased && isExplorer()) {
+      <!-- A buyer sets the position by clicking the map; the marker comes from the server. -->
+      <app-location-map
+        [locations]="mapLocations()"
+        [selectable]="true"
+        [position]="savedPosition()"
+        (selectedChange)="setPosition($event)"
+      />
+
+      @if (position.error()) {
+        <div class="state state--error" role="alert">
+          ⚠ Pozicija nije učitana.
+          <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+        </div>
+      } @else if (position.hasValue() && savedPosition() === null) {
+        <p>Pozicija nije postavljena — kliknite na mapu da označite gde se nalazite</p>
+      }
+
+      @if (positionError()) {
+        <p class="error" role="alert">{{ positionError() }}</p>
+      }
+    } @else {
+      <app-location-map [locations]="mapLocations()" />
+    }
 
     <ol class="key-points stack">
       @for (keyPoint of tour.keyPoints; track keyPoint.id) {

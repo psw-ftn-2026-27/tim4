@@ -25,6 +25,9 @@ export interface QuizDto {
   instructions: string;
   status: QuizStatus;
   questions: QuestionDto[];
+  latitude: number;
+  longitude: number;
+  rangeInMeters: number;
 }
 
 export interface QuestionContentDto {
@@ -37,6 +40,9 @@ export interface QuizContentDto {
   name: string;
   instructions: string;
   questions: QuestionContentDto[];
+  latitude: number;
+  longitude: number;
+  rangeInMeters: number;
 }
 
 export type SocialChallengeStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';
@@ -114,4 +120,47 @@ export interface LocationChallengePointProgressDto {
   id: string;
   discovered: boolean;
   imageAddress: string;
+}
+
+export type QuizProgress = 'NotStarted' | 'Started' | 'Solved';
+
+export interface QuizMapItemDto {
+  id: string;
+  name: string;
+  instructions: string;
+  latitude: number;
+  longitude: number;
+  progress: QuizProgress;
+  earnedXp: number | null;
+}
+
+export interface QuizAttemptDto {
+  quizId: string;
+  name: string;
+  instructions: string;
+  answeredCount: number;
+  questionCount: number;
+  currentQuestion: CurrentQuestionDto | null;
+  result: QuizResultDto | null;
+}
+
+export interface CurrentQuestionDto {
+  id: string;
+  text: string;
+  options: string[];
+}
+
+export interface QuizResultDto {
+  earnedXp: number;
+  totalXp: number;
+  percentage: number;
+}
+
+export interface QuizPositionDto {
+  latitude: number;
+  longitude: number;
+}
+
+export interface AnswerDto {
+  selectedOptions: number[];
 }

@@ -114,6 +114,8 @@ public sealed class TourBrowsingQueries
     {
         var tour = await _tourReadRepository.GetPublishedDetailsAsync(tourId)
             ?? throw new NotFoundException($"Tour {tourId} does not exist.");
+        var isPurchased = await _paymentApi.HasPurchasedAsync(viewerId, tourId);
+        tour = tour with { IsPurchased = isPurchased };
 
         // The author sees the whole tour. Once Payment exposes purchases, a buyer will too.
         if (tour.AuthorId == viewerId)

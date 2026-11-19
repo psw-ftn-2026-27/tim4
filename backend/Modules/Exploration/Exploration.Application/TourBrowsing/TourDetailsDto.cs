@@ -12,4 +12,5 @@ public sealed record TourDetailsDto(
     List<string> Tags,
     double LengthInKm,
     List<TransportTimeDto> TransportTimes,
-    List<TourKeyPointDto> KeyPoints);
+    List<TourKeyPointDto> KeyPoints,
+    bool IsPurchased);

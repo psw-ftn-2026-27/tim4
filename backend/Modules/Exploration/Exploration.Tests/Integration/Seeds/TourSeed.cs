@@ -9,6 +9,7 @@ internal static class TourSeed
     public static readonly Tour CityStroll = new(WellKnownUsers.Explorer, "Šetnja centrom", "Kratak opis gradske šetnje.", TourDifficulty.Moderate, ["grad"], new RecommendedGroupSize(1, 10));
     public static readonly Tour SecondExplorersTrail = new(WellKnownUsers.SecondExplorer, "Tuđa staza", "Kratak opis staze drugog autora.", TourDifficulty.Easy, ["grad"], new RecommendedGroupSize(1, 10));
     public static readonly Tour PublishableRiverside;
+    public static readonly Tour PublishableQuayWithExistingProduct;
     public static readonly Tour PublishedVineyards;
     public static readonly Tour PublishedMonasteries;
     public static readonly Tour PublishedVineyardsByBicycleEasy;
@@ -27,6 +28,11 @@ internal static class TourSeed
         PublishableRiverside.AddTransportTime(TransportMode.Walking, 90);
         PublishableRiverside.AddKeyPoint(new KeyPoint("Ribarsko ostrvo", "Početak staze uz Dunav.", "/images/seed-publishableriverside-1.jpg", null, new Location(45.238, 19.877), true), 0);
         PublishableRiverside.AddKeyPoint(new KeyPoint("Most slobode", "Kraj staze kod mosta.", "/images/seed-publishableriverside-2.jpg", null, new Location(45.241, 19.859), true), 1.5);
+
+        PublishableQuayWithExistingProduct = new(WellKnownUsers.Explorer, "Šetnja kejom", "Šetnja počinje kod Varadinskog mosta, prati Sunčani kej pored Dunavskog parka i završava se kod Kamenjara, uz pogled na Petrovaradinsku tvrđavu.", TourDifficulty.Easy, ["priroda", "grad"], new RecommendedGroupSize(1, 10));
+        PublishableQuayWithExistingProduct.AddTransportTime(TransportMode.Walking, 50);
+        PublishableQuayWithExistingProduct.AddKeyPoint(new KeyPoint("Varadinski most", "Početak šetnje kejom.", "/images/seed-publishablequay-1.jpg", null, new Location(45.251, 19.862), true), 0);
+        PublishableQuayWithExistingProduct.AddKeyPoint(new KeyPoint("Kamenjar", "Kraj šetnje kejom.", "/images/seed-publishablequay-2.jpg", null, new Location(45.244, 19.873), true), 1.2);
 
         PublishedVineyards = new(WellKnownUsers.Explorer, "Vinogradi Sremskih Karlovaca", "Tura vodi kroz vinograde na obroncima Fruške gore, uz obilazak dva porodična podruma i degustaciju bermeta u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "priroda"], new RecommendedGroupSize(1, 10));
         PublishedVineyards.AddTransportTime(TransportMode.Bicycle, 60);
@@ -66,5 +72,5 @@ internal static class TourSeed
         ArchivedOldTownWalk.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk, PublishedFortressWithHiddenFirstKeyPoint, ArchivedOldTownWalk, DraftWithKeyPoints];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishableQuayWithExistingProduct, PublishedVineyards, PublishedMonasteries, PublishedVineyardsByBicycleEasy, PublishedWineAndHeritageWalk, PublishedFortressWithHiddenFirstKeyPoint, ArchivedOldTownWalk, DraftWithKeyPoints];
 }

@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { FormField, form, min, required } from '@angular/forms/signals';
+import { FormField, form, min, required, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDto, TourPricingType, TransportMode } from '../../api/exploration-api-types';
@@ -38,6 +38,16 @@ export class MyTours {
 
   protected readonly publishForm = form(this.publishModel, (path) => {
     required(path.pricingType, { message: 'Choose whether the tour is free or paid.' });
+    // A paid tour costs a whole number of EC above zero; a free tour ignores the amount.
+    validate(path.amount, ({ value, valueOf }) => {
+      if (valueOf(path.pricingType) !== 'Paid') {
+        return undefined;
+      }
+      const amount = value();
+      return amount !== null && Number.isInteger(amount) && amount > 0
+        ? undefined
+        : { kind: 'wholePositive', message: 'Cena mora biti ceo broj EC veći od nule.' };
+    });
   });
 
   protected select(tourId: string): void {

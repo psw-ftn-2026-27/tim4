@@ -12,7 +12,7 @@
       @if (editing()) {
         <h1>Izmena kviza</h1>
 
-        <app-quiz-form [quizForm]="form" [pending]="pending()" [error]="error()" (save)="save()" />
+        <app-quiz-form [quizForm]="form" [pending]="pending()" [error]="error()" (save)="save($event)" />
 
         <button class="button" type="button" [disabled]="pending()" (click)="cancelEdit()">
           Otkaži
@@ -39,6 +39,9 @@
         </p>
 
         <p>{{ loaded.instructions }}</p>
+
+        <app-location-map [locations]="quizLocation()" />
+        <p>Opseg aktivacije: {{ loaded.rangeInMeters }} m</p>
 
         <h2>Pitanja</h2>
 

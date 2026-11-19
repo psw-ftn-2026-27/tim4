@@ -4,12 +4,17 @@ using Games.Application.LocationChallengeAuthoring;
 using Games.Application.LocationChallengeBrowsing;
 using Games.Application.LocationChallengePlaying;
 using Games.Application.LocationChallenges;
+using Games.Application.QuizAttempts;
 using Games.Application.QuizAuthoring;
+using Games.Application.QuizLifecycle;
+using Games.Application.QuizSolving;
 using Games.Application.Quizzes;
+using Games.Domain.QuizAttempts;
 using Games.Application.SocialChallengePreparation;
 using Games.Application.SocialChallenges;
 using Games.Infrastructure.Persistence;
 using Games.Infrastructure.Persistence.LocationChallenges;
+using Games.Infrastructure.Persistence.QuizAttempts;
 using Games.Infrastructure.Persistence.Quizzes;
 using Games.Infrastructure.Persistence.SocialChallenges;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +37,12 @@ public static class GamesModuleExtensions
 
         services.AddScoped<QuizAuthoringService>();
         services.AddScoped<QuizAuthoringQueries>();
+        services.AddScoped<QuizLifecycleService>();
+
+        services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
+        services.AddScoped<QuizAnswering>();
+        services.AddScoped<QuizSolvingService>();
+        services.AddScoped<QuizSolvingQueries>();
 
         services.AddScoped<ILocationChallengeRepository, LocationChallengeRepository>();
         services.AddScoped<ILocationChallengeAttemptRepository, LocationChallengeAttemptRepository>();

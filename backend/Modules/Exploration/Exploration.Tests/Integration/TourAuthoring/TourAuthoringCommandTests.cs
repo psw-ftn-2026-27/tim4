@@ -6,6 +6,7 @@ using Exploration.Domain.Tours;
 using Exploration.Infrastructure.Persistence;
 using Exploration.Tests.Integration.Seeds;
 using FluentAssertions;
+using Payment.Infrastructure.Persistence;
 using Shared.Tests;
 using Xunit;
 
@@ -121,10 +122,12 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Author_publishes_a_ready_paid_tour()
+    public async Task Author_publishes_a_ready_paid_tour_and_it_is_offered_as_a_product_at_that_price()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new PublishTourDto(TourPricingType.Paid, 1500.50m);
+        var request = new PublishTourDto(TourPricingType.Paid, 1500m);
+        using var arrangeContext = Factory.CreateContext<PaymentDbContext>();
+        var productCountBefore = arrangeContext.Products.Count();
 
         var response = await client.PostAsJsonAsync($"/api/exploration/tours/{TourSeed.PublishableRiverside.Id}/publish", request);
 
@@ -133,6 +136,50 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
         var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableRiverside.Id);
         stored.Status.Should().Be(TourStatus.Published);
         stored.PublishedAt.Should().NotBeNull();
+        using var paymentContext = Factory.CreateContext<PaymentDbContext>();
+        paymentContext.Products.Count().Should().Be(productCountBefore + 1);
+        var product = paymentContext.Products.Single(product => product.EntityId == TourSeed.PublishableRiverside.Id);
+        product.Name.Should().Be(TourSeed.PublishableRiverside.Name);
+        product.OwnerId.Should().Be(WellKnownUsers.Explorer);
+        product.Price.Should().Be(1500);
+    }
+
+    [Fact]
+    public async Task Tour_that_is_not_ready_stays_a_draft_and_is_not_offered_as_a_product()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new PublishTourDto(TourPricingType.Paid, 30m);
+        using var arrangeContext = Factory.CreateContext<PaymentDbContext>();
+        var productCountBefore = arrangeContext.Products.Count();
+
+        var response = await client.PostAsJsonAsync($"/api/exploration/tours/{TourSeed.FortressWalk.Id}/publish", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.FortressWalk.Id);
+        stored.Status.Should().Be(TourStatus.Draft);
+        stored.PublishedAt.Should().BeNull();
+        using var paymentContext = Factory.CreateContext<PaymentDbContext>();
+        paymentContext.Products.Count().Should().Be(productCountBefore);
+        paymentContext.Products.Any(product => product.EntityId == TourSeed.FortressWalk.Id).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Tour_whose_product_payment_rejects_stays_a_draft()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new PublishTourDto(TourPricingType.Paid, TourProductSeed.DraftQuayFor25.Price + 5);
+
+        var response = await client.PostAsJsonAsync($"/api/exploration/tours/{TourSeed.PublishableQuayWithExistingProduct.Id}/publish", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableQuayWithExistingProduct.Id);
+        stored.Status.Should().Be(TourStatus.Draft);
+        stored.PublishedAt.Should().BeNull();
+        using var paymentContext = Factory.CreateContext<PaymentDbContext>();
+        var product = paymentContext.Products.Single(product => product.EntityId == TourSeed.PublishableQuayWithExistingProduct.Id);
+        product.Price.Should().Be(TourProductSeed.DraftQuayFor25.Price);
     }
 
     [Fact]
