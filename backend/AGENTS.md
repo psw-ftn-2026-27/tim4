@@ -21,7 +21,8 @@ backend/
   Shared/
     Shared.Domain/                 Entity, AggregateRoot, PageResult,
                                    DomainException, NotFoundException,
-                                   ImageFile (JPEG/PNG, at most 5 MB)        [platform]
+                                   ImageFile (JPEG/PNG, at most 5 MB,
+                                   metadata removed)                         [platform]
     Shared.Domain.Tests/           Unit/ tests of Shared.Domain              [platform]
     Shared.Application/            IImageStorage                             [platform]
     Shared.Api/                    ClaimsPrincipal.GetUserId()               [platform]
@@ -220,8 +221,17 @@ try/catch and no validation code.
 
 ## Image upload
 
-The image checks (size, format by content signature, server-assigned file name) exist
-once, in the platform; a module never writes them again. A module that accepts an image:
+The image checks (size, format by content signature, server-assigned file name) and the
+removal of metadata exist once, in the platform; a module never writes them again.
+`new ImageFile(bytes)` drops EXIF (which carries the GPS position of a photo), XMP, IPTC,
+comments, and PNG text chunks, without a third-party library, so `Content` never holds
+them. The removal works on the file's structure and keeps any part it cannot read
+unchanged: it protects an ordinary photo from leaking where it was taken, not against a
+file built to fool it. The only piece of EXIF an image keeps is its orientation, written into
+a new minimal EXIF segment (JPEG) or chunk (PNG), because phones save upright photos sideways
+and browsers turn them by that value. ImageSharp is deliberately not used: its maintained versions (3.2 and
+later) require a license key for Release builds, which CI runs, and the 3.1 line has known
+vulnerabilities. A module that accepts an image:
 
 1. The controller receives the image as `IFormFile` in the same request as the module's
    command, copies it to a `byte[]`, and passes the bytes to the service, because
@@ -243,7 +253,11 @@ service writes no try/catch to clean it up.
 
 `Host.Api` serves stored images as static files under `/images` without any application
 code and before authentication, so every stored image is public to anyone who has its
-address. Never store a private image through `IImageStorage`. The host caps the request
+address. The address ends in a random `Guid` and the folder is never listed, so an image
+nobody has been given the address of cannot be found. A module that must hide an image
+until some moment (a challenge that is not active yet) keeps it hidden by not returning
+its address before then; an address once given out cannot be taken back. Never store an
+image that must stay private for good through `IImageStorage`. The host caps the request
 body slightly above 5 MB; a larger request is rejected with 413. Whether an image is
 required, and deleting images no longer used, are decisions of the module. Integration
 tests write images to a temporary folder set by `ExplorerApiFactory`, not to
