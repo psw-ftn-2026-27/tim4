@@ -16,7 +16,7 @@ public class TourStartingTests
     {
         var draft = CreateDraftTour();
 
-        var start = () => new TourStarting().Start(draft, Tourist, true, null, null, Position, DateTime.UtcNow);
+        var start = () => new TourStarting().Start(draft, Tourist, true, null, Position, DateTime.UtcNow);
 
         start.Should().Throw<DomainException>();
     }
@@ -26,7 +26,7 @@ public class TourStartingTests
     {
         var tour = CreatePublishedTour();
 
-        var start = () => new TourStarting().Start(tour, Tourist, false, null, null, Position, DateTime.UtcNow);
+        var start = () => new TourStarting().Start(tour, Tourist, false, null, Position, DateTime.UtcNow);
 
         start.Should().Throw<DomainException>();
     }
@@ -38,7 +38,7 @@ public class TourStartingTests
         var inProgress = new TourExecution(tour.Id, Tourist, Position, DateTime.UtcNow.AddHours(-1));
         var now = DateTime.UtcNow;
 
-        var execution = new TourStarting().Start(tour, Tourist, true, inProgress, tour, Position, now);
+        var execution = new TourStarting().Start(tour, Tourist, true, inProgress, Position, now);
 
         execution.Should().BeSameAs(inProgress);
         execution.LastActivityAt.Should().Be(now);
@@ -51,7 +51,7 @@ public class TourStartingTests
         var otherTour = CreatePublishedTour();
         var inProgress = new TourExecution(otherTour.Id, Tourist, Position, DateTime.UtcNow);
 
-        var start = () => new TourStarting().Start(tour, Tourist, true, inProgress, otherTour, Position, DateTime.UtcNow);
+        var start = () => new TourStarting().Start(tour, Tourist, true, inProgress, Position, DateTime.UtcNow);
 
         start.Should().Throw<DomainException>();
     }

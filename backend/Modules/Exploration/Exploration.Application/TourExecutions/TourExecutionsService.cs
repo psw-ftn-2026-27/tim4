@@ -30,11 +30,9 @@ public sealed class TourExecutionsService
             ?? throw new NotFoundException($"Tour {dto.TourId} does not exist.");
         var isPurchased = await _paymentApi.HasPurchasedAsync(touristId, dto.TourId);
         var inProgress = await _executionRepository.GetInProgressByTouristAsync(touristId);
-        // The tour of the session in progress is loaded only so a rejection can name it.
-        var inProgressTour = inProgress is null ? null : await _tourRepository.GetByIdAsync(inProgress.TourId);
         var location = new Location(dto.Latitude, dto.Longitude);
 
-        var execution = _tourStarting.Start(tour, touristId, isPurchased, inProgress, inProgressTour, location, DateTime.UtcNow);
+        var execution = _tourStarting.Start(tour, touristId, isPurchased, inProgress, location, DateTime.UtcNow);
         // A continued session is already stored; only a new one is added.
         if (execution != inProgress)
         {

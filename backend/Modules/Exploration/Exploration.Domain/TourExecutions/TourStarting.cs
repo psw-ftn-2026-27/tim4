@@ -8,9 +8,8 @@ namespace Exploration.Domain.TourExecutions;
 public sealed class TourStarting
 {
     // Returns the session the tourist is now in: the continued one, or a new one the caller adds.
-    // inProgressTour is the tour of the session in progress, so a rejection can name it.
-    public TourExecution Start(Tour tour, Guid touristId, bool isPurchased, TourExecution? inProgress,
-        Tour? inProgressTour, Location location, DateTime now)
+    public TourExecution Start(Tour tour, Guid touristId, bool isPurchased, TourExecution? inProgress, Location location,
+        DateTime now)
     {
         if (tour.Status != TourStatus.Published)
         {
@@ -27,8 +26,7 @@ public sealed class TourStarting
         }
         if (inProgress.TourId != tour.Id)
         {
-            var name = inProgressTour?.Name ?? "druga tura";
-            throw new DomainException($"Već vam je u toku tura: {name}.");
+            throw new DomainException("Već vam je u toku druga tura.");
         }
 
         inProgress.Continue(now);
