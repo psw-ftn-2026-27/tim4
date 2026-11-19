@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Exploration.Application.TourExecutions;
 using Exploration.Tests.Integration.Seeds;
@@ -23,5 +24,16 @@ public class TourExecutionsQueryTests : BaseIntegrationTest
         active.TourName.Should().Be(tour.Name);
         active.KeyPoints.Select(keyPoint => keyPoint.Id).Should().Equal(tour.KeyPoints.Select(keyPoint => keyPoint.Id));
         active.NextKeyPointId.Should().Be(tour.KeyPoints[0].Id);
+        active.ReachedKeyPointCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Tourist_without_a_tour_in_progress_gets_no_active_tour()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+
+        var response = await client.GetAsync("/api/exploration/tour-executions/active");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 }

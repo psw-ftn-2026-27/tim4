@@ -48,6 +48,38 @@ public class TourExecutionsCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Starting_a_tour_whose_session_is_in_progress_continues_it_and_stores_no_new_session()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var inProgress = TourExecutionSeed.ExplorersVineyardsByBicycleInProgress;
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var executionCountBefore = arrangeContext.TourExecutions.Count();
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions", new StartTourDto(inProgress.TourId, 45.21, 19.94));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.TourExecutions.Count().Should().Be(executionCountBefore);
+        var stored = assertContext.TourExecutions.Single(execution => execution.Id == inProgress.Id);
+        stored.Status.Should().Be(TourExecutionStatus.InProgress);
+        stored.LastActivityAt.Should().BeAfter(inProgress.LastActivityAt);
+    }
+
+    [Fact]
+    public async Task Tourist_cannot_start_a_tour_that_does_not_exist_and_no_session_is_stored()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var executionCountBefore = arrangeContext.TourExecutions.Count();
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions", new StartTourDto(Guid.NewGuid(), 45.12, 19.94));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.TourExecutions.Count().Should().Be(executionCountBefore);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_start_a_tour()
     {
         var client = Factory.CreateClient();
