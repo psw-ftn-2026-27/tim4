@@ -10,6 +10,7 @@ internal static class TourProductSeed
     public static readonly Product MonasteriesForFree;
     public static readonly Product VineyardsByBicycleFor60;
     public static readonly Product ArchivedOldTownWalkFor20;
+    public static readonly Product FortressWithHiddenFirstKeyPointFor40;
     // A product left behind for a draft tour, so that publishing it at another price conflicts.
     public static readonly Product DraftQuayFor25;
 
@@ -19,8 +20,9 @@ internal static class TourProductSeed
         MonasteriesForFree = new Product(TourSeed.PublishedMonasteries.Id, TourSeed.PublishedMonasteries.Name, TourSeed.PublishedMonasteries.AuthorId, 0);
         VineyardsByBicycleFor60 = new Product(TourSeed.PublishedVineyardsByBicycleEasy.Id, TourSeed.PublishedVineyardsByBicycleEasy.Name, TourSeed.PublishedVineyardsByBicycleEasy.AuthorId, 60);
         ArchivedOldTownWalkFor20 = new Product(TourSeed.ArchivedOldTownWalk.Id, TourSeed.ArchivedOldTownWalk.Name, TourSeed.ArchivedOldTownWalk.AuthorId, 20);
+        FortressWithHiddenFirstKeyPointFor40 = new Product(TourSeed.PublishedFortressWithHiddenFirstKeyPoint.Id, TourSeed.PublishedFortressWithHiddenFirstKeyPoint.Name, TourSeed.PublishedFortressWithHiddenFirstKeyPoint.AuthorId, 40);
         DraftQuayFor25 = new Product(TourSeed.PublishableQuayWithExistingProduct.Id, TourSeed.PublishableQuayWithExistingProduct.Name, TourSeed.PublishableQuayWithExistingProduct.AuthorId, 25);
     }
 
-    public static Product[] All => [VineyardsFor30, MonasteriesForFree, VineyardsByBicycleFor60, ArchivedOldTownWalkFor20, DraftQuayFor25];
+    public static Product[] All => [VineyardsFor30, MonasteriesForFree, VineyardsByBicycleFor60, ArchivedOldTownWalkFor20, FortressWithHiddenFirstKeyPointFor40, DraftQuayFor25];
 }

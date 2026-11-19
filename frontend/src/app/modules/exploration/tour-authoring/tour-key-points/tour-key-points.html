@@ -1,14 +1,14 @@
 <div class="stack">
-  <p><a routerLink="/exploration/mine">← My tours</a></p>
+  <a class="back-link" routerLink="/exploration/mine">← Moje ture</a>
 
   @if (tour(); as tour) {
-    <h1>Key points of {{ tour.name }}</h1>
-    <p class="meta">Length: {{ tour.lengthInKm.toFixed(2) }} km</p>
+    <h1>Ključne tačke ture {{ tour.name }}</h1>
+    <p class="meta">Dužina: {{ tour.lengthInKm.toFixed(2) }} km</p>
     @if (!isDraft()) {
-      <p class="meta">Key points can be changed only while the tour is a draft.</p>
+      <p class="meta">Ključne tačke mogu da se menjaju samo dok je tura u pripremi.</p>
     }
   } @else {
-    <h1>Key points</h1>
+    <h1>Ključne tačke</h1>
   }
 
   <app-location-map
@@ -20,7 +20,7 @@
     (pathLengthChange)="pathLength.set($event)"
   />
   @if (formOpen() || removedKeyPoint()) {
-    <p class="meta">Length after the change: {{ pathLength().toFixed(2) }} km</p>
+    <p class="meta">Dužina posle izmene: {{ pathLength().toFixed(2) }} km</p>
   }
 
   @if (error()) {
@@ -28,9 +28,9 @@
   }
 
   @if (keyPoints.isLoading()) {
-    <p>Loading the key points...</p>
+    <p>Učitavanje ključnih tačaka…</p>
   } @else if (keyPoints.error()) {
-    <p class="error">Could not load the key points.</p>
+    <p class="error">Ključne tačke nije moguće učitati.</p>
   } @else {
     <ol class="key-points stack">
       @for (keyPoint of keyPoints.value() ?? []; track keyPoint.id) {
@@ -40,13 +40,13 @@
             <h2>{{ keyPoint.name }}</h2>
             <p>{{ keyPoint.description }}</p>
             @if (keyPoint.secret) {
-              <p class="meta">Secret: {{ keyPoint.secret }}</p>
+              <p class="meta">Tajna: {{ keyPoint.secret }}</p>
             }
             <p class="meta">
               {{
                 keyPoint.isVisibleWithoutPurchase
-                  ? 'Visible without purchase'
-                  : 'Visible after purchase'
+                  ? 'Vidljiva bez kupovine'
+                  : 'Vidljiva posle kupovine'
               }}
             </p>
             @if (isDraft()) {
@@ -57,7 +57,7 @@
                   [disabled]="pending() || formOpen() || removedKeyPoint() !== null"
                   (click)="startEdit(keyPoint)"
                 >
-                  Edit
+                  Izmeni
                 </button>
                 <button
                   class="button"
@@ -65,21 +65,21 @@
                   [disabled]="pending() || formOpen() || removedKeyPoint() !== null"
                   (click)="startRemove(keyPoint)"
                 >
-                  Remove
+                  Ukloni
                 </button>
               </div>
             }
           </div>
         </li>
       } @empty {
-        <li>The tour has no key points yet.</li>
+        <li>Tura još nema ključnih tačaka.</li>
       }
     </ol>
   }
 
   @if (removedKeyPoint(); as keyPoint) {
     <div class="card stack">
-      <p>Remove {{ keyPoint.name }}? The map shows the tour without it.</p>
+      <p>Da li želite da uklonite tačku {{ keyPoint.name }}? Mapa prikazuje turu bez nje.</p>
       <div class="actions">
         <button
           class="button button--primary"
@@ -87,10 +87,10 @@
           [disabled]="pending()"
           (click)="confirmRemove()"
         >
-          Remove
+          Ukloni
         </button>
         <button class="button" type="button" [disabled]="pending()" (click)="cancelRemove()">
-          Cancel
+          Odustani
         </button>
       </div>
     </div>
@@ -99,15 +99,15 @@
   @if (isDraft() && !formOpen() && removedKeyPoint() === null) {
     <p>
       <button class="button button--primary" type="button" (click)="startAdd()">
-        Add key point
+        Dodaj ključnu tačku
       </button>
     </p>
   }
 
   @if (formOpen()) {
     <form class="card stack" (submit)="save($event)">
-      <h2>{{ editedKeyPoint() ? 'Edit key point' : 'New key point' }}</h2>
-      <p class="meta">Click the map to choose where the key point is.</p>
+      <h2>{{ editedKeyPoint() ? 'Izmena ključne tačke' : 'Nova ključna tačka' }}</h2>
+      <p class="meta">Kliknite na mapu da izaberete gde se ključna tačka nalazi.</p>
       @if (form.location().touched()) {
         @for (message of form.location().errors(); track $index) {
           <p class="error">{{ message.message }}</p>
@@ -115,7 +115,7 @@
       }
 
       <div class="field">
-        <label for="key-point-name">Name</label>
+        <label for="key-point-name">Naziv</label>
         <input
           id="key-point-name"
           type="text"
@@ -132,7 +132,7 @@
       </div>
 
       <div class="field">
-        <label for="key-point-description">Description</label>
+        <label for="key-point-description">Opis</label>
         <textarea
           id="key-point-description"
           rows="3"
@@ -150,30 +150,30 @@
       </div>
 
       <div class="field">
-        <label for="key-point-secret">Secret, revealed when the explorer reaches the point</label>
+        <label for="key-point-secret">Tajna, otkriva se kada turista stigne do tačke</label>
         <textarea id="key-point-secret" rows="2" [formField]="form.secret"></textarea>
       </div>
 
       <div class="field">
         <label>
           <input type="checkbox" [formField]="form.isVisibleWithoutPurchase" />
-          Visible without purchase
+          Vidljiva bez kupovine
         </label>
       </div>
 
       <div class="field">
-        <span>Image</span>
+        <span>Slika</span>
         @if (editedKeyPoint(); as keyPoint) {
           <img class="stored-image" [src]="keyPoint.imageAddress" [alt]="keyPoint.name" />
-          <p class="meta">Choose a new image only to replace this one.</p>
+          <p class="meta">Izaberite novu sliku samo ako želite da zamenite ovu.</p>
         }
         <app-image-upload (imageChange)="image.set($event)" />
       </div>
 
       <div class="actions">
-        <button class="button button--primary" type="submit" [disabled]="pending()">Save</button>
+        <button class="button button--primary" type="submit" [disabled]="pending()">Sačuvaj</button>
         <button class="button" type="button" [disabled]="pending()" (click)="closeForm()">
-          Cancel
+          Odustani
         </button>
       </div>
     </form>

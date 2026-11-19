@@ -317,6 +317,19 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Buyer_sees_every_key_point_including_those_hidden_until_purchase_and_none_of_their_secrets()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tour = TourSeed.PublishedFortressWithHiddenFirstKeyPoint;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.KeyPoints.Select(keyPoint => keyPoint.Id).Should().Equal(tour.KeyPoints.Select(keyPoint => keyPoint.Id));
+        details.KeyPoints.Should().Contain(keyPoint => !keyPoint.IsVisibleWithoutPurchase);
+        details.KeyPoints.Should().OnlyContain(keyPoint => keyPoint.Secret == null);
+    }
+
+    [Fact]
     public async Task Buyer_is_told_the_tour_is_bought()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
