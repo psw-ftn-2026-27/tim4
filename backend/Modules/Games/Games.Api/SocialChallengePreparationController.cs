@@ -53,4 +53,23 @@ public sealed class SocialChallengePreparationController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
+
+    [HttpPost("{id:guid}/publish")]
+    public async Task<ActionResult<object>> Publish(Guid id)
+    {
+        await _service.PublishAsync(id);
+        return NoContent();
+    }
+    [HttpPost("{id:guid}/retire")]
+    public async Task<ActionResult<object>> Retire(Guid id)
+    {
+        await _service.RetireAsync(id);
+        return NoContent();
+    }
+    [HttpPost("{id:guid}/archive")]
+    public async Task<ActionResult<object>> Archive(Guid id)
+    {
+        await _service.ArchiveAsync(id);
+        return NoContent();
+    }
 }

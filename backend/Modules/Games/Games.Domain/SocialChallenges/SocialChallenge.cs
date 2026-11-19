@@ -1,3 +1,4 @@
+using Games.Domain.LocationChallenges;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -11,26 +12,59 @@ public sealed class SocialChallenge : AggregateRoot
     public decimal RangeInMeters { get; private set; }
     public int XpReward { get; private set; }
     public string CompletionMessage { get; private set; } = null!;
+    public double? Latitude { get; private set; }
+    public double? Longitude { get; private set; }
     public SocialChallengeStatus Status { get; private set; }
 
     private SocialChallenge() { }
 
     public SocialChallenge(string name, ActivityTime activityTime, int requiredParticipants,
-        decimal rangeInMeters, int xpReward, string completionMessage) : base(Guid.NewGuid())
+        decimal rangeInMeters, int xpReward, string completionMessage, double? latitude = null, double? longitude = null) : base(Guid.NewGuid())
     {
-        SetDetails(name, activityTime, requiredParticipants, rangeInMeters, xpReward, completionMessage);
+        SetDetails(name, activityTime, requiredParticipants, rangeInMeters, xpReward, completionMessage, latitude, longitude);
         Status = SocialChallengeStatus.Draft;
     }
 
     public void UpdateDetails(string name, ActivityTime activityTime, int requiredParticipants,
-        decimal rangeInMeters, int xpReward, string completionMessage)
+        decimal rangeInMeters, int xpReward, string completionMessage, double? latitude = null, double? longitude = null)
     {
         if (Status != SocialChallengeStatus.Draft)
         {
             throw new DomainException("Moguće je izmeniti samo nacrt izazova.");
         }
 
-        SetDetails(name, activityTime, requiredParticipants, rangeInMeters, xpReward, completionMessage);
+        SetDetails(name, activityTime, requiredParticipants, rangeInMeters, xpReward, completionMessage, latitude, longitude);
+    }
+
+    public void Publish()
+    {
+        if (Status != SocialChallengeStatus.Draft)
+        {
+            throw new DomainException("Moguće je objaviti samo nacrt izazova.");
+        }
+
+        _ = new ChallengeLocation(Latitude, Longitude);
+        Status = SocialChallengeStatus.Published;
+    }
+
+    public void Retire()
+    {
+        if (Status != SocialChallengeStatus.Published)
+        {
+            throw new DomainException("Moguće je povući samo objavljen izazov.");
+        }
+
+        Status = SocialChallengeStatus.Retired;
+    }
+
+    public void Archive()
+    {
+        if (Status != SocialChallengeStatus.Retired)
+        {
+            throw new DomainException("Moguće je arhivirati samo povučen izazov.");
+        }
+
+        Status = SocialChallengeStatus.Archived;
     }
 
     public void EnsureCanBeDeleted()
@@ -42,7 +76,7 @@ public sealed class SocialChallenge : AggregateRoot
     }
 
     private void SetDetails(string name, ActivityTime activityTime, int requiredParticipants,
-        decimal rangeInMeters, int xpReward, string completionMessage)
+        decimal rangeInMeters, int xpReward, string completionMessage, double? latitude = null, double? longitude = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -74,6 +108,10 @@ public sealed class SocialChallenge : AggregateRoot
             throw new DomainException("Završna poruka je obavezna.");
         }
 
+        var location = new ChallengeLocation(latitude, longitude);
+
+        Latitude = location.Latitude;
+        Longitude = location.Longitude;
         Name = name;
         ActivityTime = activityTime;
         RequiredParticipants = requiredParticipants;

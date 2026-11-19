@@ -30,6 +30,32 @@ export class SocialChallengeList {
   protected readonly selectedId = signal<string | null>(null);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly stateErrorId = signal<string | null>(null);
+
+  protected async changeState(challenge: SocialChallengeDto): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    this.stateErrorId.set(null);
+    try {
+      switch (challenge.status) {
+        case 'Draft':
+          await this.preparation.publish(challenge.id);
+          break;
+        case 'Published':
+          await this.preparation.retire(challenge.id);
+          break;
+        case 'Retired':
+          await this.preparation.archive(challenge.id);
+          break;
+      }
+      this.challenges.reload();
+    } catch (failure) {
+      this.stateErrorId.set(challenge.id);
+      this.error.set(serverMessage(failure, 'Promena stanja izazova nije uspela.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
 
   protected changePage(page: number): void {
     this.cancelDelete();
@@ -38,6 +64,7 @@ export class SocialChallengeList {
 
   protected requestDelete(id: string): void {
     this.error.set(null);
+    this.stateErrorId.set(null);
     this.selectedId.set(id);
   }
 

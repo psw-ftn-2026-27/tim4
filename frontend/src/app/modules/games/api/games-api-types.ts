@@ -55,6 +55,8 @@ export interface SocialChallengeDetailsDto {
   rangeInMeters: number;
   xpReward: number;
   completionMessage: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface SocialChallengeDto extends SocialChallengeDetailsDto {
