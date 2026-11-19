@@ -90,6 +90,18 @@ public sealed class Quiz : AggregateRoot
         }
     }
 
+    public void EnsureCanStart(Location position)
+    {
+        if (Status != QuizStatus.Published)
+        {
+            throw new DomainException("Only a published quiz can be solved.");
+        }
+        if (Location.DistanceInMetersTo(position) > RangeInMeters)
+        {
+            throw new DomainException("Move closer to the quiz location to start it.");
+        }
+    }
+
     public int TotalXp()
     {
         return _questions.Sum(question => question.XpReward);

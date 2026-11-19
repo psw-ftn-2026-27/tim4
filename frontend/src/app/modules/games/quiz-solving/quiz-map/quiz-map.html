@@ -1,0 +1,101 @@
+<div class="stack">
+  <a class="back-link" routerLink="/games">← Games</a>
+  <header class="page-header">
+    <h1>Mapa izazova</h1>
+  </header>
+
+  @if (!user()) {
+    <p class="state">Prijavite se da biste rešavali kvizove.</p>
+  } @else if (!isExplorer()) {
+    <p class="state">Rešavanje kvizova dostupno je istraživačima.</p>
+  } @else if (quizzes.error()) {
+    <div class="state state--error" role="alert">
+      <p>Učitavanje kvizova nije uspelo.</p>
+      <button class="button" type="button" (click)="quizzes.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else if (quizzes.hasValue()) {
+    @if (positionError(); as message) {
+      <p class="state state--error" role="alert">{{ message }}</p>
+    }
+    @if (position.error()) {
+      <div class="state state--error" role="alert">
+        <p>Poziciju nije moguće učitati.</p>
+        <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+      </div>
+    }
+
+    <div>
+      <app-location-map
+        [locations]="locations()"
+        [selectable]="!pending()"
+        [position]="position.value() ?? null"
+        (selectedChange)="setPosition($event)"
+        (locationClick)="selectQuiz($event)"
+      />
+    </div>
+
+    @if (selectedQuiz(); as quiz) {
+      <section class="card stack">
+        <h2>{{ quiz.name }}</h2>
+        <p>{{ quiz.instructions }}</p>
+        @if (quiz.progress === 'Solved') {
+          <p>
+            <span class="badge badge--success">✓ Rešen</span>
+            <span class="badge badge--xp">★ {{ quiz.earnedXp?.toFixed(2) }} XP</span>
+          </p>
+        } @else {
+          @if (startError(); as message) {
+            <p class="error" role="alert">{{ message }}</p>
+          }
+          @if (hasPosition()) {
+            <div class="form-actions">
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="pending()"
+                (click)="start(quiz)"
+              >
+                {{ quiz.progress === 'Started' ? 'Nastavi' : 'Započni' }}
+              </button>
+            </div>
+          } @else {
+            <p class="meta">Pozicija nije postavljena. Kliknite na mapu da označite gde se nalazite.</p>
+          }
+        }
+      </section>
+    }
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Naziv</th>
+          <th scope="col" class="col-fit">Stanje</th>
+          <th scope="col" class="col-fit">XP</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (quiz of quizzes.value(); track quiz.id) {
+          <tr>
+            <td>{{ quiz.name }}</td>
+            <td class="col-fit">
+              @if (quiz.progress === 'Solved') {
+                <span class="badge badge--success">✓ Rešen</span>
+              }
+            </td>
+            <td class="col-fit">
+              @if (quiz.progress === 'Solved') {
+                <span class="badge badge--xp">★ {{ quiz.earnedXp?.toFixed(2) }} XP</span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="meta">Nema objavljenih kvizova.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else if (quizzes.isLoading()) {
+    <p class="state" role="status">Učitavanje kvizova…</p>
+  }
+</div>
