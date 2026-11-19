@@ -72,7 +72,9 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TouristId");
+                    b.HasIndex("TouristId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'InProgress'");
 
                     b.ToTable("TourExecutions", "exploration");
                 });
