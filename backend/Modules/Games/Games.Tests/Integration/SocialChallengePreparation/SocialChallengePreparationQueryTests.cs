@@ -45,6 +45,8 @@ public sealed class SocialChallengePreparationQueryTests : BaseIntegrationTest
             expected.RangeInMeters,
             expected.XpReward,
             expected.CompletionMessage,
+            expected.Latitude,
+            expected.Longitude,
             expected.Status
         });
     }

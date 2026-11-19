@@ -1,9 +1,10 @@
 import { Component, OnInit, input, output, signal } from '@angular/core';
 import { FormField, form, min, required, validate } from '@angular/forms/signals';
+import { LocationMap, MapCoordinates } from '../../../../shared/map/location-map';
 import { SocialChallengeDetailsDto } from '../../api/games-api-types';
 
 @Component({
-  imports: [FormField],
+  imports: [FormField, LocationMap],
   selector: 'app-social-challenge-form',
   templateUrl: './social-challenge-form.html',
   styleUrl: './social-challenge-form.scss',
@@ -22,6 +23,7 @@ export class SocialChallengeForm implements OnInit {
     rangeInMeters: null as number | null,
     xpReward: null as number | null,
     completionMessage: '',
+    location: null as MapCoordinates | null,
   });
 
   protected readonly fields = form(this.model, (path) => {
@@ -32,6 +34,7 @@ export class SocialChallengeForm implements OnInit {
     required(path.rangeInMeters);
     required(path.xpReward);
     required(path.completionMessage);
+    required(path.location, { message: 'Izaberite lokaciju na mapi.' });
     min(path.requiredParticipants, 2, { message: 'Potrebna su najmanje dva učesnika.' });
     min(path.xpReward, 1, { message: 'XP nagrada mora biti veća od nule.' });
     validate(path.requiredParticipants, ({ value }) =>
@@ -62,6 +65,9 @@ export class SocialChallengeForm implements OnInit {
         rangeInMeters: initial.rangeInMeters,
         xpReward: initial.xpReward,
         completionMessage: initial.completionMessage,
+        location: initial.latitude !== null && initial.longitude !== null
+          ? { latitude: initial.latitude, longitude: initial.longitude }
+          : null,
       });
     }
   }
@@ -72,14 +78,14 @@ export class SocialChallengeForm implements OnInit {
       this.fields().markAsTouched();
       return;
     }
-    const { name, start, end, requiredParticipants, rangeInMeters, xpReward, completionMessage } =
+    const { name, start, end, requiredParticipants, rangeInMeters, xpReward, completionMessage, location } =
       this.model();
     if (
       !this.fields().valid() ||
       this.pending() ||
       requiredParticipants === null ||
       rangeInMeters === null ||
-      xpReward === null
+      xpReward === null || location === null
     ) {
       return;
     }
@@ -92,6 +98,8 @@ export class SocialChallengeForm implements OnInit {
       rangeInMeters,
       xpReward,
       completionMessage,
+      latitude: location.latitude,
+      longitude: location.longitude,
     });
   }
 }

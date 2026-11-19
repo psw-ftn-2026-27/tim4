@@ -158,6 +158,20 @@
       }
     }
   </div>
+  <div class="field">
+    <h2>Lokacija izazova</h2>
+    <app-location-map
+      [locations]="[]"
+      [selectable]="!pending()"
+      [selected]="fields.location().value()"
+      (selectedChange)="fields.location().value.set($event)"
+    />
+    @if (fields.location().dirty() || fields.location().touched()) {
+      @for (issue of fields.location().errors(); track issue.kind) {
+        <p class="error">{{ issue.message }}</p>
+      }
+    }
+  </div>
   @if (error(); as message) {
     <p class="error" role="alert">{{ message }}</p>
   }
