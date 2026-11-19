@@ -46,4 +46,21 @@ public sealed class Question : Entity
         XpReward = xpReward;
         _options.AddRange(options);
     }
+
+    public double Score(IReadOnlyList<int> selectedOptions)
+    {
+        if (selectedOptions.Any(index => index < 0 || index >= _options.Count))
+        {
+            throw new DomainException("A selected answer option does not exist.");
+        }
+        if (selectedOptions.Distinct().Count() != selectedOptions.Count)
+        {
+            throw new DomainException("An answer option can be selected only once.");
+        }
+
+        var xpPerCorrectOption = (double)XpReward / _options.Count(option => option.IsCorrect);
+        var xpPerIncorrectOption = XpReward / 4.0;
+        var score = selectedOptions.Sum(index => _options[index].IsCorrect ? xpPerCorrectOption : -xpPerIncorrectOption);
+        return Math.Max(0, score);
+    }
 }
