@@ -33,6 +33,7 @@ public static class ExplorationModuleExtensions
 
         services.AddScoped<TourAuthoringService>();
         services.AddScoped<TourAuthoringQueries>();
+        services.AddScoped<TourBrowsingService>();
         services.AddScoped<TourBrowsingQueries>();
         services.AddScoped<TourPreferencesService>();
         services.AddScoped<TourPreferencesQueries>();

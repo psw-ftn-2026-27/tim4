@@ -12,4 +12,9 @@ export class TourBrowsing {
   async recordLocationSearch(dto: RecordLocationSearchDto): Promise<void> {
     await firstValueFrom(this.http.post<void>(BASE_URL, dto));
   }
+
+  // Payment checks the cart rules; a rejection arrives as its ProblemDetails.
+  async addToCart(tourId: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`/api/exploration/tours/${tourId}/cart`, {}));
+  }
 }

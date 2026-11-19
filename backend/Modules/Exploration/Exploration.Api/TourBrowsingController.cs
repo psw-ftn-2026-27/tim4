@@ -11,11 +11,23 @@ namespace Exploration.Api;
 [Authorize]
 public sealed class TourBrowsingController : ControllerBase
 {
+    private readonly TourBrowsingService _browsingService;
     private readonly TourBrowsingQueries _browsingQueries;
 
-    public TourBrowsingController(TourBrowsingQueries browsingQueries)
+    public TourBrowsingController(
+        TourBrowsingService browsingService,
+        TourBrowsingQueries browsingQueries)
     {
+        _browsingService = browsingService;
         _browsingQueries = browsingQueries;
+    }
+
+    [HttpPost("{id:guid}/cart")]
+    [Authorize(Roles = "explorer")]
+    public async Task<ActionResult> AddToCart(Guid id)
+    {
+        await _browsingService.AddToCartAsync(User.GetUserId(), id);
+        return NoContent();
     }
 
     [HttpGet("published")]

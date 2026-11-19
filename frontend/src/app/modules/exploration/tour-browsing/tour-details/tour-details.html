@@ -6,7 +6,28 @@
   } @else if (tour.error()) {
     <p class="error">Could not load the tour.</p>
   } @else if (tour.value(); as tour) {
-    <h1>{{ tour.name }}</h1>
+    <div class="page-header">
+      <h1>{{ tour.name }}</h1>
+      @if (canAddToCart()) {
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending()"
+          (click)="addToCart()"
+        >
+          Dodaj u korpu
+        </button>
+      }
+    </div>
+
+    @if (added()) {
+      <p class="notice notice--success">
+        ✓ Tura je dodata u korpu. <a routerLink="/payment/cart">Otvori korpu</a>
+      </p>
+    }
+    @if (error(); as message) {
+      <p class="error" role="alert">⚠ {{ message }}</p>
+    }
     <p>{{ tour.description }}</p>
     <p class="meta">
       Difficulty: {{ tour.difficulty }} · Length: {{ tour.lengthInKm.toFixed(2) }} km
