@@ -36,4 +36,28 @@ public class QuestionTests
 
         creation.Should().Throw<DomainException>();
     }
+
+    [Theory]
+    [InlineData(new[] { 0, 1 }, 100.0)]
+    [InlineData(new[] { 0 }, 50.0)]
+    [InlineData(new[] { 0, 1, 2 }, 75.0)]
+    [InlineData(new[] { 0, 2 }, 25.0)]
+    [InlineData(new[] { 0, 2, 3 }, 0.0)]
+    [InlineData(new[] { 2, 3 }, 0.0)]
+    [InlineData(new int[0], 0.0)]
+    public void Correct_options_share_the_question_xp_incorrect_ones_take_a_quarter_and_the_score_is_never_negative(
+        int[] selectedOptions, double expectedXp)
+    {
+        var question = new Question("Koji manastiri su na Fruškoj gori?", 100,
+        [
+            new AnswerOption("Grgeteg", true),
+            new AnswerOption("Novo Hopovo", true),
+            new AnswerOption("Žiča", false),
+            new AnswerOption("Studenica", false)
+        ]);
+
+        var xp = question.Score(selectedOptions);
+
+        xp.Should().Be(expectedXp);
+    }
 }

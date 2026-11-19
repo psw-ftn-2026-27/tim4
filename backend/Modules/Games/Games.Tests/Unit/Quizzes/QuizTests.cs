@@ -193,6 +193,29 @@ public class QuizTests
         quiz.Status.Should().Be(status);
     }
 
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_published_cannot_be_solved(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var starting = () => quiz.EnsureCanStart(CreateLocation());
+
+        starting.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Published_quiz_cannot_be_solved_from_outside_its_activation_range()
+    {
+        var quiz = CreateQuizIn(QuizStatus.Published);
+
+        var starting = () => quiz.EnsureCanStart(new Location(45.2551, 19.8452));
+
+        starting.Should().Throw<DomainException>();
+    }
+
     [Fact]
     public void Total_xp_of_a_quiz_is_the_sum_of_its_question_rewards()
     {

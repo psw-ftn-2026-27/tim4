@@ -1,5 +1,6 @@
 <h1>Games</h1>
 <p><a routerLink="/games/challenges">Izazovi</a></p>
+<p><a routerLink="/games/map">Mapa izazova</a></p>
 @if (auth.user()?.roles?.includes('administrator')) {
   <a routerLink="/games/social-challenges">Društveni izazovi</a>
 }
