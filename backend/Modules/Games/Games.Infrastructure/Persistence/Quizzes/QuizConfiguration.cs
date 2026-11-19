@@ -17,6 +17,14 @@ internal static class QuizConfiguration
         builder.Property(quiz => quiz.Status).HasConversion<string>().HasMaxLength(20);
 
         builder.OwnsMany(quiz => quiz.Questions, ConfigureQuestion);
+        builder.OwnsOne(quiz => quiz.Location, ConfigureLocation);
+        builder.Navigation(quiz => quiz.Location).IsRequired();
+    }
+
+    private static void ConfigureLocation(OwnedNavigationBuilder<Quiz, Location> builder)
+    {
+        builder.Property(location => location.Latitude).HasColumnName("Latitude");
+        builder.Property(location => location.Longitude).HasColumnName("Longitude");
     }
 
     private static void ConfigureQuestion(OwnedNavigationBuilder<Quiz, Question> builder)

@@ -17,7 +17,8 @@ public sealed class QuizAuthoringService
 
     public async Task<Guid> CreateAsync(QuizContentDto dto)
     {
-        var quiz = new Quiz(dto.Name, dto.Instructions, CreateQuestions(dto.Questions));
+        var quiz = new Quiz(dto.Name, dto.Instructions, CreateQuestions(dto.Questions),
+            new Location(dto.Latitude, dto.Longitude), dto.RangeInMeters);
 
         _quizRepository.Add(quiz);
         await _unitOfWork.SaveChangesAsync();
@@ -33,7 +34,8 @@ public sealed class QuizAuthoringService
             throw new NotFoundException($"Quiz {quizId} does not exist.");
         }
 
-        quiz.Edit(dto.Name, dto.Instructions, CreateQuestions(dto.Questions));
+        quiz.Edit(dto.Name, dto.Instructions, CreateQuestions(dto.Questions),
+            new Location(dto.Latitude, dto.Longitude), dto.RangeInMeters);
         await _unitOfWork.SaveChangesAsync();
     }
 

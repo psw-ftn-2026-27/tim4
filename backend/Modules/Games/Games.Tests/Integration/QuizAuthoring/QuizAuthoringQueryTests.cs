@@ -23,7 +23,7 @@ public class QuizAuthoringQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Quiz_view_shows_its_questions_and_answer_options()
+    public async Task Quiz_view_shows_its_questions_answer_options_location_and_range()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         var seeded = QuizSeed.DraftFortressQuiz;
@@ -31,6 +31,9 @@ public class QuizAuthoringQueryTests : BaseIntegrationTest
         var quiz = await client.GetFromJsonAsync<QuizDto>($"/api/games/quizzes/{seeded.Id}", JsonOptions);
 
         quiz!.Id.Should().Be(seeded.Id);
+        quiz.Latitude.Should().Be(seeded.Location.Latitude);
+        quiz.Longitude.Should().Be(seeded.Location.Longitude);
+        quiz.RangeInMeters.Should().Be(seeded.RangeInMeters);
         quiz.Questions.Should().BeEquivalentTo(
             seeded.Questions.Select(question => new QuestionDto(
                 question.Id,

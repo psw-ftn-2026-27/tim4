@@ -10,7 +10,7 @@ internal static class QuizSeed
         new Question("Iznad koje reke se nalazi tvrđava?", 50, [new AnswerOption("Dunav", true), new AnswerOption("Sava", false), new AnswerOption("Tisa", false)]),
         new Question("Šta se nalazi ispod tvrđave?", 80, [new AnswerOption("Podzemne galerije", true), new AnswerOption("Rudnik zlata", false)]),
         new Question("Koji festivali se održavaju na tvrđavi?", 70, [new AnswerOption("Exit", true), new AnswerOption("Guča", false), new AnswerOption("Tvrđava teatar", true)])
-    ]);
+    ], new Location(45.2517, 19.8628), 150);
 
     public static readonly Quiz DraftRiversideQuiz = new("Uz Dunav", "Prepoznaj mesta duž obale.",
     [
@@ -18,7 +18,7 @@ internal static class QuizSeed
         new Question("Koji most vodi ka Fruškoj gori?", 60, [new AnswerOption("Most slobode", true), new AnswerOption("Brankov most", false)]),
         new Question("Koje ostrvo je na Dunavu kod Novog Sada?", 30, [new AnswerOption("Ribarsko ostrvo", true), new AnswerOption("Veliko ratno ostrvo", false)]),
         new Question("Šta se vidi sa keja?", 20, [new AnswerOption("Tvrđava", true), new AnswerOption("More", false)])
-    ]);
+    ], new Location(45.2441, 19.8508), 300);
 
     public static Quiz[] All => [DraftFortressQuiz, DraftRiversideQuiz];
 }
