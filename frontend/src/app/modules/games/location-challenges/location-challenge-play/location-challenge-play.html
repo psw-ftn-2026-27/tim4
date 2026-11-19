@@ -1,0 +1,108 @@
+<div class="stack">
+  <a class="back-link" routerLink="/games/location-challenges">← Lokacijski izazovi</a>
+  <header class="page-header">
+    <h1>{{ details.hasValue() ? details.value().challenge.name : 'Lokacijski izazov' }}</h1>
+    @if (details.hasValue() && !details.value().attempt) {
+      <button
+        class="button button--primary"
+        type="button"
+        [disabled]="!canCheck()"
+        (click)="activate()"
+      >
+        Aktiviraj izazov
+      </button>
+    }
+  </header>
+
+  @if (!user()) {
+    <p class="state">Prijavite se da biste pristupili izazovu.</p>
+  } @else if (!isExplorer()) {
+    <p class="state">Igranje izazova dostupno je istraživačima.</p>
+  } @else if (detailsMissing()) {
+    <p class="state">Lokacijski izazov nije pronađen.</p>
+  } @else if (details.error()) {
+    <div class="state state--error" role="alert">
+      <p>Učitavanje izazova nije uspelo.</p>
+      <button class="button" type="button" (click)="details.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else if (details.hasValue()) {
+    @let data = details.value();
+    <p>
+      Skrivenih tačaka: {{ data.challenge.pointCount }}
+      <span class="badge badge--xp">{{ data.challenge.xpReward }} XP</span>
+    </p>
+    <div>
+      <app-location-map
+        [locations]="locations()"
+        [area]="area()"
+        [position]="position.hasValue() ? position.value() : null"
+        [selectable]="!busy() && !data.attempt?.completedAt"
+        (selectedChange)="setPosition($event)"
+      />
+    </div>
+    @if (position.error()) {
+      <div class="state state--error" role="alert">
+        <p>Poziciju nije moguće učitati.</p>
+        <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+      </div>
+    } @else if (position.isLoading()) {
+      <p class="state" role="status">Učitavanje pozicije…</p>
+    } @else if (position.hasValue() && !position.value() && !data.attempt?.completedAt) {
+      <p>Pozicija nije postavljena. Kliknite na mapu da označite gde se nalazite.</p>
+    }
+    @if (error(); as message) {
+      <p class="state state--error" role="alert">{{ message }}</p>
+    }
+    @if (feedback(); as message) {
+      <p role="status">{{ message }}</p>
+    }
+    @if (data.attempt; as attempt) {
+      <div class="progress">
+        <span class="progress__bar" aria-hidden="true">
+          <span
+            class="progress__fill"
+            [style.width.%]="(discoveredCount() / attempt.points.length) * 100"
+          ></span>
+        </span>
+        <span>{{ discoveredCount() }} od {{ attempt.points.length }} otkrivenih tačaka</span>
+      </div>
+      @if (attempt.completedAt; as completedAt) {
+        <p role="status">
+          Izazov je završen {{ completedAt | date: 'dd.MM.yyyy. HH:mm' }}. Osvojili ste
+          <span class="badge badge--xp">{{ attempt.awardedXp }} XP</span>.
+        </p>
+      } @else {
+        <ul class="stack">
+          @for (point of attempt.points; track point.id; let number = $index) {
+            <li>
+              <p>Skrivena tačka {{ number + 1 }}</p>
+              <div>
+                <img
+                  class="photo-clue"
+                  [src]="point.imageAddress"
+                  [alt]="'Fotografski trag za tačku ' + (number + 1)"
+                  loading="lazy"
+                />
+              </div>
+              @if (point.discovered) {
+                <span class="badge badge--success">Otkrivena</span>
+              } @else {
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="!canCheck()"
+                  (click)="check(point.id)"
+                  [attr.aria-label]="'Proveri skrivenu tačku ' + (number + 1)"
+                >
+                  Proveri
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    }
+  } @else if (details.isLoading()) {
+    <p class="state" role="status">Učitavanje izazova…</p>
+  }
+</div>

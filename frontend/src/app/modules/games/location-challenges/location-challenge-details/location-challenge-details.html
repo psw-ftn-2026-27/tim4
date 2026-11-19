@@ -1,0 +1,30 @@
+<a class="back-link" routerLink="/games/location-challenges">← Lokacijski izazovi</a>
+
+@if (!user()) {
+  <p class="state">Prijavite se da biste videli detalje izazova.</p>
+} @else if (!isAdministrator()) {
+  <p class="state">Pristup je dozvoljen administratorima.</p>
+} @else if (details.isLoading()) {
+  <p class="state" role="status">Učitavanje izazova…</p>
+} @else if (details.error()) {
+  <div class="state state--error" role="alert">
+    <p>Učitavanje izazova nije uspelo.</p>
+    <button class="button" type="button" (click)="details.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (details.value(); as data) {
+  <header class="page-header">
+    <h1>{{ data.challenge.name }}</h1>
+  </header>
+  <p>
+    <span class="badge badge--xp">{{ data.challenge.xpReward }} XP</span>
+  </p>
+  <app-location-map [locations]="locations()" />
+  @for (point of data.points; track point.id; let index = $index) {
+    <h2>Skrivena tačka {{ index + 1 }}</h2>
+    <img
+      [src]="point.imageAddress"
+      [alt]="'Fotografija skrivene tačke ' + (index + 1)"
+      width="320"
+    />
+  }
+}

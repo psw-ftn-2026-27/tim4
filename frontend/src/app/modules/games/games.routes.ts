@@ -1,5 +1,9 @@
 import { Routes } from '@angular/router';
 import { GamesHome } from './games-home/games-home';
+import { LocationChallengeCreate } from './location-challenges/location-challenge-create/location-challenge-create';
+import { LocationChallengeDetails } from './location-challenges/location-challenge-details/location-challenge-details';
+import { LocationChallengeList } from './location-challenges/location-challenge-list/location-challenge-list';
+import { LocationChallengePlay } from './location-challenges/location-challenge-play/location-challenge-play';
 import { ChallengeList } from './quiz-authoring/challenge-list/challenge-list';
 import { CreateQuiz } from './quiz-authoring/create-quiz/create-quiz';
 import { QuizDetail } from './quiz-authoring/quiz-detail/quiz-detail';
@@ -14,4 +18,8 @@ export const gamesRoutes: Routes = [
   { path: 'social-challenges', component: SocialChallengeList },
   { path: 'social-challenges/create', component: SocialChallengeEditor },
   { path: 'social-challenges/:id/edit', component: SocialChallengeEditor },
+  { path: 'location-challenges', component: LocationChallengeList },
+  { path: 'location-challenges/create', component: LocationChallengeCreate },
+  { path: 'location-challenges/:id/play', component: LocationChallengePlay },
+  { path: 'location-challenges/:id', component: LocationChallengeDetails },
 ];

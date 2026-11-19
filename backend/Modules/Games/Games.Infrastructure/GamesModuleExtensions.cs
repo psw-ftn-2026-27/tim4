@@ -1,9 +1,15 @@
+using System.Globalization;
 using Games.Application;
+using Games.Application.LocationChallengeAuthoring;
+using Games.Application.LocationChallengeBrowsing;
+using Games.Application.LocationChallengePlaying;
+using Games.Application.LocationChallenges;
 using Games.Application.QuizAuthoring;
 using Games.Application.Quizzes;
 using Games.Application.SocialChallengePreparation;
 using Games.Application.SocialChallenges;
 using Games.Infrastructure.Persistence;
+using Games.Infrastructure.Persistence.LocationChallenges;
 using Games.Infrastructure.Persistence.Quizzes;
 using Games.Infrastructure.Persistence.SocialChallenges;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +32,24 @@ public static class GamesModuleExtensions
 
         services.AddScoped<QuizAuthoringService>();
         services.AddScoped<QuizAuthoringQueries>();
+
+        services.AddScoped<ILocationChallengeRepository, LocationChallengeRepository>();
+        services.AddScoped<ILocationChallengeAttemptRepository, LocationChallengeAttemptRepository>();
+        services.AddScoped<ILocationChallengePlayReadRepository, LocationChallengePlayReadRepository>();
+        services.AddScoped<ILocationChallengeReadRepository, LocationChallengeReadRepository>();
+        services.AddScoped<LocationChallengeAuthoringService>();
+        services.AddScoped<LocationChallengeAuthoringQueries>();
+        services.AddScoped<LocationChallengeBrowsingQueries>();
+        services.AddScoped<LocationChallengePlayingService>();
+        services.AddScoped<LocationChallengePlayingQueries>();
+        services.AddSingleton(provider =>
+        {
+            var activationDistance = provider.GetRequiredService<IConfiguration>()
+                ["Games:LocationChallenges:ActivationDistanceInMeters"];
+            return new LocationChallengeActivation(string.IsNullOrWhiteSpace(activationDistance)
+                ? null
+                : double.Parse(activationDistance, NumberStyles.Float, CultureInfo.InvariantCulture));
+        });
 
         services.AddScoped<ISocialChallengeRepository, SocialChallengeRepository>();
         services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();

@@ -1,0 +1,100 @@
+<div class="stack">
+  <a class="back-link" routerLink="/games">← Igre</a>
+  <header class="page-header">
+    <h1>Lokacijski izazovi</h1>
+    @if (isAdministrator()) {
+      <a class="button button--primary" routerLink="create">Kreiraj izazov</a>
+    }
+  </header>
+
+  @if (!user()) {
+    <p class="state">Prijavite se da biste videli lokacijske izazove.</p>
+  } @else if (!canBrowse()) {
+    <p class="state">Nemate pristup lokacijskim izazovima.</p>
+  } @else if (challenges.isLoading()) {
+    <p class="state" role="status">Učitavanje izazova…</p>
+  } @else if (challenges.error()) {
+    <div class="state state--error" role="alert">
+      <p>Učitavanje izazova nije uspelo.</p>
+      <button class="button" type="button" (click)="challenges.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else if (challenges.value(); as result) {
+    @if (!result.items.length) {
+      <p class="state">Trenutno nema lokacijskih izazova.</p>
+    } @else {
+      <div class="stack">
+        <app-location-map
+          [locations]="locations()"
+          [position]="position.hasValue() ? position.value() : null"
+          [selectable]="canSetPosition() && !positionPending()"
+          (selectedChange)="setPosition($event)"
+        />
+        @if (canSetPosition()) {
+          @if (positionError(); as message) {
+            <p class="state state--error" role="alert">{{ message }}</p>
+          } @else if (position.error()) {
+            <p class="state state--error" role="alert">Poziciju nije moguće učitati.</p>
+            <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+          } @else if (positionPending() || position.isLoading()) {
+            <p class="state" role="status">Učitavanje pozicije…</p>
+          } @else if (position.hasValue() && !position.value()) {
+            <p>Pozicija nije postavljena. Kliknite na mapu da označite gde se nalazite.</p>
+          }
+        }
+      </div>
+      <table class="table table--cards">
+        <thead>
+          <tr>
+            <th scope="col">Naziv</th>
+            <th scope="col" class="col-fit">Skrivenih tačaka</th>
+            <th scope="col" class="col-fit">Nagrada</th>
+            @if (isAdministrator() || canSetPosition()) {
+              <th scope="col">Radnje</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (challenge of result.items; track challenge.id) {
+            <tr>
+              <td data-label="Naziv">{{ challenge.name }}</td>
+              <td class="col-fit" data-label="Skrivenih tačaka">{{ challenge.pointCount }}</td>
+              <td class="col-fit" data-label="Nagrada">
+                <span class="badge badge--xp">{{ challenge.xpReward }} XP</span>
+              </td>
+              @if (isAdministrator()) {
+                <td class="col-actions">
+                  <a class="button" [routerLink]="[challenge.id]">Pogledaj</a>
+                </td>
+              } @else if (canSetPosition()) {
+                <td class="col-actions">
+                  <a class="button" [routerLink]="[challenge.id, 'play']">Pogledaj</a>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+    @if (result.totalCount > pageSize) {
+      <nav class="pagination" aria-label="Strane lokacijskih izazova">
+        <button
+          class="button"
+          type="button"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+        >
+          Prethodna
+        </button>
+        <span>Strana {{ page() }} od {{ pageCount() }}</span>
+        <button
+          class="button"
+          type="button"
+          [disabled]="page() * pageSize >= result.totalCount"
+          (click)="page.set(page() + 1)"
+        >
+          Sledeća
+        </button>
+      </nav>
+    }
+  }
+</div>
