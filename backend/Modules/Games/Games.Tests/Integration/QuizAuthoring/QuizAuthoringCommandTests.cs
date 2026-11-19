@@ -115,6 +115,26 @@ public class QuizAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Editing_a_quiz_that_is_not_a_draft_is_rejected_and_the_quiz_stays_unchanged()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var seeded = QuizSeed.PublishedMonasteriesQuiz;
+
+        var response = await client.PutAsJsonAsync($"/api/games/quizzes/{seeded.Id}", ValidContent);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.Quizzes.Single(quiz => quiz.Id == seeded.Id);
+        stored.Status.Should().Be(QuizStatus.Published);
+        stored.Name.Should().Be(seeded.Name);
+        stored.Instructions.Should().Be(seeded.Instructions);
+        stored.Questions.Select(question => question.Text)
+            .Should().Equal(seeded.Questions.Select(question => question.Text));
+        stored.Location.Should().Be(seeded.Location);
+        stored.RangeInMeters.Should().Be(seeded.RangeInMeters);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_edit_a_quiz()
     {
         var client = Factory.CreateClient();

@@ -15,6 +15,24 @@ public class QuizTests
 
     private static Location CreateLocation() => new(45.2517, 19.8628);
 
+    private static Quiz CreateQuizIn(QuizStatus status)
+    {
+        var quiz = new Quiz("Tajne tvrđave", "Odgovori na pitanja.", CreateQuestions(4), CreateLocation(), 150);
+        if (status != QuizStatus.Draft)
+        {
+            quiz.Publish();
+        }
+        if (status == QuizStatus.Retired || status == QuizStatus.Archived)
+        {
+            quiz.Retire();
+        }
+        if (status == QuizStatus.Archived)
+        {
+            quiz.Archive();
+        }
+        return quiz;
+    }
+
     [Fact]
     public void New_quiz_starts_as_a_draft()
     {
@@ -61,6 +79,118 @@ public class QuizTests
         var creation = () => new Quiz("Tajne tvrđave", "Odgovori na pitanja.", CreateQuestions(4), CreateLocation(), rangeInMeters);
 
         creation.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_a_draft_cannot_be_edited(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var editing = () => quiz.Edit("Nove tajne", "Nova uputstva.", CreateQuestions(5), CreateLocation(), 300);
+
+        editing.Should().Throw<DomainException>();
+        quiz.Name.Should().Be("Tajne tvrđave");
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Retired)]
+    public void Draft_or_retired_quiz_becomes_published(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        quiz.Publish();
+
+        quiz.Status.Should().Be(QuizStatus.Published);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Archived)]
+    public void Published_or_archived_quiz_cannot_be_published(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var publishing = () => quiz.Publish();
+
+        publishing.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
+    }
+
+    [Fact]
+    public void Published_quiz_becomes_retired()
+    {
+        var quiz = CreateQuizIn(QuizStatus.Published);
+
+        quiz.Retire();
+
+        quiz.Status.Should().Be(QuizStatus.Retired);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_published_cannot_be_retired(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var retiring = () => quiz.Retire();
+
+        retiring.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
+    }
+
+    [Fact]
+    public void Retired_quiz_becomes_archived()
+    {
+        var quiz = CreateQuizIn(QuizStatus.Retired);
+
+        quiz.Archive();
+
+        quiz.Status.Should().Be(QuizStatus.Archived);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_retired_cannot_be_archived(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var archiving = () => quiz.Archive();
+
+        archiving.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Archived)]
+    public void Draft_or_archived_quiz_may_be_deleted(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var checking = () => quiz.EnsureCanBeDeleted();
+
+        checking.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Retired)]
+    public void Published_or_retired_quiz_cannot_be_deleted(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var checking = () => quiz.EnsureCanBeDeleted();
+
+        checking.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
     }
 
     [Fact]

@@ -52,6 +52,44 @@ public sealed class Quiz : AggregateRoot
         RangeInMeters = rangeInMeters;
     }
 
+    public void Publish()
+    {
+        if (Status != QuizStatus.Draft && Status != QuizStatus.Retired)
+        {
+            throw new DomainException("Only a draft or retired quiz can be published.");
+        }
+
+        Status = QuizStatus.Published;
+    }
+
+    public void Retire()
+    {
+        if (Status != QuizStatus.Published)
+        {
+            throw new DomainException("Only a published quiz can be retired.");
+        }
+
+        Status = QuizStatus.Retired;
+    }
+
+    public void Archive()
+    {
+        if (Status != QuizStatus.Retired)
+        {
+            throw new DomainException("Only a retired quiz can be archived.");
+        }
+
+        Status = QuizStatus.Archived;
+    }
+
+    public void EnsureCanBeDeleted()
+    {
+        if (Status != QuizStatus.Draft && Status != QuizStatus.Archived)
+        {
+            throw new DomainException("Only a draft or archived quiz can be deleted.");
+        }
+    }
+
     public int TotalXp()
     {
         return _questions.Sum(question => question.XpReward);
