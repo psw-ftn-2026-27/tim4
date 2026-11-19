@@ -26,7 +26,8 @@ public class TourExecutionsCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<ExplorationDbContext>();
-        var stored = assertContext.TourExecutions.Single(execution => execution.TouristId == WellKnownUsers.SecondExplorer);
+        var stored = assertContext.TourExecutions.Single(execution => execution.TouristId == WellKnownUsers.SecondExplorer
+            && execution.Status == TourExecutionStatus.InProgress);
         stored.TourId.Should().Be(tour.Id);
         stored.Status.Should().Be(TourExecutionStatus.InProgress);
         stored.StartLocation.Should().Be(new Location(45.12, 19.94));
@@ -45,6 +46,28 @@ public class TourExecutionsCommandTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var assertContext = Factory.CreateContext<ExplorationDbContext>();
         assertContext.TourExecutions.Count().Should().Be(executionCountBefore);
+    }
+
+    [Fact]
+    public async Task Starting_a_tour_the_tourist_already_completed_stores_a_new_session_and_keeps_the_completed_one()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var completed = TourExecutionSeed.SecondExplorersMonasteriesCompleted;
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var executionCountBefore = arrangeContext.TourExecutions.Count();
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions", new StartTourDto(completed.TourId, 45.12, 19.94));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.TourExecutions.Count().Should().Be(executionCountBefore + 1);
+        var started = assertContext.TourExecutions.Single(execution => execution.TouristId == WellKnownUsers.SecondExplorer
+            && execution.Status == TourExecutionStatus.InProgress);
+        started.TourId.Should().Be(completed.TourId);
+        started.ReachedKeyPoints.Should().BeEmpty();
+        var stored = assertContext.TourExecutions.Single(execution => execution.Id == completed.Id);
+        stored.Status.Should().Be(TourExecutionStatus.Completed);
+        stored.ReachedKeyPoints.Should().HaveCount(completed.ReachedKeyPointCount);
     }
 
     [Fact]
