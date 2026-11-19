@@ -27,6 +27,8 @@ public sealed class SocialChallengePreparationCommandTests : BaseIntegrationTest
         var id = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
         using var context = Factory.CreateContext<GamesDbContext>();
         var stored = context.SocialChallenges.Single(challenge => challenge.Id == id);
+        stored.Latitude.Should().Be(details.Latitude);
+        stored.Longitude.Should().Be(details.Longitude);
         stored.Name.Should().Be(details.Name);
         stored.ActivityTime.Start.Should().Be(details.Start);
         stored.ActivityTime.End.Should().Be(details.End);
@@ -51,6 +53,8 @@ public sealed class SocialChallengePreparationCommandTests : BaseIntegrationTest
             details.RequiredParticipants,
             details.RangeInMeters,
             details.XpReward,
+            details.Latitude,
+            details.Longitude,
             details.CompletionMessage
         });
     }
@@ -178,6 +182,6 @@ public sealed class SocialChallengePreparationCommandTests : BaseIntegrationTest
     private static SocialChallengeDetailsDto NewDetails()
     {
         return new SocialChallengeDetailsDto("Susret u parku", new TimeOnly(12, 30), new TimeOnly(14, 0),
-            8, 30.5m, 100, "Čestitamo!");
+            8, 30.5m, 100, "Čestitamo!", 45.25, 19.85);
     }
 }

@@ -20,4 +20,15 @@ export class SocialChallengePreparation {
   async remove(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${baseUrl}/${id}`));
   }
+  async publish(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${baseUrl}/${id}/publish`, {}));
+  }
+
+  async retire(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${baseUrl}/${id}/retire`, {}));
+  }
+
+  async archive(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${baseUrl}/${id}/archive`, {}));
+  }
 }

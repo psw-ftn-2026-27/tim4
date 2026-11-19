@@ -24,8 +24,9 @@
                 <th>Opseg (m)</th>
                 <th>XP nagrada</th>
                 <th>Završna poruka</th>
+                <th>Lokacija</th>
                 <th>Stanje</th>
-                <th>Radnje</th>
+                <th class="col-actions" colspan="3">Radnje</th>
               </tr>
             </thead>
             <tbody>
@@ -37,6 +38,13 @@
                   <td>{{ challenge.rangeInMeters }}</td>
                   <td>{{ challenge.xpReward }}</td>
                   <td>{{ challenge.completionMessage }}</td>
+                  <td>
+                    @if (challenge.latitude !== null && challenge.longitude !== null) {
+                      {{ challenge.latitude }}, {{ challenge.longitude }}
+                    } @else {
+                      Lokacija nije postavljena.
+                    }
+                  </td>
                   <td>
                     @switch (challenge.status) {
                       @case ('Draft') {
@@ -53,34 +61,40 @@
                       }
                     }
                   </td>
-                  <td>
-                    @if (selectedId() === challenge.id) {
+                  @if (selectedId() === challenge.id) {
+                    <td colspan="3">
                       <p>Da li želiš da obrišeš ovaj izazov?</p>
-                      <button
-                        class="button"
-                        type="button"
-                        (click)="deleteChallenge(challenge.id)"
-                        [disabled]="pending()"
-                      >
-                        Obriši
-                      </button>
-                      <button
-                        class="button"
-                        type="button"
-                        (click)="cancelDelete()"
-                        [disabled]="pending()"
-                      >
-                        Otkaži
-                      </button>
+                      <div class="form-actions">
+                        <button
+                          class="button"
+                          type="button"
+                          (click)="deleteChallenge(challenge.id)"
+                          [disabled]="pending()"
+                        >
+                          Obriši
+                        </button>
+                        <button
+                          class="button"
+                          type="button"
+                          (click)="cancelDelete()"
+                          [disabled]="pending()"
+                        >
+                          Otkaži
+                        </button>
+                      </div>
                       @if (error(); as message) {
                         <p class="error" role="alert">{{ message }}</p>
                       }
-                    } @else {
+                    </td>
+                  } @else {
+                    <td class="col-actions">
                       @if (challenge.status === 'Draft' && !pending()) {
                         <a [routerLink]="['/games/social-challenges', challenge.id, 'edit']"
                           >Izmeni</a
                         >
                       }
+                    </td>
+                    <td class="col-actions">
                       @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
                         <button
                           class="button"
@@ -91,8 +105,27 @@
                           Obriši
                         </button>
                       }
-                    }
-                  </td>
+                    </td>
+                    <td class="col-actions">
+                      @if (challenge.status !== 'Archived') {
+                        <button
+                          class="button"
+                          type="button"
+                          (click)="changeState(challenge)"
+                          [disabled]="pending()"
+                        >
+                          @switch (challenge.status) {
+                            @case ('Draft') { Objavi }
+                            @case ('Published') { Povuci }
+                            @case ('Retired') { Arhiviraj }
+                          }
+                        </button>
+                      }
+                      @if (stateErrorId() === challenge.id && error(); as message) {
+                        <p class="error" role="alert">{{ message }}</p>
+                      }
+                    </td>
+                  }
                 </tr>
               }
             </tbody>

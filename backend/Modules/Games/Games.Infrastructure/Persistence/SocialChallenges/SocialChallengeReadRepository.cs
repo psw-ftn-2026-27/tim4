@@ -38,6 +38,6 @@ internal sealed class SocialChallengeReadRepository : ISocialChallengeReadReposi
         return challenges.Select(challenge => new SocialChallengeDto(
             challenge.Id, challenge.Name, challenge.ActivityTime.Start, challenge.ActivityTime.End,
             challenge.RequiredParticipants, challenge.RangeInMeters, challenge.XpReward,
-            challenge.CompletionMessage, challenge.Status));
+            challenge.CompletionMessage, challenge.Status, challenge.Latitude, challenge.Longitude));
     }
 }

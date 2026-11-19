@@ -4,4 +4,4 @@ namespace Games.Application.SocialChallengePreparation;
 
 public sealed record SocialChallengeDetailsDto(string Name, [property: JsonRequired] TimeOnly Start,
     [property: JsonRequired] TimeOnly End, int RequiredParticipants, decimal RangeInMeters,
-    int XpReward, string CompletionMessage);
+    int XpReward, string CompletionMessage, double? Latitude = null, double? Longitude = null);
