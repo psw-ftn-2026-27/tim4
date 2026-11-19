@@ -42,8 +42,8 @@ internal static class TourSeed
 
         PublishedMonasteries = new(WellKnownUsers.Explorer, "Fruškogorski manastiri", "Tura obilazi tri fruškogorska manastira: Krušedol, Grgeteg i Novo Hopovo, sa pauzom za ručak u podnožju nacionalnog parka.", TourDifficulty.Hard, ["istorija"], new RecommendedGroupSize(1, 10));
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
-        PublishedMonasteries.AddKeyPoint(new KeyPoint("Krušedol", "Prvi manastir na turi.", "/images/seed-publishedmonasteries-1.jpg", null, new Location(45.121, 19.944), true), 0);
-        PublishedMonasteries.AddKeyPoint(new KeyPoint("Novo Hopovo", "Poslednji manastir na turi.", "/images/seed-publishedmonasteries-2.jpg", null, new Location(45.15, 19.864), true), 7.2);
+        PublishedMonasteries.AddKeyPoint(new KeyPoint("Krušedol", "Prvi manastir na turi.", "/images/seed-publishedmonasteries-1.jpg", "U porti je zakopana kapsula iz 1901. godine.", new Location(45.121, 19.944), true), 0);
+        PublishedMonasteries.AddKeyPoint(new KeyPoint("Novo Hopovo", "Poslednji manastir na turi.", "/images/seed-publishedmonasteries-2.jpg", "Zvono sa kule se čuje do Iriga.", new Location(45.15, 19.864), true), 7.2);
         PublishedMonasteries.Publish(new TourPricing(TourPricingType.Free, null));
 
         PublishedVineyardsByBicycleEasy = new(WellKnownUsers.SecondExplorer, "Laka vožnja kroz vinograde", "Laka vožnja biciklom vodi ravnim putem kroz vinograde podno Fruške gore, uz kratko zadržavanje kod vidikovca i povratak istim putem do polazne tačke.", TourDifficulty.Easy, ["vino", "priroda"], new RecommendedGroupSize(1, 10));

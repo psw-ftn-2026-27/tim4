@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Exploration.Application.TourExecutions;
+using Exploration.Domain.TourExecutions;
 using Exploration.Tests.Integration.Seeds;
 using FluentAssertions;
 using Shared.Tests;
@@ -41,6 +42,27 @@ public class TourExecutionsQueryTests : BaseIntegrationTest
         active!.ReachedKeyPoints.Should().Contain(new ReachedKeyPointDto(reachedKeyPoint.Id, reachedKeyPoint.Name, reachedKeyPoint.Secret));
         active.ReachedKeyPoints.Select(keyPoint => keyPoint.Id).Should().NotIntersectWith(unreachedKeyPoints.Select(keyPoint => keyPoint.Id));
         active.ReachedKeyPoints.Select(keyPoint => keyPoint.Secret).Should().NotIntersectWith(unreachedKeyPoints.Select(keyPoint => keyPoint.Secret));
+    }
+
+    [Fact]
+    public async Task Tourist_reads_their_completed_session_with_the_reached_key_points_and_their_secrets()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var completed = TourExecutionSeed.SecondExplorersMonasteriesCompleted;
+        var tour = TourSeed.PublishedMonasteries;
+        var expectedReached = completed.ReachedKeyPoints
+            .Select(reached => tour.GetKeyPoint(reached.KeyPointId))
+            .Select(keyPoint => new ReachedKeyPointDto(keyPoint.Id, keyPoint.Name, keyPoint.Secret))
+            .ToList();
+
+        var response = await client.GetAsync($"/api/exploration/tour-executions/{completed.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var execution = await response.Content.ReadFromJsonAsync<TourExecutionDto>(JsonOptions);
+        execution!.ExecutionId.Should().Be(completed.Id);
+        execution.TourName.Should().Be(tour.Name);
+        execution.Status.Should().Be(TourExecutionStatus.Completed);
+        execution.ReachedKeyPoints.Should().BeEquivalentTo(expectedReached);
     }
 
     [Fact]
