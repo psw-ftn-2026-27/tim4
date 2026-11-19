@@ -1,29 +1,48 @@
 import { Component, input, output } from '@angular/core';
 import { FieldTree, FormField } from '@angular/forms/signals';
+import { LocationMap, MapCoordinates } from '../../../../shared/map/location-map';
 import { QuestionContentDto, QuizContentDto } from '../../api/games-api-types';
+
+// The form's model: the location is one map pin (null until the map is clicked) and the
+// range is null while its field is empty. On submit they become the DTO's flat fields.
+export interface QuizFormValue {
+  name: string;
+  instructions: string;
+  location: MapCoordinates | null;
+  rangeInMeters: number | null;
+  questions: QuestionContentDto[];
+}
 
 // The page owns the form() so it can fill it in a click handler; this component only
 // shows the fields and adds or removes questions and options in the page's form.
 @Component({
-  imports: [FormField],
+  imports: [FormField, LocationMap],
   selector: 'app-quiz-form',
   styleUrl: './quiz-form.scss',
   templateUrl: './quiz-form.html',
 })
 export class QuizForm {
-  readonly quizForm = input.required<FieldTree<QuizContentDto>>();
+  readonly quizForm = input.required<FieldTree<QuizFormValue>>();
   readonly pending = input(false);
   readonly error = input<string | null>(null);
 
-  readonly save = output<void>();
+  readonly save = output<QuizContentDto>();
 
   protected submit(event: Event): void {
     event.preventDefault();
-    if (!this.quizForm()().valid()) {
+    const { name, instructions, location, rangeInMeters, questions } = this.quizForm()().value();
+    if (!this.quizForm()().valid() || location === null || rangeInMeters === null) {
       this.quizForm()().markAsTouched();
       return;
     }
-    this.save.emit();
+    this.save.emit({
+      name,
+      instructions,
+      questions,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      rangeInMeters,
+    });
   }
 
   protected addQuestion(): void {

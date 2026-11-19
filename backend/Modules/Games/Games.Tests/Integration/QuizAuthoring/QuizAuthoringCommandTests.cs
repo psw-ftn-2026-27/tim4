@@ -18,12 +18,12 @@ public class QuizAuthoringCommandTests : BaseIntegrationTest
         new QuestionContentDto("Na kojoj planini su manastiri?", 50, [new AnswerOptionDto("Fruška gora", true), new AnswerOptionDto("Tara", false)]),
         new QuestionContentDto("Koji manastiri su na Fruškoj gori?", 80, [new AnswerOptionDto("Grgeteg", true), new AnswerOptionDto("Novo Hopovo", true), new AnswerOptionDto("Žiča", false)]),
         new QuestionContentDto("Koliko je manastira sačuvano na Fruškoj gori?", 70, [new AnswerOptionDto("Šesnaest", true), new AnswerOptionDto("Dva", false)])
-    ]);
+    ], 45.1453, 19.8125, 200);
 
     public QuizAuthoringCommandTests(GamesApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Administrator_creates_a_draft_quiz_with_its_questions()
+    public async Task Administrator_creates_a_draft_quiz_with_its_questions_location_and_range()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         using var arrangeContext = Factory.CreateContext<GamesDbContext>();
@@ -41,6 +41,8 @@ public class QuizAuthoringCommandTests : BaseIntegrationTest
         stored.Questions.Select(question => question.Text)
             .Should().Equal(ValidContent.Questions.Select(question => question.Text));
         stored.Questions[2].Options.Should().HaveCount(3);
+        stored.Location.Should().Be(new Location(ValidContent.Latitude, ValidContent.Longitude));
+        stored.RangeInMeters.Should().Be(ValidContent.RangeInMeters);
     }
 
     [Fact]
@@ -79,7 +81,7 @@ public class QuizAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Administrator_replaces_the_content_of_a_draft_quiz()
+    public async Task Administrator_replaces_the_content_location_and_range_of_a_draft_quiz()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         var quizId = QuizSeed.DraftFortressQuiz.Id;
@@ -93,6 +95,8 @@ public class QuizAuthoringCommandTests : BaseIntegrationTest
         stored.Instructions.Should().Be(ValidContent.Instructions);
         stored.Questions.Select(question => question.Text)
             .Should().Equal(ValidContent.Questions.Select(question => question.Text));
+        stored.Location.Should().Be(new Location(ValidContent.Latitude, ValidContent.Longitude));
+        stored.RangeInMeters.Should().Be(ValidContent.RangeInMeters);
     }
 
     [Fact]
