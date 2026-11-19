@@ -4,10 +4,13 @@ using Exploration.Application.LocationSearchRecords;
 using Exploration.Application.LocationSearches;
 using Exploration.Application.TourAuthoring;
 using Exploration.Application.TourBrowsing;
+using Exploration.Application.TourExecutions;
 using Exploration.Application.TourPreferences;
 using Exploration.Application.Tours;
+using Exploration.Domain.TourExecutions;
 using Exploration.Infrastructure.Persistence;
 using Exploration.Infrastructure.Persistence.LocationSearchRecords;
+using Exploration.Infrastructure.Persistence.TourExecutions;
 using Exploration.Infrastructure.Persistence.TourPreferences;
 using Exploration.Infrastructure.Persistence.Tours;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +33,9 @@ public static class ExplorationModuleExtensions
         services.AddScoped<ITourPreferenceRepository, TourPreferenceRepository>();
         services.AddScoped<ITourPreferenceReadRepository, TourPreferenceReadRepository>();
         services.AddScoped<ILocationSearchRecordRepository, LocationSearchRecordRepository>();
+        services.AddScoped<ITourExecutionRepository, TourExecutionRepository>();
+        services.AddScoped<ITourExecutionReadRepository, TourExecutionReadRepository>();
+        services.AddScoped<TourStarting>();
 
         services.AddScoped<TourAuthoringService>();
         services.AddScoped<TourAuthoringQueries>();
@@ -40,6 +46,8 @@ public static class ExplorationModuleExtensions
         services.AddScoped<KeyPointAuthoringService>();
         services.AddScoped<KeyPointAuthoringQueries>();
         services.AddScoped<LocationSearchesService>();
+        services.AddScoped<TourExecutionsService>();
+        services.AddScoped<TourExecutionsQueries>();
 
         return services;
     }

@@ -1,0 +1,46 @@
+<div class="stack">
+  @if (!auth.isLoggedIn()) {
+    <div class="state">
+      Prijavite se da vidite svoju aktivnu turu.
+      <a routerLink="/login">Prijava</a>
+    </div>
+  } @else if (!isExplorer()) {
+    <div class="state">Aktivna tura je dostupna turistima.</div>
+  } @else if (activeTour.error() || position.error()) {
+    <div class="state state--error" role="alert">
+      ⚠ Aktivna tura nije učitana.
+      <button class="button" type="button" (click)="reload()">Pokušaj ponovo</button>
+    </div>
+  } @else if (activeTour.isLoading() || position.isLoading()) {
+    <div class="state" role="status">Učitavanje aktivne ture…</div>
+  } @else if (activeTour.value(); as active) {
+    <div class="page-header">
+      <h1>{{ active.tourName }}</h1>
+    </div>
+
+    <app-location-map
+      [locations]="mapLocations()"
+      [position]="savedPosition()"
+      [target]="nextKeyPoint()"
+    />
+
+    @if (nextKeyPoint(); as next) {
+      <p>Sledeća tačka: {{ next.name }}</p>
+    }
+
+    <p class="progress">
+      <span class="progress__bar" aria-hidden="true"
+        ><span
+          class="progress__fill"
+          [style.width]="(active.reachedKeyPointCount / active.keyPoints.length) * 100 + '%'"
+        ></span
+      ></span>
+      {{ active.reachedKeyPointCount }} od {{ active.keyPoints.length }} tačaka
+    </p>
+  } @else {
+    <div class="state">
+      Nemate turu u toku.
+      <a routerLink="/exploration">Spisak tura</a>
+    </div>
+  }
+</div>
