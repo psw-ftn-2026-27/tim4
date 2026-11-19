@@ -17,6 +17,10 @@ public sealed record TourPricing
         {
             throw new DomainException("A paid tour requires an amount greater than zero.");
         }
+        if (type == TourPricingType.Paid && (amount % 1 != 0 || amount > long.MaxValue))
+        {
+            throw new DomainException("Cena ture mora biti ceo broj EC veći od nule.");
+        }
         if (type == TourPricingType.Free && amount is not null)
         {
             throw new DomainException("A free tour cannot have an amount.");
@@ -25,4 +29,6 @@ public sealed record TourPricing
         Type = type.Value;
         Amount = amount;
     }
+
+    public long PriceInEc() => Type == TourPricingType.Free ? 0 : (long)Amount!.Value;
 }
