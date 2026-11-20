@@ -117,17 +117,19 @@ public sealed class TourBrowsingQueries
         var isPurchased = await _paymentApi.HasPurchasedAsync(viewerId, tourId);
         tour = tour with { IsPurchased = isPurchased };
 
-        // The author sees the whole tour. Once Payment exposes purchases, a buyer will too.
+        // The author sees the whole tour, secrets included.
         if (tour.AuthorId == viewerId)
         {
             return tour;
         }
 
-        // Everyone else sees only the key points open without purchase, and no secret.
-        var openKeyPoints = tour.KeyPoints
-            .Where(keyPoint => keyPoint.IsVisibleWithoutPurchase)
+        // A buyer sees every key point, and everyone else only the key points open without
+        // purchase. Neither sees a secret: a secret is revealed only when the tourist reaches
+        // its key point while going through the tour.
+        var visibleKeyPoints = tour.KeyPoints
+            .Where(keyPoint => isPurchased || keyPoint.IsVisibleWithoutPurchase)
             .Select(keyPoint => keyPoint with { Secret = null })
             .ToList();
-        return tour with { KeyPoints = openKeyPoints };
+        return tour with { KeyPoints = visibleKeyPoints };
     }
 }

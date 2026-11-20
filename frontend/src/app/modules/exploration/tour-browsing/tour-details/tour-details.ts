@@ -6,7 +6,7 @@ import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
 import { PositionSimulation } from '../../../../shared/position/position-simulation';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { TourDetailsDto } from '../../api/exploration-api-types';
+import { TourDetailsDto, TransportMode } from '../../api/exploration-api-types';
 import { TourBrowsing } from '../tour-browsing';
 
 @Component({
@@ -24,11 +24,29 @@ export class TourDetails {
   // The tour ID from the route tours/:id.
   readonly id = input.required<string>();
 
-  // The server sends only what this visitor may see: a visitor gets the key points open
-  // without purchase and no secrets, the author gets the whole tour.
+  // The server sends only what this visitor may see: the author gets the whole tour, a buyer
+  // every key point without secrets, anyone else the key points open without purchase and no
+  // secrets.
   protected readonly tour = httpResource<TourDetailsDto>(
     () => `/api/exploration/tours/${this.id()}`,
   );
+
+  // The names the page shows for the transport modes, as the search filters write them.
+  protected readonly transportLabels: Record<TransportMode, string> = {
+    Walking: 'Peške',
+    Bicycle: 'Bicikl',
+    Car: 'Automobil',
+  };
+
+  // The author and a buyer get every key point, so the path between them is the real tour.
+  // Anyone else gets only the open ones, and a path joining them would skip the hidden ones.
+  protected readonly seesWholeTour = computed(() => {
+    const tour = this.tour.value();
+    if (tour === undefined) {
+      return false;
+    }
+    return tour.isPurchased || tour.authorId === this.auth.user()?.id;
+  });
 
   protected readonly pending = signal(false);
   protected readonly added = signal(false);

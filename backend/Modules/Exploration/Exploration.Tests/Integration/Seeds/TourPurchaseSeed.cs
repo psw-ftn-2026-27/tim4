@@ -12,6 +12,7 @@ internal static class TourPurchaseSeed
     public static readonly ShoppingCart ExplorersCompletedCart;
     public static readonly Wallet ExplorersWallet;
     public static readonly Purchase ExplorerBoughtVineyardsByBicycle;
+    public static readonly Purchase ExplorerBoughtFortressWithHiddenFirstKeyPoint;
     public static readonly ShoppingCart SecondExplorersCompletedCart;
     public static readonly Wallet SecondExplorersWallet;
     public static readonly Purchase SecondExplorerBoughtMonasteries;
@@ -28,6 +29,12 @@ internal static class TourPurchaseSeed
         ExplorerBoughtVineyardsByBicycle = new Purchasing().Complete(ExplorersCompletedCart, ExplorersWallet, checkout,
             null, null, ExplorersCompletedCart.TotalToPay, [], now);
 
+        // A second purchase from the same cart and wallet: a tour with a key point hidden until purchase.
+        ExplorersCompletedCart.Add(TourProductSeed.FortressWithHiddenFirstKeyPointFor40);
+        var fortressCheckout = ExplorersCompletedCart.PrepareCheckout([TourProductSeed.FortressWithHiddenFirstKeyPointFor40]);
+        ExplorerBoughtFortressWithHiddenFirstKeyPoint = new Purchasing().Complete(ExplorersCompletedCart, ExplorersWallet,
+            fortressCheckout, null, null, ExplorersCompletedCart.TotalToPay, [ExplorerBoughtVineyardsByBicycle], now);
+
         SecondExplorersCompletedCart = new ShoppingCart(WellKnownUsers.SecondExplorer);
         SecondExplorersCompletedCart.Add(TourProductSeed.MonasteriesForFree);
         var secondCheckout = SecondExplorersCompletedCart.PrepareCheckout([TourProductSeed.MonasteriesForFree]);
@@ -38,7 +45,7 @@ internal static class TourPurchaseSeed
 
     public static object[] All =>
     [
-        ExplorersCompletedCart, ExplorersWallet, ExplorerBoughtVineyardsByBicycle,
+        ExplorersCompletedCart, ExplorersWallet, ExplorerBoughtVineyardsByBicycle, ExplorerBoughtFortressWithHiddenFirstKeyPoint,
         SecondExplorersCompletedCart, SecondExplorersWallet, SecondExplorerBoughtMonasteries,
     ];
 }

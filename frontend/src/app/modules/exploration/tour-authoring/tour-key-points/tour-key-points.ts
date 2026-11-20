@@ -49,9 +49,9 @@ export class TourKeyPoints {
   protected readonly error = signal<string | null>(null);
 
   protected readonly form = form(signal({ ...EMPTY_KEY_POINT }), (path) => {
-    required(path.name, { message: 'Name is required.' });
-    required(path.description, { message: 'Description is required.' });
-    required(path.location, { message: 'Choose the location on the map.' });
+    required(path.name, { message: 'Naziv je obavezan.' });
+    required(path.description, { message: 'Opis je obavezan.' });
+    required(path.location, { message: 'Izaberite lokaciju na mapi.' });
   });
 
   // The tour as it will be after the change in progress is saved. The map draws it and
@@ -70,7 +70,7 @@ export class TourKeyPoints {
           : { latitude: keyPoint.latitude, longitude: keyPoint.longitude, name: keyPoint.name },
       );
     if (this.formOpen() && edited === null && location !== null) {
-      locations.push({ ...location, name: name || 'New key point' });
+      locations.push({ ...location, name: name || 'Nova ključna tačka' });
     }
     return locations.map((point, index) => ({ ...point, name: `${index + 1}. ${point.name}` }));
   });
@@ -118,7 +118,7 @@ export class TourKeyPoints {
       return;
     }
     if (edited === null && image === null) {
-      this.error.set('Choose an image for the key point.');
+      this.error.set('Izaberite sliku ključne tačke.');
       return;
     }
     const secret = this.form.secret().value().trim();
@@ -143,7 +143,7 @@ export class TourKeyPoints {
       this.tours.reload();
       this.closeForm();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not save the key point.'));
+      this.error.set(serverMessage(failure, 'Ključnu tačku nije moguće sačuvati.'));
     } finally {
       this.pending.set(false);
     }
@@ -162,7 +162,7 @@ export class TourKeyPoints {
       this.tours.reload();
       this.removedKeyPoint.set(null);
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not remove the key point.'));
+      this.error.set(serverMessage(failure, 'Ključnu tačku nije moguće ukloniti.'));
     } finally {
       this.pending.set(false);
     }

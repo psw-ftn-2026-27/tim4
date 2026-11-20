@@ -1,10 +1,10 @@
 <div class="stack">
-  <p><a routerLink="/exploration">← Tours</a></p>
+  <a class="back-link" routerLink="/exploration">← Ture</a>
 
   @if (tour.isLoading()) {
-    <p>Loading the tour...</p>
+    <p>Učitavanje ture…</p>
   } @else if (tour.error()) {
-    <p class="error">Could not load the tour.</p>
+    <p class="error">Turu nije moguće učitati.</p>
   } @else if (tour.value(); as tour) {
     <!-- One primary action at a time: a buyer starts the tour, anyone else who may buy adds it to the cart. -->
     <div class="page-header">
@@ -42,9 +42,20 @@
       <p class="error" role="alert">⚠ {{ message }}</p>
     }
     <p>{{ tour.description }}</p>
-    <p class="meta">
-      Difficulty: {{ tour.difficulty }} · Length: {{ tour.lengthInKm.toFixed(2) }} km
+    <p>
+      @switch (tour.difficulty) {
+        @case ('Easy') {
+          <span class="badge badge--easy">Lako</span>
+        }
+        @case ('Moderate') {
+          <span class="badge badge--moderate">Srednje</span>
+        }
+        @case ('Hard') {
+          <span class="badge badge--hard">Teško</span>
+        }
+      }
     </p>
+    <p class="meta">Dužina: {{ tour.lengthInKm.toFixed(2) }} km</p>
 
     @if (tour.tags.length > 0) {
       <ul class="tags">
@@ -56,15 +67,16 @@
 
     <ul class="times">
       @for (time of tour.transportTimes; track time.transport) {
-        <li class="meta">{{ time.transport }}: {{ time.minutes }} min</li>
+        <li class="meta">{{ transportLabels[time.transport] }}: {{ time.minutes }} min</li>
       }
     </ul>
 
-    <h2>Key points</h2>
+    <h2>Ključne tačke</h2>
     @if (tour.isPurchased && isExplorer()) {
       <!-- A buyer sets the position by clicking the map; the marker comes from the server. -->
       <app-location-map
         [locations]="mapLocations()"
+        [showPath]="true"
         [selectable]="true"
         [position]="savedPosition()"
         (selectedChange)="setPosition($event)"
@@ -83,7 +95,7 @@
         <p class="error" role="alert">{{ positionError() }}</p>
       }
     } @else {
-      <app-location-map [locations]="mapLocations()" />
+      <app-location-map [locations]="mapLocations()" [showPath]="seesWholeTour()" />
     }
 
     <ol class="key-points stack">
@@ -94,12 +106,12 @@
             <h3>{{ keyPoint.name }}</h3>
             <p>{{ keyPoint.description }}</p>
             @if (keyPoint.secret) {
-              <p class="meta">Secret: {{ keyPoint.secret }}</p>
+              <p class="meta">Tajna: {{ keyPoint.secret }}</p>
             }
           </div>
         </li>
       } @empty {
-        <li>The key points are revealed after purchase.</li>
+        <li>Ključne tačke se otkrivaju posle kupovine.</li>
       }
     </ol>
   }
