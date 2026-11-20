@@ -67,6 +67,31 @@ public sealed class SocialChallenge : AggregateRoot
         Status = SocialChallengeStatus.Archived;
     }
 
+    public void EnsureCanBeJoined(ChallengeLocation position, DateTime now)
+    {
+        if (Status != SocialChallengeStatus.Published)
+        {
+            throw new DomainException("Moguće je aktivirati samo objavljen izazov.");
+        }
+
+        if (!IsInRange(position))
+        {
+            throw new DomainException("Niste u opsegu izazova.");
+        }
+
+        var time = TimeOnly.FromDateTime(now.ToLocalTime());
+        if (time < ActivityTime.Start || time > ActivityTime.End)
+        {
+            throw new DomainException("Izazov trenutno nije aktivan.");
+        }
+    }
+
+    internal bool IsInRange(ChallengeLocation position)
+    {
+        var location = new ChallengeLocation(Latitude, Longitude);
+        return location.DistanceTo(position) <= (double)RangeInMeters;
+    }
+
     public void EnsureCanBeDeleted()
     {
         if (Status != SocialChallengeStatus.Draft && Status != SocialChallengeStatus.Archived)

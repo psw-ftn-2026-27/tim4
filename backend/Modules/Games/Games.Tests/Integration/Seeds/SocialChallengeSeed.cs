@@ -13,13 +13,16 @@ internal static class SocialChallengeSeed
         new ActivityTime(new TimeOnly(18, 0), new TimeOnly(20, 0)), 3, 20, 50, "Bravo!", 45.25, 19.85);
     public static readonly SocialChallenge Retired = new("D. Povučen susret",
         new ActivityTime(new TimeOnly(18, 0), new TimeOnly(20, 0)), 3, 20, 50, "Bravo!", 45.25, 19.85);
+    public static readonly SocialChallenge PublishedAllDay = new("E. Celodnevni susret",
+        new ActivityTime(TimeOnly.MinValue, TimeOnly.MaxValue), 2, 20, 40, "Svi zajedno!", 45.2671, 19.8335);
 
     static SocialChallengeSeed()
     {
         Published.Publish();
         Retired.Publish();
         Retired.Retire();
+        PublishedAllDay.Publish();
     }
 
-    public static SocialChallenge[] All => [EveningDraft, MorningDraft, Published, Retired];
+    public static SocialChallenge[] All => [EveningDraft, MorningDraft, Published, Retired, PublishedAllDay];
 }
