@@ -42,8 +42,8 @@ frontend/src/
       analytics/             Analytics (Google Analytics 4): consent, page views,
                              the event catalog; see "Analytics" below          [platform]
       position/              PositionSimulation: the command that sets the tourist's
-                             position; see its README, example at
-                             /design-preview/map                               [platform]
+                             position; repeatEvery: a page's periodic check;
+                             see its README, example at /design-preview/map    [platform]
   environments/              environment.ts (production), environment.development.ts
                              (ng serve and tests): the GA measurement ID       [platform]
     modules/
@@ -147,6 +147,10 @@ construct means adding a lesson, so treat it as a platform decision.
   method and never see the Observable.
 - The app shell's navigation bar (`app.html`) is the third: it may use `routerLinkActive`,
   with `routerLinkActiveOptions`, to highlight the current section. Modules do not use it.
+- `shared/position` is the fourth: its `repeatEvery` may use `setInterval` and
+  `inject(DestroyRef)` to repeat a page's check on an interval and stop when the page is
+  destroyed; modules call only `repeatEvery` and its `stop()` (see
+  `src/app/shared/position/README.md`).
 
 ## Styling
 
@@ -174,8 +178,8 @@ with mock data. It is reached only by typing the URL, never linked from the app'
 navigation. Before writing a style, look there for a class that already fits. When a
 global class is added to `_components.scss`, show it on the overview page in the same
 change. The sketches never call the server and are never imported by a module. The single
-exception is the "Simulator pozicije" and "Ruta do sledeće tačke" sections on
-`/design-preview/map`, which read and set the signed-in tourist's position through
+exception is the "Simulator pozicije", "Ruta do sledeće tačke" and "Periodična provera"
+sections on `/design-preview/map`, which read and set the signed-in tourist's position through
 `shared/position`.
 
 An entity's state is always shown with a state badge from the style guide (`.badge` with

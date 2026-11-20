@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { CoordinatesDto } from '../../../shared/api/coordinates-dto';
 import { LocationMap, MapArea, MapCoordinates, MapLocation } from '../../../shared/map/location-map';
 import { PositionSimulation } from '../../../shared/position/position-simulation';
+import { repeatEvery } from '../../../shared/position/repeat-every';
 import { serverMessage } from '../../../shared/util/server-message';
 import { Auth } from '../../auth/auth';
 
@@ -32,8 +33,8 @@ const HIDDEN_LOCATION_AREA: MapArea = { latitude: 45.2517, longitude: 19.8618, r
 
 // The living example of the shared map (shared/map): city challenges, a tour and an empty
 // list, then picking a location, adding a key point and moving an existing one. The position
-// simulator and the route to the next key point are the parts of the style guide that call
-// the server; the last section draws an area as a circle.
+// simulator, the route to the next key point and the periodic check are the parts of the
+// style guide that call the server; the last section draws an area as a circle.
 @Component({
   imports: [LocationMap, RouterLink],
   selector: 'app-map-view',
@@ -192,6 +193,37 @@ export class MapView {
     } finally {
       this.pending.set(false);
     }
+  }
+
+  // The periodic check, the model for E22 and G22. On every tick a module's page sends the last
+  // saved position with its own request; this section only writes out what would be sent.
+  private readonly tickCount = signal(0);
+  protected readonly tickText = signal('');
+  protected readonly checkStopped = signal(false);
+
+  private checkPosition(): void {
+    this.tickCount.update((count) => count + 1);
+    const tick = this.tickCount();
+    // Not loaded yet, failed or not set: the tick sends nothing.
+    const position = this.position.hasValue() ? this.position.value() : null;
+    if (!position) {
+      this.tickText.set(`Otkucaj ${tick}: preskočen — pozicija nije postavljena`);
+      return;
+    }
+    this.tickText.set(
+      `Otkucaj ${tick}: poslata bi bila pozicija ` +
+        `${position.latitude.toFixed(5)}, ${position.longitude.toFixed(5)}`,
+    );
+  }
+
+  // Declared after the position resource, because the first tick runs right away.
+  private readonly check = repeatEvery(10_000, () => this.checkPosition());
+
+  // In a module, the server's answer that ends the check (tour finished, challenge solved)
+  // stops it the same way.
+  protected stopCheck(): void {
+    this.check.stop();
+    this.checkStopped.set(true);
   }
 
   // The area on the map: a search area as in E23 and a smaller one around a hidden location as
