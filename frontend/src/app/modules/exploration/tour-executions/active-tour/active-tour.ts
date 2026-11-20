@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
@@ -19,6 +19,7 @@ import { TourExecutions } from '../tour-executions';
 })
 export class ActiveTour {
   protected readonly auth = inject(Auth);
+  private readonly router = inject(Router);
   private readonly positionSimulation = inject(PositionSimulation);
   private readonly tourExecutions = inject(TourExecutions);
 
@@ -49,6 +50,10 @@ export class ActiveTour {
   protected readonly pending = signal(false);
   protected readonly positionError = signal<string | null>(null);
   protected readonly checkError = signal<string | null>(null);
+  protected readonly abandonError = signal<string | null>(null);
+
+  // True while the section that confirms abandoning the tour is open.
+  protected readonly confirmingAbandon = signal(false);
 
   // True once a check reached a key point; the notice stays until another one is reached.
   private readonly justReached = signal(false);
@@ -103,6 +108,24 @@ export class ActiveTour {
       await this.checkPosition(coordinates, active.executionId);
     } catch (failure) {
       this.positionError.set(serverMessage(failure, 'Poziciju nije moguće sačuvati.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  // After abandoning, the tourist returns to the details of the abandoned tour, where it can be
+  // started again as a new session.
+  protected async abandon(tourId: string): Promise<void> {
+    if (this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.abandonError.set(null);
+    try {
+      await this.tourExecutions.abandon();
+      await this.router.navigate(['/exploration/tours', tourId]);
+    } catch (failure) {
+      this.abandonError.set(serverMessage(failure, 'Turu nije moguće napustiti.'));
     } finally {
       this.pending.set(false);
     }

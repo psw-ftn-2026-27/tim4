@@ -1,3 +1,4 @@
+using Exploration.Application.TourExecutions;
 using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
 using Payment.Contracts;
@@ -9,18 +10,23 @@ namespace Exploration.Application.TourBrowsing;
 public sealed class TourBrowsingQueries
 {
     private readonly ITourReadRepository _tourReadRepository;
+    private readonly ITourExecutionReadRepository _executionReadRepository;
     private readonly IPaymentApi _paymentApi;
 
-    public TourBrowsingQueries(ITourReadRepository tourReadRepository, IPaymentApi paymentApi)
+    public TourBrowsingQueries(ITourReadRepository tourReadRepository,
+        ITourExecutionReadRepository executionReadRepository, IPaymentApi paymentApi)
     {
         _tourReadRepository = tourReadRepository;
+        _executionReadRepository = executionReadRepository;
         _paymentApi = paymentApi;
     }
 
-    public async Task<PageResult<PublishedTourDto>> GetPublishedAsync(PublishedTourSearchDto search, int page, int pageSize)
+    public async Task<PageResult<PublishedTourDto>> GetPublishedAsync(PublishedTourSearchDto search, Guid viewerId,
+        int page, int pageSize)
     {
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
+        var inProgressTourId = await _executionReadRepository.GetInProgressTourIdAsync(viewerId);
 
         // Prices live in Payment, and key points are stored as JSON, so the database cannot filter or
         // sort by price or filter by the circle. Without such a criterion the database pages the tours
@@ -32,7 +38,7 @@ public sealed class TourBrowsingQueries
         {
             var tourPage = await _tourReadRepository.GetPublishedAsync(search, page, pageSize);
             var pageLocations = await _tourReadRepository.GetVisibleKeyPointLocationsAsync(tourPage.Items.Select(tour => tour.Id).ToList());
-            var pageItems = await WithPricesAndPinsAsync(tourPage.Items, pageLocations);
+            var pageItems = await WithPricesAndPinsAsync(tourPage.Items, pageLocations, inProgressTourId);
             return new PageResult<PublishedTourDto>(pageItems, tourPage.TotalCount);
         }
 
@@ -43,7 +49,7 @@ public sealed class TourBrowsingQueries
         var toursInCircle = usesCircle
             ? WithinCircle(allTours, locations, new Location(search.Latitude!.Value, search.Longitude!.Value), search.RadiusInKm!.Value)
             : allTours;
-        var tours = await WithPricesAndPinsAsync(toursInCircle, locations);
+        var tours = await WithPricesAndPinsAsync(toursInCircle, locations, inProgressTourId);
         var matching = SortByPrice(WithinPriceRange(tours, search.PriceFrom, search.PriceTo), search.Sort);
         var items = matching
             .Skip((page - 1) * pageSize)
@@ -54,11 +60,13 @@ public sealed class TourBrowsingQueries
 
     // The pin is the first key point open without purchase, so the map never reveals a location
     // the visitor has yet to buy.
-    private async Task<List<PublishedTourDto>> WithPricesAndPinsAsync(List<TourDto> tours, Dictionary<Guid, List<LocationDto>> locations)
+    private async Task<List<PublishedTourDto>> WithPricesAndPinsAsync(List<TourDto> tours,
+        Dictionary<Guid, List<LocationDto>> locations, Guid? inProgressTourId)
     {
         var prices = await _paymentApi.GetPricesByEntityIdsAsync(tours.Select(tour => tour.Id).ToList());
         return tours
-            .Select(tour => new PublishedTourDto(tour, prices[tour.Id], locations[tour.Id].FirstOrDefault()))
+            .Select(tour => new PublishedTourDto(tour, prices[tour.Id], locations[tour.Id].FirstOrDefault(),
+                tour.Id == inProgressTourId))
             .ToList();
     }
 
@@ -115,7 +123,8 @@ public sealed class TourBrowsingQueries
         var tour = await _tourReadRepository.GetPublishedDetailsAsync(tourId)
             ?? throw new NotFoundException($"Tour {tourId} does not exist.");
         var isPurchased = await _paymentApi.HasPurchasedAsync(viewerId, tourId);
-        tour = tour with { IsPurchased = isPurchased };
+        var inProgressTourId = await _executionReadRepository.GetInProgressTourIdAsync(viewerId);
+        tour = tour with { IsPurchased = isPurchased, IsInProgress = tour.Id == inProgressTourId };
 
         // The author sees the whole tour, secrets included.
         if (tour.AuthorId == viewerId)

@@ -352,6 +352,52 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Published_list_marks_the_tour_in_progress_only_for_its_tourist()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var inProgressTourId = TourExecutionSeed.ExplorersVineyardsByBicycleWithFirstKeyPointReached.TourId;
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?pageSize=100", JsonOptions);
+
+        tours!.Items.Should().ContainSingle(tour => tour.IsInProgress)
+            .Which.Tour.Id.Should().Be(inProgressTourId);
+    }
+
+    [Fact]
+    public async Task Published_list_does_not_mark_another_tourists_tour_in_progress()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var inProgressTourId = TourExecutionSeed.ExplorersVineyardsByBicycleWithFirstKeyPointReached.TourId;
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Tour.Id == inProgressTourId);
+        tours.Items.Should().OnlyContain(tour => !tour.IsInProgress);
+    }
+
+    [Fact]
+    public async Task Tourist_is_told_the_tour_is_in_progress()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var inProgressTourId = TourExecutionSeed.ExplorersVineyardsByBicycleWithFirstKeyPointReached.TourId;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{inProgressTourId}", JsonOptions);
+
+        details!.IsInProgress.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Another_tourist_is_told_the_tour_is_not_in_progress()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var inProgressTourId = TourExecutionSeed.ExplorersVineyardsByBicycleWithFirstKeyPointReached.TourId;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{inProgressTourId}", JsonOptions);
+
+        details!.IsInProgress.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Draft_tour_cannot_be_opened_by_a_visitor()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");

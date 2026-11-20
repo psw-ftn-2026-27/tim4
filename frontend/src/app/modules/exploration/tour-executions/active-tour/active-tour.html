@@ -107,6 +107,48 @@
         }
       </ol>
     }
+
+    <!-- Abandoning cannot be undone, so it is confirmed in a section under the button. -->
+    <div class="stack">
+      <p>
+        <button
+          class="button button--danger"
+          type="button"
+          [disabled]="pending()"
+          (click)="confirmingAbandon.set(true)"
+        >
+          Napusti turu
+        </button>
+      </p>
+
+      @if (confirmingAbandon()) {
+        <section class="card stack">
+          <p>Napuštena tura ne može da se nastavi. Dostignute tačke ostaju zapisane.</p>
+          <div class="form-actions">
+            <button
+              class="button button--danger"
+              type="button"
+              [disabled]="pending()"
+              (click)="abandon(active.tourId)"
+            >
+              Potvrdi napuštanje
+            </button>
+            <button
+              class="button"
+              type="button"
+              [disabled]="pending()"
+              (click)="confirmingAbandon.set(false)"
+            >
+              Odustani
+            </button>
+          </div>
+        </section>
+      }
+
+      @if (abandonError(); as message) {
+        <p class="error" role="alert">⚠ {{ message }}</p>
+      }
+    </div>
   } @else {
     <div class="state">
       Nemate turu u toku.

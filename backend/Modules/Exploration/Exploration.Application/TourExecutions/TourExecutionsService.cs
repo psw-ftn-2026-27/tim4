@@ -55,4 +55,13 @@ public sealed class TourExecutionsService
         await _unitOfWork.SaveChangesAsync();
         return new PositionCheckResultDto(outcome);
     }
+
+    public async Task AbandonAsync(Guid touristId)
+    {
+        var execution = await _executionRepository.GetInProgressByTouristAsync(touristId)
+            ?? throw new NotFoundException("Nemate turu u toku.");
+
+        execution.Abandon(DateTime.UtcNow);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

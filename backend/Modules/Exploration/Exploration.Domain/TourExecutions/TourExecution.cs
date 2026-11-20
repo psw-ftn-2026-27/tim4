@@ -18,6 +18,7 @@ public sealed class TourExecution : AggregateRoot
     public Location StartLocation { get; private set; }
     public DateTime LastActivityAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
+    public DateTime? AbandonedAt { get; private set; }
     // In the order they were reached.
     public IReadOnlyList<ReachedKeyPoint> ReachedKeyPoints => _reachedKeyPoints;
     public int ReachedKeyPointCount => _reachedKeyPoints.Count;
@@ -75,6 +76,15 @@ public sealed class TourExecution : AggregateRoot
             Status = TourExecutionStatus.Completed;
             CompletedAt = now;
         }
+    }
+
+    // The key points reached so far stay recorded in the abandoned session.
+    public void Abandon(DateTime now)
+    {
+        EnsureInProgress();
+
+        Status = TourExecutionStatus.Abandoned;
+        AbandonedAt = now;
     }
 
     public bool HasReached(Guid keyPointId) =>

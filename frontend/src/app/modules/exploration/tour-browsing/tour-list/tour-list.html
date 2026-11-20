@@ -144,7 +144,7 @@
     } @else {
       <div class="grid">
         @for (item of page.items; track item.tour.id) {
-          <app-tour-card [tour]="item.tour" [price]="item.price" />
+          <app-tour-card [tour]="item.tour" [price]="item.price" [isInProgress]="item.isInProgress" />
         }
       </div>
     }
