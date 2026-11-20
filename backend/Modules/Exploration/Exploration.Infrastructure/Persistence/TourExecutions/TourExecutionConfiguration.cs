@@ -22,5 +22,10 @@ internal static class TourExecutionConfiguration
 
         builder.OwnsOne(execution => execution.StartLocation);
         builder.Navigation(execution => execution.StartLocation).IsRequired();
+
+        builder.OwnsMany(execution => execution.ReachedKeyPoints, reachedKeyPoints =>
+        {
+            reachedKeyPoints.ToJson();
+        });
     }
 }

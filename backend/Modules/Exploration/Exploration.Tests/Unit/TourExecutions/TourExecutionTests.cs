@@ -35,4 +35,29 @@ public class TourExecutionTests
 
         next.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void Next_key_point_is_the_first_one_in_tour_order_that_is_not_reached()
+    {
+        var keyPointIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        var execution = new TourExecution(Guid.NewGuid(), Guid.NewGuid(), new Location(45.25, 19.85), DateTime.UtcNow);
+        execution.ReachKeyPoint(keyPointIds[0], false, DateTime.UtcNow);
+
+        var next = execution.NextKeyPointId(keyPointIds);
+
+        next.Should().Be(keyPointIds[1]);
+    }
+
+    [Fact]
+    public void Key_point_that_is_already_reached_cannot_be_reached_again()
+    {
+        var keyPointId = Guid.NewGuid();
+        var execution = new TourExecution(Guid.NewGuid(), Guid.NewGuid(), new Location(45.25, 19.85), DateTime.UtcNow);
+        execution.ReachKeyPoint(keyPointId, false, DateTime.UtcNow);
+
+        var reachAgain = () => execution.ReachKeyPoint(keyPointId, false, DateTime.UtcNow);
+
+        reachAgain.Should().Throw<DomainException>();
+        execution.ReachedKeyPointCount.Should().Be(1);
+    }
 }

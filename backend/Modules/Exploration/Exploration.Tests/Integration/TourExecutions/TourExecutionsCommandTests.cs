@@ -26,7 +26,8 @@ public class TourExecutionsCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<ExplorationDbContext>();
-        var stored = assertContext.TourExecutions.Single(execution => execution.TouristId == WellKnownUsers.SecondExplorer);
+        var stored = assertContext.TourExecutions.Single(execution => execution.TouristId == WellKnownUsers.SecondExplorer
+            && execution.Status == TourExecutionStatus.InProgress);
         stored.TourId.Should().Be(tour.Id);
         stored.Status.Should().Be(TourExecutionStatus.InProgress);
         stored.StartLocation.Should().Be(new Location(45.12, 19.94));
@@ -48,10 +49,32 @@ public class TourExecutionsCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Starting_a_tour_the_tourist_already_completed_stores_a_new_session_and_keeps_the_completed_one()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var completed = TourExecutionSeed.SecondExplorersMonasteriesCompleted;
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var executionCountBefore = arrangeContext.TourExecutions.Count();
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions", new StartTourDto(completed.TourId, 45.12, 19.94));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.TourExecutions.Count().Should().Be(executionCountBefore + 1);
+        var started = assertContext.TourExecutions.Single(execution => execution.TouristId == WellKnownUsers.SecondExplorer
+            && execution.Status == TourExecutionStatus.InProgress);
+        started.TourId.Should().Be(completed.TourId);
+        started.ReachedKeyPoints.Should().BeEmpty();
+        var stored = assertContext.TourExecutions.Single(execution => execution.Id == completed.Id);
+        stored.Status.Should().Be(TourExecutionStatus.Completed);
+        stored.ReachedKeyPoints.Should().HaveCount(completed.ReachedKeyPointCount);
+    }
+
+    [Fact]
     public async Task Starting_a_tour_whose_session_is_in_progress_continues_it_and_stores_no_new_session()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var inProgress = TourExecutionSeed.ExplorersVineyardsByBicycleInProgress;
+        var inProgress = TourExecutionSeed.ExplorersVineyardsByBicycleWithFirstKeyPointReached;
         using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
         var executionCountBefore = arrangeContext.TourExecutions.Count();
 
@@ -95,6 +118,60 @@ public class TourExecutionsCommandTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
         var response = await client.PostAsJsonAsync("/api/exploration/tour-executions", new StartTourDto(TourSeed.PublishedMonasteries.Id, 45.12, 19.94));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Tourist_who_arrives_at_the_next_key_point_reaches_it_and_it_is_stored_with_the_time_it_was_reached()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var execution = TourExecutionSeed.ExplorersVineyardsByBicycleWithFirstKeyPointReached;
+        var nextKeyPoint = TourSeed.PublishedVineyardsByBicycleEasy.KeyPoints[1];
+        var checkedAfter = DateTime.UtcNow;
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions/active/position-checks",
+            new CheckPositionDto(nextKeyPoint.Location.Latitude, nextKeyPoint.Location.Longitude));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<PositionCheckResultDto>(JsonOptions);
+        result!.Outcome.Should().Be(PositionCheckOutcome.ReachedKeyPoint);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.TourExecutions.Single(stored => stored.Id == execution.Id);
+        stored.ReachedKeyPoints.Should().ContainSingle(reached => reached.KeyPointId == nextKeyPoint.Id)
+            .Which.ReachedAt.Should().BeOnOrAfter(checkedAfter);
+    }
+
+    [Fact]
+    public async Task Tourist_without_a_tour_in_progress_cannot_check_their_position_and_no_session_changes()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var executionCountBefore = arrangeContext.TourExecutions.Count(execution => execution.TouristId == WellKnownUsers.SecondExplorer);
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions/active/position-checks", new CheckPositionDto(45.121, 19.944));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.TourExecutions.Count(execution => execution.TouristId == WellKnownUsers.SecondExplorer).Should().Be(executionCountBefore);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_check_a_position()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions/active/position-checks", new CheckPositionDto(45.199, 19.93));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_check_a_position()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions/active/position-checks", new CheckPositionDto(45.199, 19.93));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

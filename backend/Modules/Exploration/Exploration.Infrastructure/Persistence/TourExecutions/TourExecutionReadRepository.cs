@@ -20,11 +20,12 @@ internal sealed class TourExecutionReadRepository : ITourExecutionReadRepository
                 tour.Id,
                 tour.Name,
                 tour.KeyPoints
-                    .Select(keyPoint => new ActiveKeyPointDto(
+                    .Select(keyPoint => new ExecutedKeyPointDto(
                         keyPoint.Id,
                         keyPoint.Name,
                         keyPoint.Location.Latitude,
-                        keyPoint.Location.Longitude))
+                        keyPoint.Location.Longitude,
+                        keyPoint.Secret))
                     .ToList()))
             .SingleOrDefaultAsync();
     }

@@ -19,6 +19,12 @@ internal sealed class TourExecutionRepository : ITourExecutionRepository
             execution.TouristId == touristId && execution.Status == TourExecutionStatus.InProgress);
     }
 
+    public Task<TourExecution?> GetByTouristAsync(Guid touristId, Guid executionId)
+    {
+        return _dbContext.TourExecutions.FirstOrDefaultAsync(execution =>
+            execution.Id == executionId && execution.TouristId == touristId);
+    }
+
     public void Add(TourExecution execution)
     {
         _dbContext.TourExecutions.Add(execution);

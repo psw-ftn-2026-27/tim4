@@ -36,6 +36,7 @@ public static class ExplorationModuleExtensions
         services.AddScoped<ITourExecutionRepository, TourExecutionRepository>();
         services.AddScoped<ITourExecutionReadRepository, TourExecutionReadRepository>();
         services.AddScoped<TourStarting>();
+        services.AddScoped<TourWalking>();
 
         services.AddScoped<TourAuthoringService>();
         services.AddScoped<TourAuthoringQueries>();

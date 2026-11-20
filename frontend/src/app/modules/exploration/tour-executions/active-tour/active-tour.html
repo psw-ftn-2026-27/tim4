@@ -6,23 +6,79 @@
     </div>
   } @else if (!isExplorer()) {
     <div class="state">Aktivna tura je dostupna turistima.</div>
+  } @else if (completedExecutionId() !== null) {
+    <!-- After the last key point the session is no longer in progress, so it is read by its ID. -->
+    @if (completedExecution.error()) {
+      <div class="state state--error" role="alert">
+        ⚠ Završena tura nije učitana.
+        <button class="button" type="button" (click)="completedExecution.reload()">
+          Pokušaj ponovo
+        </button>
+      </div>
+    } @else if (completedExecution.isLoading()) {
+      <div class="state" role="status">Učitavanje završene ture…</div>
+    } @else if (completedExecution.value(); as completed) {
+      <div class="page-header">
+        <h1>{{ completed.tourName }}</h1>
+      </div>
+
+      <p class="notice notice--success">
+        ✓ Tura je završena. <a routerLink="/exploration">Spisak tura</a>
+      </p>
+
+      <h2>Dostignute tačke</h2>
+      <ol class="reached stack">
+        @for (keyPoint of completed.reachedKeyPoints; track keyPoint.id) {
+          <li class="card stack">
+            <h3>{{ keyPoint.name }}</h3>
+            @if (keyPoint.secret) {
+              <p>{{ keyPoint.secret }}</p>
+            }
+          </li>
+        }
+      </ol>
+    }
   } @else if (activeTour.error() || position.error()) {
     <div class="state state--error" role="alert">
       ⚠ Aktivna tura nije učitana.
       <button class="button" type="button" (click)="reload()">Pokušaj ponovo</button>
     </div>
-  } @else if (activeTour.isLoading() || position.isLoading()) {
+  } @else if (activeTour.status() === 'loading' || position.status() === 'loading') {
+    <!-- Only the first load replaces the page; a reload after a click keeps the map in place. -->
     <div class="state" role="status">Učitavanje aktivne ture…</div>
   } @else if (activeTour.value(); as active) {
     <div class="page-header">
       <h1>{{ active.tourName }}</h1>
     </div>
 
+    <!-- A click on the map saves the position; the marker comes from the server. -->
     <app-location-map
       [locations]="mapLocations()"
+      [selectable]="true"
       [position]="savedPosition()"
       [target]="nextKeyPoint()"
+      (selectedChange)="setPosition($event)"
     />
+
+    @if (savedPosition() === null) {
+      <p>Pozicija nije postavljena — kliknite na mapu da označite gde se nalazite</p>
+    }
+
+    @if (positionError(); as message) {
+      <p class="error" role="alert">⚠ {{ message }}</p>
+    }
+    @if (checkError(); as message) {
+      <p class="error" role="alert">⚠ {{ message }}</p>
+    }
+
+    @if (reachedKeyPoint(); as reached) {
+      <p class="notice notice--success">
+        ✓ Stigli ste do tačke {{ reached.name }}.
+        @if (reached.secret) {
+          Tajna: {{ reached.secret }}
+        }
+      </p>
+    }
 
     @if (nextKeyPoint(); as next) {
       <p>Sledeća tačka: {{ next.name }}</p>
@@ -37,6 +93,20 @@
       ></span>
       {{ active.reachedKeyPointCount }} od {{ active.keyPoints.length }} tačaka
     </p>
+
+    @if (active.reachedKeyPoints.length > 0) {
+      <h2>Dostignute tačke</h2>
+      <ol class="reached stack">
+        @for (keyPoint of active.reachedKeyPoints; track keyPoint.id) {
+          <li class="card stack">
+            <h3>{{ keyPoint.name }}</h3>
+            @if (keyPoint.secret) {
+              <p>{{ keyPoint.secret }}</p>
+            }
+          </li>
+        }
+      </ol>
+    }
   } @else {
     <div class="state">
       Nemate turu u toku.

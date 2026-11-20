@@ -1,3 +1,4 @@
+using Exploration.Domain.TourExecutions;
 using Shared.Domain.Exceptions;
 
 namespace Exploration.Application.TourExecutions;
@@ -23,11 +24,36 @@ public sealed class TourExecutionsQueries
             return null;
         }
 
-        var tour = await _executionReadRepository.GetExecutedTourAsync(execution.TourId)
+        var tour = await GetExecutedTourAsync(execution);
+        var keyPoints = tour.KeyPoints
+            .Select(keyPoint => new ActiveKeyPointDto(keyPoint.Id, keyPoint.Name, keyPoint.Latitude, keyPoint.Longitude))
+            .ToList();
+        var nextKeyPointId = execution.NextKeyPointId(keyPoints.Select(keyPoint => keyPoint.Id).ToList());
+        return new ActiveTourDto(execution.Id, tour.TourId, tour.TourName, keyPoints, nextKeyPointId,
+            execution.ReachedKeyPointCount, ReachedKeyPoints(execution, tour));
+    }
+
+    public async Task<TourExecutionDto> GetExecutionAsync(Guid touristId, Guid executionId)
+    {
+        var execution = await _executionRepository.GetByTouristAsync(touristId, executionId)
+            ?? throw new NotFoundException($"Tour execution {executionId} does not exist.");
+
+        var tour = await GetExecutedTourAsync(execution);
+        return new TourExecutionDto(execution.Id, tour.TourName, execution.Status, ReachedKeyPoints(execution, tour));
+    }
+
+    private async Task<ExecutedTourDto> GetExecutedTourAsync(TourExecution execution)
+    {
+        return await _executionReadRepository.GetExecutedTourAsync(execution.TourId)
             ?? throw new NotFoundException($"Tour {execution.TourId} does not exist.");
-        var nextKeyPointId = execution.NextKeyPointId(tour.KeyPoints.Select(keyPoint => keyPoint.Id).ToList());
-        // The next key point is the first one not reached, so every key point before it is reached.
-        var reachedCount = tour.KeyPoints.FindIndex(keyPoint => keyPoint.Id == nextKeyPointId);
-        return new ActiveTourDto(execution.Id, tour.TourId, tour.TourName, tour.KeyPoints, nextKeyPointId, reachedCount);
+    }
+
+    // Key points are reached in tour order, so tour order is also the order they were reached in.
+    private static List<ReachedKeyPointDto> ReachedKeyPoints(TourExecution execution, ExecutedTourDto tour)
+    {
+        return tour.KeyPoints
+            .Where(keyPoint => execution.HasReached(keyPoint.Id))
+            .Select(keyPoint => new ReachedKeyPointDto(keyPoint.Id, keyPoint.Name, keyPoint.Secret))
+            .ToList();
     }
 }

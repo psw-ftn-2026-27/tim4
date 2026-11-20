@@ -38,4 +38,16 @@ public sealed class TourExecutionsController : ControllerBase
         }
         return active;
     }
+
+    [HttpPost("active/position-checks")]
+    public async Task<ActionResult<PositionCheckResultDto>> CheckPosition(CheckPositionDto dto)
+    {
+        return await _executionsService.CheckPositionAsync(User.GetUserId(), dto);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<TourExecutionDto>> GetExecution(Guid id)
+    {
+        return await _executionsQueries.GetExecutionAsync(User.GetUserId(), id);
+    }
 }
