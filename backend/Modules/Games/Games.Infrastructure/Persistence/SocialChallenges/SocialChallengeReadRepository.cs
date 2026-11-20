@@ -1,3 +1,4 @@
+using Games.Application.SocialChallengePlaying;
 using Games.Application.SocialChallengePreparation;
 using Games.Application.SocialChallenges;
 using Games.Domain.SocialChallenges;
@@ -31,6 +32,38 @@ internal sealed class SocialChallengeReadRepository : ISocialChallengeReadReposi
     {
         var challenges = _context.SocialChallenges.AsNoTracking().Where(challenge => challenge.Id == id);
         return ProjectChallenges(challenges).SingleOrDefaultAsync();
+    }
+
+    public async Task<List<SocialChallengeMapItemDto>> GetMapAsync(Guid userId)
+    {
+        var challenges = await _context.SocialChallenges.AsNoTracking()
+            .Where(challenge => challenge.Status == SocialChallengeStatus.Published)
+            .OrderBy(challenge => challenge.Name).ThenBy(challenge => challenge.Id)
+            .Select(challenge => new
+            {
+                challenge.Id,
+                challenge.Name,
+                Latitude = challenge.Latitude!.Value,
+                Longitude = challenge.Longitude!.Value,
+                challenge.XpReward
+            })
+            .ToListAsync();
+
+        var challengeIds = challenges.Select(challenge => challenge.Id).ToList();
+        var awards = await _context.SocialChallengeRuns.AsNoTracking()
+            .Where(run => run.SolvedAt != null && challengeIds.Contains(run.ChallengeId) &&
+                run.Participants.Any(participant => participant.UserId == userId))
+            .Select(run => new { run.ChallengeId, run.AwardedXp })
+            .ToListAsync();
+        var awardedXp = awards
+            .DistinctBy(award => award.ChallengeId)
+            .ToDictionary(award => award.ChallengeId, award => award.AwardedXp);
+
+        return challenges
+            .Select(challenge => new SocialChallengeMapItemDto(challenge.Id, challenge.Name, challenge.Latitude,
+                challenge.Longitude, challenge.XpReward, awardedXp.ContainsKey(challenge.Id),
+                awardedXp.TryGetValue(challenge.Id, out var xp) ? xp : null))
+            .ToList();
     }
 
     private static IQueryable<SocialChallengeDto> ProjectChallenges(IQueryable<SocialChallenge> challenges)

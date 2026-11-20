@@ -135,6 +135,27 @@ namespace Games.Infrastructure.Persistence.Migrations
                     b.ToTable("Quizzes", "games");
                 });
 
+            modelBuilder.Entity("Games.Domain.SocialChallengeRuns.SocialChallengeRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AwardedXp")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ChallengeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("SolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChallengeId");
+
+                    b.ToTable("SocialChallengeRuns", "games");
+                });
+
             modelBuilder.Entity("Games.Domain.SocialChallenges.SocialChallenge", b =>
                 {
                     b.Property<Guid>("Id")
@@ -322,6 +343,34 @@ namespace Games.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("Games.Domain.SocialChallengeRuns.SocialChallengeRun", b =>
+                {
+                    b.OwnsMany("Games.Domain.SocialChallengeRuns.RunParticipant", "Participants", b1 =>
+                        {
+                            b1.Property<Guid>("SocialChallengeRunId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<DateTime>("LastLocationAt");
+
+                            b1.Property<Guid>("UserId");
+
+                            b1.HasKey("SocialChallengeRunId", "__synthesizedOrdinal");
+
+                            b1.ToTable("SocialChallengeRuns", "games");
+
+                            b1
+                                .ToJson("Participants")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SocialChallengeRunId");
+                        });
+
+                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("Games.Domain.SocialChallenges.SocialChallenge", b =>

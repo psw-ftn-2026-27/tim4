@@ -164,3 +164,26 @@ export interface QuizPositionDto {
 export interface AnswerDto {
   selectedOptions: number[];
 }
+
+export interface SocialChallengeMapItemDto {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  xpReward: number;
+  solved: boolean;
+  awardedXp: number | null;
+}
+
+export interface SocialChallengeRunDto {
+  isParticipant: boolean;
+  activeParticipantCount: number;
+  requiredParticipants: number;
+  completionMessage: string | null;
+  awardedXp: number | null;
+}
+
+export interface SocialChallengePositionDto {
+  latitude: number;
+  longitude: number;
+}

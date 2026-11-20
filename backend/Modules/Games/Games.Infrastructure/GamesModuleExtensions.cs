@@ -10,11 +10,15 @@ using Games.Application.QuizLifecycle;
 using Games.Application.QuizSolving;
 using Games.Application.Quizzes;
 using Games.Domain.QuizAttempts;
+using Games.Application.SocialChallengePlaying;
 using Games.Application.SocialChallengePreparation;
+using Games.Application.SocialChallengeRuns;
 using Games.Application.SocialChallenges;
+using Games.Domain.SocialChallengeRuns;
 using Games.Infrastructure.Persistence;
 using Games.Infrastructure.Persistence.LocationChallenges;
 using Games.Infrastructure.Persistence.QuizAttempts;
+using Games.Infrastructure.Persistence.SocialChallengeRuns;
 using Games.Infrastructure.Persistence.Quizzes;
 using Games.Infrastructure.Persistence.SocialChallenges;
 using Microsoft.Extensions.Configuration;
@@ -66,6 +70,11 @@ public static class GamesModuleExtensions
         services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();
         services.AddScoped<SocialChallengePreparationService>();
         services.AddScoped<SocialChallengePreparationQueries>();
+
+        services.AddScoped<ISocialChallengeRunRepository, SocialChallengeRunRepository>();
+        services.AddScoped<SocialChallengeJoining>();
+        services.AddScoped<SocialChallengePlayingService>();
+        services.AddScoped<SocialChallengePlayingQueries>();
 
         return services;
     }

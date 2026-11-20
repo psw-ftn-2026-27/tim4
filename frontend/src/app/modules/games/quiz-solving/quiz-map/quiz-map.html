@@ -30,9 +30,76 @@
         [selectable]="!pending()"
         [position]="position.value() ?? null"
         (selectedChange)="setPosition($event)"
-        (locationClick)="selectQuiz($event)"
+        (locationClick)="selectPin($event)"
       />
     </div>
+
+    @if (socialChallenges.error()) {
+      <div class="state state--error" role="alert">
+        <p>Učitavanje društvenih izazova nije uspelo.</p>
+        <button class="button" type="button" (click)="socialChallenges.reload()">
+          Pokušaj ponovo
+        </button>
+      </div>
+    }
+
+    @if (selectedChallenge(); as challenge) {
+      <section class="card stack">
+        <h2>{{ challenge.name }}</h2>
+        @if (run.error()) {
+          <div class="state state--error" role="alert">
+            <p>Učitavanje izazova nije uspelo.</p>
+            <button class="button" type="button" (click)="run.reload()">Pokušaj ponovo</button>
+          </div>
+        } @else if (solved()) {
+          <p>
+            <span class="badge badge--success">✓ Rešen</span>
+            <span class="badge badge--xp">★ {{ awardedXp() }} XP</span>
+          </p>
+          @if (run.hasValue() && run.value().completionMessage; as message) {
+            <p role="status">{{ message }}</p>
+          }
+        } @else if (checking()) {
+          <p><span class="badge badge--xp">★ {{ challenge.xpReward }} XP</span></p>
+          @if (run.hasValue()) {
+            <div class="progress" role="status">
+              <span class="progress__bar" aria-hidden="true">
+                <span class="progress__fill" [style.width.%]="progressPercent()"></span>
+              </span>
+              <span>
+                {{ run.value().activeParticipantCount }} od
+                {{ run.value().requiredParticipants }} igrača
+              </span>
+            </div>
+          }
+          @if (reportError(); as message) {
+            <p class="error" role="alert">{{ message }}</p>
+          }
+        } @else {
+          <p><span class="badge badge--xp">★ {{ challenge.xpReward }} XP</span></p>
+          @if (showDroppedOut()) {
+            <p role="status">Niste više u opsegu izazova.</p>
+          }
+          @if (activateError(); as message) {
+            <p class="error" role="alert">{{ message }}</p>
+          }
+          @if (hasPosition()) {
+            <div class="form-actions">
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="pending()"
+                (click)="activate(challenge.id)"
+              >
+                Aktiviraj
+              </button>
+            </div>
+          } @else {
+            <p class="meta">Pozicija nije postavljena. Kliknite na mapu da označite gde se nalazite.</p>
+          }
+        }
+      </section>
+    }
 
     @if (selectedQuiz(); as quiz) {
       <section class="card stack">
