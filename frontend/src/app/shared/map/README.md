@@ -279,7 +279,9 @@ ključne tačke iz svog upita i, ako dužinu čuva kao poslovni podatak, šalje 
 `target` sa sledećom ključnom tačkom, za rutu po putevima. Pozicija: resurs `/api/positions/mine`
 i simulator za postavljanje. Posao modula Exploration: zna koja je tačka sledeća, i proverava
 blizinu na svakih 10 sekundi tako što šalje poslednju sačuvanu poziciju iz resursa svojim
-zahtevom (ne traži od turiste nov klik); server odlučuje da li je tačka dostignuta.
+zahtevom (ne traži od turiste nov klik); server odlučuje da li je tačka dostignuta. Ponavljanje
+pokreće i zaustavlja `repeatEvery` iz `shared/position` (vidi njegov README, "Periodična
+provera").
 
 **E23 (pretraga po oblasti).** Mapa: `area` sa centrom i poluprečnikom u metrima. Posao modula
 Exploration: poluprečnik je polje njegove forme, a ne deo mape; stranica iz forme sastavi
@@ -292,7 +294,8 @@ lokacije.
 
 **G22 (izazov u blizini).** Mapa: `locations` sa izazovima i `position` iz resursa. Pozicija:
 resurs i simulator. Posao modula Games: na svakih 10 sekundi šalje poslednju sačuvanu poziciju
-svojim zahtevom, a server odlučuje šta je "dovoljno blizu" i vraća ishod.
+svojim zahtevom, a server odlučuje šta je "dovoljno blizu" i vraća ishod. Ponavljanje pokreće i
+zaustavlja `repeatEvery` iz `shared/position` (vidi njegov README, "Periodična provera").
 
 ## Izuzetak od Angular podskupa
 
