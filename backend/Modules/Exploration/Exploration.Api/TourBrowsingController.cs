@@ -36,7 +36,7 @@ public sealed class TourBrowsingController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        return await _browsingQueries.GetPublishedAsync(search, page, pageSize);
+        return await _browsingQueries.GetPublishedAsync(search, User.GetUserId(), page, pageSize);
     }
 
     [HttpGet("{id:guid}")]

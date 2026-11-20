@@ -6,10 +6,13 @@
   } @else if (tour.error()) {
     <p class="error">Turu nije moguće učitati.</p>
   } @else if (tour.value(); as tour) {
-    <!-- One primary action at a time: a buyer starts the tour, anyone else who may buy adds it to the cart. -->
+    <!-- One primary action at a time: a tour in progress is continued, a buyer starts the tour,
+         anyone else who may buy adds it to the cart. -->
     <div class="page-header">
       <h1>{{ tour.name }}</h1>
-      @if (tour.isPurchased) {
+      @if (tour.isInProgress) {
+        <a class="button button--primary" routerLink="/exploration/active">Nastavi turu</a>
+      } @else if (tour.isPurchased) {
         <button
           class="button button--primary"
           type="button"

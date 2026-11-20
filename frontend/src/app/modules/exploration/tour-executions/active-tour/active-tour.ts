@@ -1,10 +1,11 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
 import { PositionSimulation } from '../../../../shared/position/position-simulation';
+import { repeatEvery } from '../../../../shared/position/repeat-every';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { ActiveTourDto, TourExecutionDto } from '../../api/exploration-api-types';
 import { TourExecutions } from '../tour-executions';
@@ -19,6 +20,7 @@ import { TourExecutions } from '../tour-executions';
 })
 export class ActiveTour {
   protected readonly auth = inject(Auth);
+  private readonly router = inject(Router);
   private readonly positionSimulation = inject(PositionSimulation);
   private readonly tourExecutions = inject(TourExecutions);
 
@@ -49,9 +51,16 @@ export class ActiveTour {
   protected readonly pending = signal(false);
   protected readonly positionError = signal<string | null>(null);
   protected readonly checkError = signal<string | null>(null);
+  protected readonly abandonError = signal<string | null>(null);
+
+  // True while the section that confirms abandoning the tour is open.
+  protected readonly confirmingAbandon = signal(false);
 
   // True once a check reached a key point; the notice stays until another one is reached.
   private readonly justReached = signal(false);
+
+  // True while a check is on its way; the timer does not wait for the previous request.
+  private readonly checking = signal(false);
 
   protected readonly savedPosition = computed(() =>
     this.position.hasValue() ? this.position.value() : null,
@@ -81,6 +90,10 @@ export class ActiveTour {
     return this.activeTour.value()?.reachedKeyPoints.at(-1) ?? null;
   });
 
+  // Every 10 seconds the page sends the last saved position, so the tourist reaches a key point
+  // without another click. It runs right away too, so it is declared after everything it reads.
+  private readonly check = repeatEvery(10_000, () => this.checkSavedPosition());
+
   protected reload(): void {
     this.activeTour.reload();
     this.position.reload();
@@ -98,8 +111,7 @@ export class ActiveTour {
     try {
       await this.positionSimulation.setPosition(coordinates);
       this.position.reload();
-      // Until the platform team provides the pattern for the 10-second timer, the page checks
-      // the position right after it is saved. The timer is added once the pattern exists.
+      // A click also checks at once, so the tourist does not wait for the next tick.
       await this.checkPosition(coordinates, active.executionId);
     } catch (failure) {
       this.positionError.set(serverMessage(failure, 'Poziciju nije moguće sačuvati.'));
@@ -108,8 +120,40 @@ export class ActiveTour {
     }
   }
 
-  // Sends the saved coordinates; the server decides whether the next key point is reached.
+  // After abandoning, the tourist returns to the details of the abandoned tour, where it can be
+  // started again as a new session.
+  protected async abandon(tourId: string): Promise<void> {
+    if (this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.abandonError.set(null);
+    try {
+      await this.tourExecutions.abandon();
+      await this.router.navigate(['/exploration/tours', tourId]);
+    } catch (failure) {
+      this.abandonError.set(serverMessage(failure, 'Turu nije moguće napustiti.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  // One tick of the timer: nothing is sent until the tour in progress and the position are known.
+  private async checkSavedPosition(): Promise<void> {
+    const active = this.activeTour.hasValue() ? this.activeTour.value() : null;
+    const position = this.savedPosition();
+    if (active === null || position === null) {
+      return;
+    }
+    await this.checkPosition(position, active.executionId);
+  }
+
+  // Sends the coordinates; the server decides whether the next key point is reached.
   private async checkPosition(coordinates: MapCoordinates, executionId: string): Promise<void> {
+    if (this.checking()) {
+      return;
+    }
+    this.checking.set(true);
     try {
       const result = await this.tourExecutions.checkPosition({
         latitude: coordinates.latitude,
@@ -119,10 +163,13 @@ export class ActiveTour {
         this.justReached.set(true);
         this.activeTour.reload();
       } else if (result.outcome === 'CompletedTour') {
+        this.check.stop();
         this.completedExecutionId.set(executionId);
       }
     } catch (failure) {
       this.checkError.set(serverMessage(failure, 'Provera pozicije nije uspela.'));
+    } finally {
+      this.checking.set(false);
     }
   }
 }

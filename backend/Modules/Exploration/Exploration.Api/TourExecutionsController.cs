@@ -45,6 +45,13 @@ public sealed class TourExecutionsController : ControllerBase
         return await _executionsService.CheckPositionAsync(User.GetUserId(), dto);
     }
 
+    [HttpPost("active/abandonment")]
+    public async Task<ActionResult> Abandon()
+    {
+        await _executionsService.AbandonAsync(User.GetUserId());
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TourExecutionDto>> GetExecution(Guid id)
     {

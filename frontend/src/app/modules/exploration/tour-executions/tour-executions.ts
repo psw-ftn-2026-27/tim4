@@ -16,4 +16,9 @@ export class TourExecutions {
       this.http.post<PositionCheckResultDto>(`${ACTIVE_URL}/position-checks`, dto),
     );
   }
+
+  // The tourist has at most one tour in progress, so the server needs nothing but the tourist.
+  async abandon(): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${ACTIVE_URL}/abandonment`, {}));
+  }
 }

@@ -1,4 +1,5 @@
 using Exploration.Application.TourExecutions;
+using Exploration.Domain.TourExecutions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Exploration.Infrastructure.Persistence.TourExecutions;
@@ -28,5 +29,13 @@ internal sealed class TourExecutionReadRepository : ITourExecutionReadRepository
                         keyPoint.Secret))
                     .ToList()))
             .SingleOrDefaultAsync();
+    }
+
+    public Task<Guid?> GetInProgressTourIdAsync(Guid touristId)
+    {
+        return _dbContext.TourExecutions
+            .Where(execution => execution.TouristId == touristId && execution.Status == TourExecutionStatus.InProgress)
+            .Select(execution => (Guid?)execution.TourId)
+            .FirstOrDefaultAsync();
     }
 }

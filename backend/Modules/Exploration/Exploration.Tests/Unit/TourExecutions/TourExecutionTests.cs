@@ -60,4 +60,71 @@ public class TourExecutionTests
         reachAgain.Should().Throw<DomainException>();
         execution.ReachedKeyPointCount.Should().Be(1);
     }
+
+    [Fact]
+    public void Abandoning_a_session_in_progress_makes_it_abandoned_at_that_time()
+    {
+        var execution = NewSession();
+        var now = DateTime.UtcNow;
+
+        execution.Abandon(now);
+
+        execution.Status.Should().Be(TourExecutionStatus.Abandoned);
+        execution.AbandonedAt.Should().Be(now);
+    }
+
+    [Fact]
+    public void Completed_session_cannot_be_abandoned()
+    {
+        var execution = NewSession();
+        execution.ReachKeyPoint(Guid.NewGuid(), true, DateTime.UtcNow);
+
+        var abandon = () => execution.Abandon(DateTime.UtcNow);
+
+        abandon.Should().Throw<DomainException>();
+        execution.Status.Should().Be(TourExecutionStatus.Completed);
+        execution.AbandonedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void Abandoned_session_cannot_be_abandoned_again()
+    {
+        var execution = NewSession();
+        var abandonedAt = DateTime.UtcNow.AddMinutes(-5);
+        execution.Abandon(abandonedAt);
+
+        var abandon = () => execution.Abandon(DateTime.UtcNow);
+
+        abandon.Should().Throw<DomainException>();
+        execution.AbandonedAt.Should().Be(abandonedAt);
+    }
+
+    [Fact]
+    public void Abandoning_a_session_keeps_its_reached_key_points()
+    {
+        var keyPointId = Guid.NewGuid();
+        var execution = NewSession();
+        execution.ReachKeyPoint(keyPointId, false, DateTime.UtcNow);
+
+        execution.Abandon(DateTime.UtcNow);
+
+        execution.ReachedKeyPoints.Should().ContainSingle(reached => reached.KeyPointId == keyPointId);
+    }
+
+    [Fact]
+    public void Abandoned_session_cannot_reach_key_points_any_more()
+    {
+        var execution = NewSession();
+        execution.Abandon(DateTime.UtcNow);
+
+        var reach = () => execution.ReachKeyPoint(Guid.NewGuid(), false, DateTime.UtcNow);
+
+        reach.Should().Throw<DomainException>();
+        execution.ReachedKeyPoints.Should().BeEmpty();
+    }
+
+    private static TourExecution NewSession()
+    {
+        return new TourExecution(Guid.NewGuid(), Guid.NewGuid(), new Location(45.25, 19.85), DateTime.UtcNow);
+    }
 }

@@ -175,4 +175,60 @@ public class TourExecutionsCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Tourist_abandons_the_tour_in_progress_and_the_stored_session_is_abandoned_with_its_time_and_the_same_reached_key_points()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var inProgress = TourExecutionSeed.ExplorersVineyardsByBicycleWithFirstKeyPointReached;
+        var abandonedAfter = DateTime.UtcNow;
+
+        var response = await client.PostAsync("/api/exploration/tour-executions/active/abandonment", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.TourExecutions.Single(execution => execution.Id == inProgress.Id);
+        stored.Status.Should().Be(TourExecutionStatus.Abandoned);
+        stored.AbandonedAt.Should().BeOnOrAfter(abandonedAfter);
+        stored.ReachedKeyPoints.Select(reached => reached.KeyPointId).Should()
+            .Equal(inProgress.ReachedKeyPoints.Select(reached => reached.KeyPointId));
+    }
+
+    [Fact]
+    public async Task Tourist_without_a_tour_in_progress_cannot_abandon_a_tour_and_no_session_changes()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var completed = TourExecutionSeed.SecondExplorersMonasteriesCompleted;
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var executionCountBefore = arrangeContext.TourExecutions.Count(execution => execution.TouristId == WellKnownUsers.SecondExplorer);
+
+        var response = await client.PostAsync("/api/exploration/tour-executions/active/abandonment", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.TourExecutions.Count(execution => execution.TouristId == WellKnownUsers.SecondExplorer).Should().Be(executionCountBefore);
+        var stored = assertContext.TourExecutions.Single(execution => execution.Id == completed.Id);
+        stored.Status.Should().Be(TourExecutionStatus.Completed);
+        stored.AbandonedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_abandon_a_tour()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.PostAsync("/api/exploration/tour-executions/active/abandonment", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_abandon_a_tour()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PostAsync("/api/exploration/tour-executions/active/abandonment", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

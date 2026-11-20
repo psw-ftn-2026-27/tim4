@@ -58,6 +58,7 @@ export interface TourDetailsDto {
   transportTimes: TransportTimeDto[];
   keyPoints: TourKeyPointDto[];
   isPurchased: boolean;
+  isInProgress: boolean;
 }
 
 export interface KeyPointDetailsDto {
@@ -123,6 +124,7 @@ export interface PublishedTourDto {
   tour: TourDto;
   price: number | null;
   pinLocation: LocationDto | null;
+  isInProgress: boolean;
 }
 
 export interface RecordLocationSearchDto {

@@ -26,7 +26,7 @@ public sealed class LocationSearchesService
         var search = new PublishedTourSearchDto(dto.Name, dto.Difficulties, dto.Tags, dto.Transport,
             dto.PriceFrom, dto.PriceTo, dto.LengthFrom, dto.LengthTo, null,
             dto.Latitude, dto.Longitude, dto.RadiusInKm);
-        var found = await _tourBrowsingQueries.GetPublishedAsync(search, 1, 1);
+        var found = await _tourBrowsingQueries.GetPublishedAsync(search, touristId, 1, 1);
 
         var center = new Location(dto.Latitude, dto.Longitude);
         var criteria = new LocationSearchCriteria(dto.Name, dto.Difficulties, dto.Tags, dto.Transport,

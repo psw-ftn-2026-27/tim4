@@ -13,6 +13,9 @@
     } @else {
       <span class="badge badge--ec">◎ {{ price() }} EC</span>
     }
+    @if (isInProgress()) {
+      <span class="badge badge--published">▶ Aktivna</span>
+    }
   </p>
 
   <p class="meta">Difficulty: {{ tour().difficulty }}</p>
