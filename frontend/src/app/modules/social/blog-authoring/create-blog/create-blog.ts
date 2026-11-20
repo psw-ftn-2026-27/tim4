@@ -24,6 +24,10 @@ export class CreateBlog {
 
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
+    if (!this.form().valid()) {
+      this.form().markAsTouched();
+      return;
+    }
     this.pending.set(true);
     this.error.set(null);
     try {

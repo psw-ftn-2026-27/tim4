@@ -7,8 +7,23 @@
       @if (comment.userId === currentUserId()) {
         @if (editingCommentId() === comment.id) {
           <form class="comment-actions" (submit)="saveEdit($event, comment.id)">
-            <input type="text" aria-label="Edit comment" [formField]="editForm.text" />
-            <button class="button" type="submit" [disabled]="!editForm().valid()">Save</button>
+            <div class="field">
+              <input
+                type="text"
+                aria-label="Edit comment"
+                [formField]="editForm.text"
+                [attr.aria-invalid]="
+                  (editForm.text().dirty() || editForm.text().touched()) &&
+                  editForm.text().errors().length > 0
+                "
+              />
+              @if (editForm.text().dirty() || editForm.text().touched()) {
+                @for (message of editForm.text().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+            <button class="button" type="submit">Save</button>
             <button class="button" type="button" (click)="editingCommentId.set(null)">
               Cancel
             </button>
@@ -30,9 +45,21 @@
 
 @if (currentUserId()) {
   <form class="comment-form" (submit)="submitComment($event)">
-    <input type="text" aria-label="New comment" [formField]="form.text" />
-    <button class="button button--primary" type="submit" [disabled]="!form().valid()">
-      Comment
-    </button>
+    <div class="field">
+      <input
+        type="text"
+        aria-label="New comment"
+        [formField]="form.text"
+        [attr.aria-invalid]="
+          (form.text().dirty() || form.text().touched()) && form.text().errors().length > 0
+        "
+      />
+      @if (form.text().dirty() || form.text().touched()) {
+        @for (message of form.text().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+    <button class="button button--primary" type="submit">Comment</button>
   </form>
 }

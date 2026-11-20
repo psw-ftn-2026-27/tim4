@@ -4,8 +4,15 @@
   <form class="stack" (submit)="submit($event)">
     <div class="field">
       <label for="title">Title</label>
-      <input id="title" type="text" [formField]="form.title" />
-      @if (form.title().touched()) {
+      <input
+        id="title"
+        type="text"
+        [formField]="form.title"
+        [attr.aria-invalid]="
+          (form.title().dirty() || form.title().touched()) && form.title().errors().length > 0
+        "
+      />
+      @if (form.title().dirty() || form.title().touched()) {
         @for (message of form.title().errors(); track $index) {
           <p class="error">{{ message.message }}</p>
         }
@@ -14,8 +21,16 @@
 
     <div class="field">
       <label for="description">Description</label>
-      <textarea id="description" rows="6" [formField]="form.description"></textarea>
-      @if (form.description().touched()) {
+      <textarea
+        id="description"
+        rows="6"
+        [formField]="form.description"
+        [attr.aria-invalid]="
+          (form.description().dirty() || form.description().touched()) &&
+          form.description().errors().length > 0
+        "
+      ></textarea>
+      @if (form.description().dirty() || form.description().touched()) {
         @for (message of form.description().errors(); track $index) {
           <p class="error">{{ message.message }}</p>
         }
@@ -26,8 +41,6 @@
       <p class="error">{{ error() }}</p>
     }
 
-    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
-      Create
-    </button>
+    <button class="button button--primary" type="submit" [disabled]="pending()">Create</button>
   </form>
 </div>
