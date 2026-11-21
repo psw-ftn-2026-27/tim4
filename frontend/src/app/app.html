@@ -102,36 +102,6 @@
   </nav>
 </header>
 
-@if (consent.bannerOpen()) {
-  <section class="consent" aria-label="Kolačići za analitiku">
-    <p>
-      Koristimo Google Analytics da vidimo koji delovi aplikacije su teški za korišćenje. Ništa se
-      ne beleži dok ne prihvatite, a izbor možete da promenite bilo kada u „Podešavanja kolačića” na
-      dnu stranice.
-      @switch (consent.choice()) {
-        @case ('accepted') {
-          <strong>Prihvatili ste.</strong>
-        }
-        @case ('rejected') {
-          <strong>Odbili ste.</strong>
-        }
-      }
-    </p>
-    <div class="consent-actions">
-      <button class="button" type="button" (click)="analytics.accept()">Prihvati</button>
-      <button class="button" type="button" (click)="analytics.reject()">Odbij</button>
-    </div>
-    <button
-      class="consent-close"
-      type="button"
-      [attr.aria-label]="consent.choice() === 'undecided' ? 'Zatvori i odbij' : 'Zatvori'"
-      (click)="analytics.dismiss()"
-    >
-      ×
-    </button>
-  </section>
-}
-
 <main class="container stack">
   <router-outlet />
 </main>
@@ -142,13 +112,48 @@
   </button>
 </footer>
 
-<!-- Only while a tour is in progress: a floating bar at the bottom of the window, over the page,
-     so it never moves the page's content. The whole bar leads to the tour and hides on its page. -->
-@if (tourInProgress(); as tour) {
-  <a class="run-strip" routerLink="/exploration/active" routerLinkActive="run-strip--here">
-    <span class="run-strip__dot" aria-hidden="true"></span>
-    <strong class="run-strip__count">Tura u toku · {{ tour.reached }} od {{ tour.points }}</strong>
-    <span class="run-strip__text">{{ tour.name }}</span>
-    <span class="run-strip__action">Nastavi →</span>
-  </a>
-}
+<!-- What floats at the bottom of the window, over the page, so it never moves the page's
+     content: the analytics question until it is answered, and the tour in progress. -->
+<div class="dock">
+  @if (consent.bannerOpen()) {
+    <section class="consent" aria-label="Kolačići za analitiku">
+      <p>
+        Koristimo Google Analytics da vidimo koji delovi aplikacije su teški za korišćenje. Ništa se
+        ne beleži dok ne prihvatite, a izbor možete da promenite bilo kada u „Podešavanja kolačića”
+        na dnu stranice.
+        @switch (consent.choice()) {
+          @case ('accepted') {
+            <strong>Prihvatili ste.</strong>
+          }
+          @case ('rejected') {
+            <strong>Odbili ste.</strong>
+          }
+        }
+      </p>
+      <div class="consent-actions">
+        <button class="button" type="button" (click)="analytics.accept()">Prihvati</button>
+        <button class="button" type="button" (click)="analytics.reject()">Odbij</button>
+      </div>
+      <button
+        class="consent-close"
+        type="button"
+        [attr.aria-label]="consent.choice() === 'undecided' ? 'Zatvori i odbij' : 'Zatvori'"
+        (click)="analytics.dismiss()"
+      >
+        ×
+      </button>
+    </section>
+  }
+
+  <!-- Only while a tour is in progress; the whole bar leads to the tour and hides on its page. -->
+  @if (tourInProgress(); as tour) {
+    <a class="run-strip" routerLink="/exploration/active" routerLinkActive="run-strip--here">
+      <span class="run-strip__dot" aria-hidden="true"></span>
+      <strong class="run-strip__count"
+        >Tura u toku · {{ tour.reached }} od {{ tour.points }}</strong
+      >
+      <span class="run-strip__text">{{ tour.name }}</span>
+      <span class="run-strip__action">Nastavi →</span>
+    </a>
+  }
+</div>
