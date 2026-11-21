@@ -10,91 +10,288 @@ main {
   flex: 1;
 }
 
-header {
+// ---- The bar: brand, sections, then what is the user's own ----
+
+.bar {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   margin-bottom: var(--space-5);
+  position: sticky;
+  top: 0;
+  // Above the map's own panes and controls, which go up to 1000.
+  z-index: 1100;
 }
 
-nav {
+.bar__inner {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
-  padding-block: var(--space-3);
+  gap: var(--space-3) var(--space-6);
+  padding-block: var(--space-2);
 }
 
-nav a {
-  color: var(--color-text-muted);
-  font-weight: 500;
+.brand {
+  align-items: center;
+  color: var(--color-text);
+  display: flex;
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  gap: var(--space-2);
   text-decoration: none;
 }
 
-nav a:hover {
+.brand__mark {
   color: var(--color-accent);
 }
 
-// The current section: an underline as well as the colour, so it is not told by colour alone.
-nav a.nav-active {
+.brand__role {
+  background: var(--color-accent-soft);
+  border-radius: var(--radius);
   color: var(--color-accent);
-  text-decoration: underline;
-  text-underline-offset: var(--space-1);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0 var(--space-2);
 }
 
-// Wide screen: the toggle is hidden and the items stand in the same row as "Početna".
-.nav-toggle {
-  display: none;
-}
-
-.nav-menu {
-  align-items: center;
+.sections {
   display: flex;
   flex: 1;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--space-1);
 }
 
-.nav-user {
+.sections a,
+.mine__link,
+.wallet,
+.icon-link {
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sections a:hover,
+.mine__link:hover,
+.icon-link:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+.sections a.active,
+.mine__link.active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.mine {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--space-2);
   margin-left: auto;
 }
 
-.nav-email {
+.mine .button {
+  text-decoration: none;
+}
+
+.icon-link {
+  align-items: center;
+  display: inline-flex;
+  position: relative;
+}
+
+.icon-link svg {
+  height: var(--space-5);
+  width: var(--space-5);
+}
+
+.count {
+  background: var(--color-accent);
+  border-radius: 999px;
+  color: var(--color-accent-text);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  line-height: 1;
+  min-width: calc(var(--space-4) + var(--space-1));
+  padding: var(--space-1);
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 0;
+}
+
+.wallet {
+  background: var(--color-ec-bg);
+  color: var(--color-ec-text);
+  font-weight: 600;
+}
+
+.wallet:hover {
+  text-decoration: underline;
+}
+
+// The cart and the wallet show they are the current page with an outline.
+.icon-link.active,
+.wallet.active {
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+// ---- User menu ----
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu__button {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  white-space: nowrap;
+}
+
+.user-menu__button::after {
+  color: var(--color-text-muted);
+  content: '▾';
+}
+
+.avatar {
+  align-items: center;
+  background: var(--color-accent);
+  border-radius: 50%;
+  color: var(--color-accent-text);
+  display: inline-flex;
+  font-weight: 700;
+  height: var(--space-6);
+  justify-content: center;
+  width: var(--space-6);
+}
+
+.user-menu__list {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.12);
+  display: flex;
+  flex-direction: column;
+  min-width: 14rem;
+  padding: var(--space-2);
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-1));
+}
+
+.user-menu__email {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   overflow-wrap: anywhere;
+  padding: var(--space-1) var(--space-3) var(--space-2);
 }
 
-// Narrow screen: the bar shows "Početna" and "Meni"; the open list is a vertical section
-// under the bar that pushes the page down. 48rem (768px) is the breakpoint; a media query
-// cannot read a custom property, so the value is written here.
-@media (max-width: 48rem) {
-  .nav-toggle {
-    display: inline-block;
-    margin-left: auto;
-  }
+.user-menu__list a,
+.user-menu__list button {
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  text-decoration: none;
+}
 
-  .nav-menu {
-    align-items: flex-start;
-    display: none;
-    flex-basis: 100%;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
+.user-menu__list a:hover,
+.user-menu__list button:hover {
+  background: var(--color-muted-bg);
+}
 
-  .nav-menu--open {
-    display: flex;
-  }
+.user-menu__list hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-1) 0;
+  width: 100%;
+}
 
-  .nav-user {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: var(--space-3);
-    margin-left: 0;
+// ---- Tour in progress ----
+
+// Floating over the bottom of the window, like a music player's mini bar: it is always in reach
+// and never pushes the page down. Above the map's panes and controls (1000), like the bar.
+.run-strip {
+  align-items: center;
+  background: var(--color-accent);
+  border-radius: 999px;
+  bottom: var(--space-4);
+  box-shadow: 0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.25);
+  color: var(--color-accent-text);
+  display: flex;
+  gap: var(--space-3);
+  left: 50%;
+  max-width: calc(100% - var(--space-4) * 2);
+  padding: var(--space-2) var(--space-5);
+  position: fixed;
+  text-decoration: none;
+  transform: translateX(-50%);
+  width: 36rem;
+  z-index: 1100;
+}
+
+.run-strip:hover {
+  box-shadow: 0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.35);
+}
+
+.run-strip__dot {
+  animation: pulse 1.6s infinite;
+  background: var(--color-accent-text);
+  border-radius: 50%;
+  flex: none;
+  height: var(--space-2);
+  width: var(--space-2);
+}
+
+// The count never shortens; a long tour name ends with "…" instead.
+.run-strip__count {
+  white-space: nowrap;
+}
+
+.run-strip__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.run-strip__action {
+  font-weight: 600;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
   }
+}
+
+// On the active tour page itself the strip would only repeat the page.
+.run-strip--here {
+  display: none;
+}
+
+// Room under the footer, so the floating strip never covers the end of a page.
+:host:has(.run-strip:not(.run-strip--here)) footer {
+  padding-bottom: calc(var(--space-6) * 2.5);
 }
 
 // Analytics consent: a section under the header, in the flow of the page, so it never

@@ -20,18 +20,26 @@ rutiranje: koriste samo ulaze i izlaze opisane ispod.
 
 ## Ulazi i izlazi
 
-| Ime                | Vrsta                       | Značenje                                                                               |
-| ------------------ | --------------------------- | -------------------------------------------------------------------------------------- |
-| `locations`        | ulaz, obavezan              | `MapLocation[]`: `latitude`, `longitude` i `name` svake lokacije                       |
-| `showPath`         | ulaz, podrazumevano `false` | da li ruta spaja lokacije redom kojim su predate                                       |
-| `pathLengthChange` | izlaz, `number`             | dužina putanje u km, šalje se dok je `showPath` uključen, kada stignu rute svih delova |
-| `selectable`       | ulaz, podrazumevano `false` | da li klik na mapu bira lokaciju                                                       |
-| `selected`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: izabrani pin, ako postoji                                    |
-| `selectedChange`   | izlaz, `MapCoordinates`     | koordinate mesta na koje je korisnik kliknuo, dok je izbor uključen                    |
-| `position`         | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: pozicija turiste, ako je postavljena                         |
-| `locationClick`    | izlaz, `number`             | pozicija u `locations` pina na koji je korisnik kliknuo                                |
-| `target`           | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: sledeća tačka; uz `position` mapa crta rutu do nje           |
-| `area`             | ulaz, podrazumevano `null`  | `MapArea \| null`: krug sa centrom `latitude`, `longitude` i poluprečnikom `radiusMeters` |
+| Ime                    | Vrsta                       | Značenje                                                                                                     |
+| ---------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `locations`            | ulaz, obavezan              | `MapLocation[]`: `latitude`, `longitude` i `name` svake lokacije                                             |
+| `showPath`             | ulaz, podrazumevano `false` | da li ruta spaja lokacije redom kojim su predate                                                             |
+| `pathLengthChange`     | izlaz, `number`             | dužina putanje u km, šalje se dok je `showPath` uključen, kada stignu rute svih delova                       |
+| `selectable`           | ulaz, podrazumevano `false` | da li klik na mapu bira lokaciju                                                                             |
+| `selected`             | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: izabrani pin, ako postoji                                                          |
+| `selectedChange`       | izlaz, `MapCoordinates`     | koordinate mesta na koje je korisnik kliknuo, dok je izbor uključen                                          |
+| `position`             | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: pozicija turiste, ako je postavljena                                               |
+| `locationClick`        | izlaz, `number`             | pozicija u `locations` pina na koji je korisnik kliknuo                                                      |
+| `target`               | ulaz, podrazumevano `null`  | `MapCoordinates \| null`: sledeća tačka; uz `position` mapa crta rutu do nje                                 |
+| `area`                 | ulaz, podrazumevano `null`  | `MapArea \| null`: krug sa centrom `latitude`, `longitude` i poluprečnikom `radiusMeters`                    |
+| `activeIndex`          | ulaz, podrazumevano `null`  | pozicija u `locations` pina koji je istaknut (tamniji i iznad ostalih), npr. kartica pod mišem               |
+| `focusIndex`           | ulaz, podrazumevano `null`  | kada se promeni, mapa doleti do tog pina ako ga korisnik ne vidi                                             |
+| `fitKey`               | ulaz, podrazumevano `null`  | bez njega se pogled namešta na sve pinove pri svakoj promeni `locations`; sa njim samo kada se ključ promeni |
+| `cluster`              | ulaz, podrazumevano `false` | pinovi koji se na ekranu preklapaju postaju jedan krug sa brojem                                             |
+| `fill`                 | ulaz, podrazumevano `false` | mapa zauzima visinu roditelja umesto 400px                                                                   |
+| `locationHover`        | izlaz, `number \| null`     | pozicija pina pod mišem, `null` kada miš izađe                                                               |
+| `viewChange`           | izlaz, `MapBounds`          | vidljiva oblast, posle pomeranja ili zumiranja koje je uradio korisnik (ne stranica)                         |
+| `targetDistanceChange` | izlaz, `number`             | dužina pešačke rute od `position` do `target`, u metrima                                                     |
 
 Dužina putanje je zbir dužina pešačkih ruta po putevima između uzastopnih lokacija;
 poslednja lokacija nije spojena sa prvom. Za svaki deo putanje (dve uzastopne lokacije)
@@ -316,3 +324,32 @@ JavaScript Leaflet-a stiže lenjo, zajedno sa stranicom koja koristi mapu. Njego
 se pod podrazumevanom (emulated) enkapsulacijom ne primenjuju na elemente koje komponenta
 nije napisala u šablonu; `::ng-deep` i isključivanje enkapsulacije su van pravila projekta.
 Globalni CSS je zato najjednostavnije rešenje koje radi.
+
+## Pinovi, grupe i pogled
+
+`MapLocation` ima i dva neobavezna polja. `label` je kratak tekst u samom pinu: cena („40 EC”),
+redni broj tačke („2”) ili oznaka („✓ 2”). Pin sa oznakom je zaobljena etiketa sa repićem, kao
+cena na sajtovima za smeštaj; pin bez oznake je mala tačka u boji akcenta. `tone` bira boju iz
+`_tokens.scss` po ulozi: `default` (na prodaju), `owned` (kupljeno, rešeno), `quiz`, `social`,
+`location`, `muted` (prošlo, nedostupno) i `next` (sledeća tačka). Naziv lokacije se i dalje
+prikazuje klikom na pin.
+
+Spisak pored mape (ture, izazovi) i mapa rade zajedno preko pozicije u `locations`:
+
+- kartica pod mišem → `activeIndex`; pin pod mišem → `locationHover`, pa stranica ističe karticu;
+- dugme „Na mapi” na kartici → `focusIndex`; mapa doleti do pina samo ako ga korisnik ne vidi;
+- klik na pin → `locationClick`.
+
+Sa `cluster` pinovi koji bi se preklopili postaju krug sa brojem; klik na krug uvećava mapu
+dok se grupa ne raspadne. Istaknuti pin nikad nije u grupi. Ključne tačke ture ostaju bez grupa,
+da se svaka vidi.
+
+Pretraga „u ovoj oblasti”: stranica čuva poslednji `viewChange` i, kada korisnik klikne
+„Pretraži ovu oblast”, filtrira po njemu. Da se pogled tada ne bi pomerao ispod korisnika,
+stranica daje `fitKey` koji zavisi samo od filtera (npr. `JSON.stringify(filteri)`), ne od
+oblasti. Pomeranja koja uradi sama mapa (namestanje pogleda, let do pina) ne šalju `viewChange`.
+
+Dva dugmeta na mapi: „◉” vraća pogled na poziciju turiste (vidi se samo kada je ima), „⤢”
+prikazuje sve pinove i poziciju.
+
+Podloga je blago providna preko boje pozadine aplikacije, da pinovi i linije budu u prvom planu.

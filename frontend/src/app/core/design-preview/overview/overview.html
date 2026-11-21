@@ -94,13 +94,15 @@
 
     <h3>Širina stranice</h3>
     <p class="meta">
-      Stranica čiji je sadržaj jedna forma (prijava, kreiranje, preference) dodaje
-      <code>.page--narrow</code> na svoj spoljni element, pa je široka najviše
-      <code>--page-narrow-width</code>. Uska stranica stoji uz levu ivicu, u liniji sa trakom, i
-      nikad se ne centrira, ni prijava ni registracija. Spiskovi, tabele i mape koriste celu širinu
-      prozora; treće širine nema.
+      Sadržaj stranice ili zauzima celu širinu, ili stoji u sredini; nikad se ne zaustavlja na nekoj
+      širini uz levu ivicu sa praznim prostorom desno. Spiskovi, tabele i mape koriste celu širinu
+      prozora. Stranica čiji je sadržaj jedna forma (kreiranje, preference) dodaje
+      <code>.page--narrow</code>: široka je najviše <code>--page-narrow-width</code> i stoji uz levu
+      ivicu, u liniji sa trakom i zaglavljem iznad nje. Ishod ili ulaz bez ičega sa čim bi se
+      poravnao (završena kupovina ili kviz, prijava, nepostojeća stranica) dodaje
+      <code>.page--center</code> i stoji u sredini.
     </p>
-    <div>
+    <div class="stack">
       <form class="card stack page--narrow">
         <div class="field">
           <label for="sample-narrow-name">Naziv ture</label>
@@ -110,7 +112,20 @@
           <button class="button button--primary" type="button">Sačuvaj</button>
         </div>
       </form>
+      <div class="card stack page--center">
+        <strong>✓ Kupovina je završena</strong>
+        <span class="meta">.page--center: ishod koji nema sa čim da se poravna</span>
+      </div>
     </div>
+
+    <h3>Spisak i mapa</h3>
+    <p class="meta">
+      <code>.split</code>: spisak levo, mapa kao uska vertikalna kolona desno, obe visine prozora
+      ispod trake, kao na sajtovima za smeštaj. Naslov i filteri (<code>.split__side</code>) stoje,
+      skroluje se samo <code>.split__list</code>, a mapa u <code>.split__map</code> se ne pomera i
+      dobija ulaz <code>fill</code>. Kartica pod mišem ističe svoj pin i obrnuto; primer pinova,
+      grupa i pretrage „u ovoj oblasti” je na stranici <a routerLink="/design-preview/map">Mapa</a>.
+    </p>
 
     <h3>Dugmad</h3>
     <p class="meta">
@@ -352,6 +367,56 @@
       <div class="card">
         <h3>Obična kartica</h3>
         <p class="meta"><code>.card</code> za bilo koji uokviren sadržaj.</p>
+      </div>
+    </div>
+
+    <h3>Jezičci</h3>
+    <p class="meta">
+      <code>.tabs</code> deli jednu stranicu na poglede, na primer spisak po stanju. Dugmad sa
+      <code>role="tab"</code> i <code>aria-selected</code> unutar <code>role="tablist"</code>; broj
+      je neobavezan. Dve stranice koje se čitaju kao jedna (autorove ture i kuponi) koriste linkove
+      <code>a.tabs__tab</code>, a trenutni dobija <code>.tabs__tab--on</code>.
+    </p>
+    <div class="card sample-frame">
+      <div class="tabs" role="tablist" aria-label="Primer jezičaka">
+        <button class="tabs__tab" type="button" role="tab" aria-selected="true">
+          Objavljene <span class="tabs__count">3</span>
+        </button>
+        <button class="tabs__tab" type="button" role="tab" aria-selected="false">
+          U pripremi <span class="tabs__count">1</span>
+        </button>
+        <button class="tabs__tab" type="button" role="tab" aria-selected="false">Arhivirane</button>
+      </div>
+    </div>
+
+    <h3>Čipovi</h3>
+    <p class="meta">
+      <code>.chips</code> i <code>.chip</code>: filteri koji deluju odmah, u jednom redu, umesto
+      forme sa dugmetom „Filtriraj”. Čip je dugme sa <code>aria-pressed</code>; uključen dobija
+      <code>.chip--on</code>.
+    </p>
+    <div class="card sample-frame">
+      <div class="chips" role="group" aria-label="Primer čipova">
+        <button class="chip chip--on" type="button" aria-pressed="true">
+          ★ Prema preferencama
+        </button>
+        <button class="chip" type="button" aria-pressed="false">Lako</button>
+        <button class="chip" type="button" aria-pressed="false">Peške</button>
+        <button class="chip" type="button" aria-pressed="false">Do 50 EC</button>
+      </div>
+    </div>
+
+    <h3>Potvrda na mestu</h3>
+    <p class="meta">
+      Radnja koja se ne može poništiti pita odmah pored svog dugmeta, u <code>.confirm</code>:
+      pitanje, pa <code>.button--danger</code> i „Odustani”. Nikad dijalog i nikad forma na dnu
+      stranice.
+    </p>
+    <div class="card sample-frame">
+      <div class="confirm" role="group" aria-label="Potvrda brisanja">
+        <p>Obrisati kviz „Tajne Katedrale”? Ovo ne može da se poništi.</p>
+        <button class="button button--danger" type="button">Obriši</button>
+        <button class="button" type="button">Odustani</button>
       </div>
     </div>
 

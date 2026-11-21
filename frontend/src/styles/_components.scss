@@ -195,7 +195,7 @@ input[type='radio'] {
 // hidden, each cell shows its column name from its data-label attribute, and the actions
 // sit side by side at the bottom of the card, so nothing scrolls sideways. A sticky actions
 // column cannot work, because the actions are several cells under one th with colspan.
-// 48rem is the navigation bar's breakpoint (app.scss); a media query cannot read a custom
+// 48rem (768px) is the narrow-screen breakpoint; a media query cannot read a custom
 // property, so the value is written here.
 @media (max-width: 48rem) {
   .table--cards,
@@ -495,4 +495,96 @@ input[type='radio'] {
 .upload--error {
   border-color: var(--color-danger);
   border-style: solid;
+}
+
+// Tabs: views of one page, such as a list split by state. Buttons with role="tab" and
+// aria-selected inside role="tablist"; links between two pages that read as one (the author's
+// tours and coupons) use a.tabs__tab with .tabs__tab--on on the current one. A count is optional.
+.tabs {
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.tabs__tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  margin-bottom: -1px;
+  padding: var(--space-2) var(--space-1);
+  text-decoration: none;
+}
+
+.tabs__tab[aria-selected='true'],
+.tabs__tab--on {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.tabs__count {
+  background: var(--color-muted-bg);
+  border-radius: 999px;
+  color: var(--color-muted-text);
+  font-size: var(--font-size-sm);
+  margin-left: var(--space-1);
+  padding: 0 var(--space-2);
+}
+
+// Chips: filters that apply at once, in one row, instead of a filter form with a submit button.
+// A chip is a button with aria-pressed; .chip--on marks one that filters.
+.chips {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1);
+  height: var(--control-height);
+  padding: 0 var(--space-4);
+  white-space: nowrap;
+}
+
+.chip:hover {
+  border-color: var(--color-text);
+}
+
+.chip--on {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+// Inline confirmation: what cannot be undone asks right next to its button, never in a dialog
+// and never far down the page. The question, then the danger button and "Odustani".
+.confirm {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.confirm p {
+  flex: 1 1 14rem;
+  margin: 0;
 }

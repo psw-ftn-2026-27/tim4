@@ -7,14 +7,15 @@ import { TourList } from './tour-browsing/tour-list/tour-list';
 import { TourMapSearch } from './tour-browsing/tour-map-search/tour-map-search';
 import { ActiveTour } from './tour-executions/active-tour/active-tour';
 import { Preferences } from './tour-preferences/preferences/preferences';
+import { requireRole } from '../../core/auth/require-role';
 
 export const explorationRoutes: Routes = [
-  { path: '', component: TourList },
-  { path: 'map', component: TourMapSearch },
-  { path: 'mine', component: MyTours },
-  { path: 'mine/:id/key-points', component: TourKeyPoints },
-  { path: 'create', component: CreateTour },
-  { path: 'preferences', component: Preferences },
-  { path: 'active', component: ActiveTour },
-  { path: 'tours/:id', component: TourDetails },
+  { path: '', component: TourList, canActivate: [requireRole()] },
+  { path: 'map', component: TourMapSearch, canActivate: [requireRole('explorer')] },
+  { path: 'mine', component: MyTours, canActivate: [requireRole('explorer')] },
+  { path: 'mine/:id/key-points', component: TourKeyPoints, canActivate: [requireRole('explorer')] },
+  { path: 'create', component: CreateTour, canActivate: [requireRole('explorer')] },
+  { path: 'preferences', component: Preferences, canActivate: [requireRole('explorer')] },
+  { path: 'active', component: ActiveTour, canActivate: [requireRole('explorer')] },
+  { path: 'tours/:id', component: TourDetails, canActivate: [requireRole()] },
 ];

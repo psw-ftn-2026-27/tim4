@@ -1,0 +1,114 @@
+// Shared by the login and registration pages: the form beside a short "why", in one card.
+// The card is centred: an entry page has nothing to line up with (frontend/AGENTS.md, Page width).
+
+// The card stands in the middle of the free height between the bar and the footer, not at
+// the top of the page: an entry page has nothing above or below it to line up with.
+:host {
+  align-items: center;
+  display: flex;
+  min-height: calc(100vh - 12rem);
+}
+
+.auth {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 2);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin: var(--space-4) auto;
+  width: 100%;
+  max-width: 60rem;
+  overflow: hidden;
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.auth__form h1 {
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.auth__form p {
+  margin: 0;
+}
+
+.auth__side {
+  background: var(--color-accent-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.auth__side img {
+  max-height: 14rem;
+}
+
+.auth__side h2 {
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.auth__side ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.auth__side li::before {
+  color: var(--color-accent);
+  content: '✓ ';
+  font-weight: 700;
+}
+
+.password {
+  display: flex;
+  position: relative;
+}
+
+.password input {
+  flex: 1;
+  padding-right: calc(var(--space-6) * 2.5);
+}
+
+.password__toggle {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  height: 100%;
+  padding: 0 var(--space-3);
+  position: absolute;
+  right: 0;
+}
+
+.auth__submit {
+  width: 100%;
+}
+
+.auth__switch {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  padding-top: var(--space-4);
+  text-align: center;
+}
+
+.form-error {
+  background: var(--color-surface);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius);
+  color: var(--color-danger);
+  padding: var(--space-2) var(--space-3);
+}
