@@ -1,0 +1,52 @@
+<div class="page-header">
+  <h1>Moja putovanja</h1>
+</div>
+
+@if (activeTour.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Putovanja nisu učitana.</strong>
+    <button class="button" type="button" (click)="activeTour.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!activeTour.hasValue()) {
+  <p class="state" role="status">Učitavanje…</p>
+} @else {
+  @if (active(); as tour) {
+    <!-- The tour in progress always comes first: the one thing the tourist may be in the middle of. -->
+    <section class="current" aria-labelledby="current-title">
+      <div class="current__body">
+        <span class="badge badge--published">▶ U toku</span>
+        <h2 id="current-title">{{ tour.tourName }}</h2>
+        <p class="progress">
+          <span class="progress__bar" aria-hidden="true"
+            ><span class="progress__fill" [style.width]="progress()"></span
+          ></span>
+          {{ tour.reachedKeyPointCount }} od {{ pointsText() }}
+        </p>
+        @if (next(); as point) {
+          <p class="meta">
+            Sledeća tačka: <strong>{{ point.name }}</strong>
+          </p>
+        }
+      </div>
+      <div class="current__actions">
+        <a class="button button--primary" routerLink="/exploration/active">Nastavi turu</a>
+        <a class="button" [routerLink]="['/exploration/tours', tour.tourId]">Opis ture</a>
+      </div>
+    </section>
+  } @else {
+    <div class="state">
+      <img src="/images/ilustracije/hiking.svg" alt="" />
+      <strong>Nemate turu u toku.</strong>
+      <span
+        >Kupljenu turu pokrećete sa njene stranice: postavite poziciju na mapi i kliknite „Pokreni
+        turu”.</span
+      >
+      <a class="button" routerLink="/exploration">Pretraži ture</a>
+    </div>
+  }
+
+  <p class="notice notice--muted">
+    Spisak kupljenih i završenih tura uskoro će biti ovde. Do tada kupljenu turu otvarate iz
+    pretrage tura.
+  </p>
+}

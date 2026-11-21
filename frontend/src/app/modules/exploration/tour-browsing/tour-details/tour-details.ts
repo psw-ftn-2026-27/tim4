@@ -6,8 +6,10 @@ import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
 import { PositionSimulation } from '../../../../shared/position/position-simulation';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { TourDetailsDto, TransportMode } from '../../api/exploration-api-types';
+import { formatKm, formatMinutes } from '../../../../shared/util/format';
+import { TourDetailsDto } from '../../api/exploration-api-types';
 import { TourBrowsing } from '../tour-browsing';
+import { difficultyBadges, difficultyLabels, transportLabels } from '../tour-card/tour-card';
 
 @Component({
   imports: [LocationMap, RouterLink],
@@ -31,12 +33,29 @@ export class TourDetails {
     () => `/api/exploration/tours/${this.id()}`,
   );
 
-  // The names the page shows for the transport modes, as the search filters write them.
-  protected readonly transportLabels: Record<TransportMode, string> = {
-    Walking: 'Peške',
-    Bicycle: 'Bicikl',
-    Car: 'Automobil',
-  };
+  protected readonly difficultyLabels = difficultyLabels;
+  protected readonly difficultyBadges = difficultyBadges;
+
+  // Length and the time for each way of travel, in one row of facts under the name.
+  protected readonly facts = computed(() => {
+    const tour = this.tour.value();
+    if (tour === undefined) {
+      return [];
+    }
+    return [
+      formatKm(tour.lengthInKm),
+      ...tour.transportTimes.map(
+        (time) => `${transportLabels[time.transport]} ${formatMinutes(time.minutes)}`,
+      ),
+    ];
+  });
+
+  protected readonly isAuthor = computed(
+    () => this.tour.value()?.authorId === this.auth.user()?.id,
+  );
+
+  // The key point under the mouse, in the list or on the map, highlighted in both.
+  protected readonly hovered = signal<number | null>(null);
 
   // The author and a buyer get every key point, so the path between them is the real tour.
   // Anyone else gets only the open ones, and a path joining them would skip the hidden ones.
@@ -79,11 +98,13 @@ export class TourDetails {
     this.position.hasValue() ? this.position.value() : null,
   );
 
+  // Numbered pins, in the order the tourist walks them.
   protected readonly mapLocations = computed<MapLocation[]>(() =>
-    (this.tour.value()?.keyPoints ?? []).map((keyPoint) => ({
+    (this.tour.value()?.keyPoints ?? []).map((keyPoint, index) => ({
       latitude: keyPoint.latitude,
       longitude: keyPoint.longitude,
       name: keyPoint.name,
+      label: String(index + 1),
     })),
   );
 

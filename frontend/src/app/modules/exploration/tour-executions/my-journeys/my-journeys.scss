@@ -1,0 +1,59 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+.button {
+  text-align: center;
+  text-decoration: none;
+}
+
+// The tour in progress, marked by a thick accent edge on the left.
+.current {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-left-width: var(--space-2);
+  border-radius: var(--radius);
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: var(--space-4) var(--space-5);
+}
+
+.current__body {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.current__body h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+}
+
+.current__body .progress {
+  max-width: 24rem;
+  width: 100%;
+}
+
+.current__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.state img {
+  max-width: 12rem;
+}
+
+.state .button {
+  text-decoration: none;
+}
