@@ -1,0 +1,167 @@
+<div class="proto-switch" role="group" aria-label="Vrsta turiste u prototipu">
+  <span class="meta">Prototip:</span>
+  <button
+    type="button"
+    class="proto-switch__option"
+    [class.proto-switch__option--on]="isNew()"
+    (click)="setNew(true)"
+  >
+    Upravo registrovan
+  </button>
+  <button
+    type="button"
+    class="proto-switch__option"
+    [class.proto-switch__option--on]="!isNew()"
+    (click)="setNew(false)"
+  >
+    Aktivan turista
+  </button>
+</div>
+
+@if (isNew()) {
+  <!-- ===== First visit ===== -->
+  <section class="welcome">
+    <div>
+      <h1>Dobro došli, marko!</h1>
+      <p>Pet koraka do prve ture. Prvi je već gotov.</p>
+    </div>
+    <img src="/images/ilustracije/travel-destination.svg" alt="" />
+  </section>
+
+  <ol class="first-steps">
+    @for (step of steps; track step.title; let index = $index) {
+      <li class="first-step" [class.first-step--done]="step.done">
+        <span class="first-step__mark">{{ step.done ? '✓' : index + 1 }}</span>
+        <div class="first-step__body">
+          <strong>{{ step.title }}</strong>
+          <span>{{ step.text }}</span>
+        </div>
+        @if (step.link) {
+          <a class="button" [routerLink]="base + step.link">{{ step.action }}</a>
+        }
+      </li>
+    }
+  </ol>
+
+  <section class="block">
+    <div class="block__head">
+      <h2>Za početak</h2>
+      <a [routerLink]="base + '/tours'">Sve ture →</a>
+    </div>
+    <ul class="suggested">
+      @for (tour of suggested; track tour.id) {
+        <li>
+          <a class="mini-tour" [routerLink]="base + '/tours/' + tour.id">
+            <img [src]="tour.image" alt="" />
+            <span class="mini-tour__body">
+              <strong>{{ tour.name }}</strong>
+              <span class="mini-tour__facts">
+                <span [class]="difficultyClasses[tour.difficulty]">{{
+                  difficultyLabels[tour.difficulty]
+                }}</span>
+                <span class="mini-tour__price" [class.mini-tour__price--free]="tour.price === 0">
+                  {{ tour.price === 0 ? 'Besplatno' : tour.price + ' EC' }}
+                </span>
+              </span>
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+} @else {
+  <!-- ===== Returning tourist ===== -->
+  <section class="hello">
+    <h1>Zdravo, marko</h1>
+    <span class="badge badge--xp">★ {{ xp }} XP</span>
+    <span class="badge badge--ec">◎ {{ balance }} EC</span>
+  </section>
+
+  <a class="current" [routerLink]="base + '/active-tour'">
+    <img [src]="active.image" alt="" />
+    <span class="current__body">
+      <span class="badge badge--published">▶ Tura u toku</span>
+      <strong>{{ active.name }}</strong>
+      <span class="progress">
+        <span class="progress__bar" aria-hidden="true"
+          ><span
+            class="progress__fill"
+            [style.width]="(activeReached / active.keyPoints.length) * 100 + '%'"
+          ></span
+        ></span>
+        {{ activeReached }} od {{ active.keyPoints.length }}
+      </span>
+    </span>
+    <span class="button button--primary">Nastavi</span>
+  </a>
+
+  <div class="widgets">
+    <section class="block">
+      <div class="block__head">
+        <h2>Spremne za polazak</h2>
+        <a [routerLink]="base + '/journeys'">Sve →</a>
+      </div>
+      <ul class="list">
+        @for (tour of ready; track tour.id) {
+          <li>
+            <a [routerLink]="base + '/tours/' + tour.id">{{ tour.name }}</a>
+            <span class="meta">{{ pointsText(tour.keyPoints.length) }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="block">
+      <div class="block__head">
+        <h2>Izazovi u blizini</h2>
+        <a [routerLink]="base + '/challenges'">Mapa →</a>
+      </div>
+      <ul class="list">
+        @for (item of near; track item.challenge.id) {
+          <li>
+            <a [routerLink]="base + '/challenges'">{{ item.challenge.name }}</a>
+            <span class="meta">{{ distance(item.meters) }} · ★ {{ item.challenge.xp }} XP</span>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="block">
+      <div class="block__head">
+        <h2>Novčanik</h2>
+        <a [routerLink]="base + '/wallet'">Otvori →</a>
+      </div>
+      <p class="wallet-amount">{{ balance }} <small>EC</small></p>
+      @if (giftCard; as card) {
+        <p class="meta">🎁 Poklon kartica od {{ card.amount }} EC čeka na plaćanje.</p>
+      }
+    </section>
+  </div>
+
+  <section class="block">
+    <div class="block__head">
+      <h2>Po vašim preferencama</h2>
+      <a [routerLink]="base + '/tours'">Sve ture →</a>
+    </div>
+    <ul class="suggested">
+      @for (tour of suggested; track tour.id) {
+        <li>
+          <a class="mini-tour" [routerLink]="base + '/tours/' + tour.id">
+            <img [src]="tour.image" alt="" />
+            <span class="mini-tour__body">
+              <strong>{{ tour.name }}</strong>
+              <span class="mini-tour__facts">
+                <span [class]="difficultyClasses[tour.difficulty]">{{
+                  difficultyLabels[tour.difficulty]
+                }}</span>
+                <span class="mini-tour__price" [class.mini-tour__price--free]="tour.price === 0">
+                  {{ tour.price === 0 ? 'Besplatno' : tour.price + ' EC' }}
+                </span>
+              </span>
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+}

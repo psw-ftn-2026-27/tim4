@@ -168,6 +168,7 @@ const SKETCHES: Sketch[] = [
   { path: 'tour-preferences', title: 'Preference tura' },
   { path: 'admin-challenges', title: 'Administratorski pregled izazova i kviza' },
   { path: 'map', title: 'Mapa' },
+  { path: 'prototype', title: 'Prototipi redizajna (turista i administrator)' },
 ];
 
 @Component({

@@ -1,0 +1,385 @@
+// A vertical slice as tall as the window under the bars. The heading and the search stay in
+// place; only the list of results scrolls, and the map beside it never moves.
+.layout {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  height: calc(100vh - 13rem);
+  min-height: 30rem;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  min-width: 0;
+}
+
+.page-header {
+  align-items: baseline;
+}
+
+// ---- Search and chips ----
+
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.search__query input {
+  font-size: var(--font-size-lg);
+}
+
+.chips {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1);
+  height: var(--control-height);
+  list-style: none;
+  padding: 0 var(--space-4);
+}
+
+.chip:hover {
+  border-color: var(--color-text);
+}
+
+.chip--on {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.chip--clear {
+  border-style: dashed;
+  color: var(--color-text-muted);
+}
+
+.chip-menu {
+  position: relative;
+}
+
+summary.chip::after {
+  content: '▾';
+  font-size: var(--font-size-sm);
+}
+
+.chip-menu__panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  left: 0;
+  min-width: 14rem;
+  padding: var(--space-3);
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  z-index: 1050;
+}
+
+.sort {
+  margin-left: auto;
+}
+
+// ---- Result cards ----
+
+.cards {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--space-2) var(--space-2) 0;
+}
+
+// The first card scrolls under a thin line, so it is clear the list goes on above.
+.cards {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+}
+
+.tour {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 9rem minmax(0, 1fr) auto;
+  padding: var(--space-3);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.tour--active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.tour__image {
+  aspect-ratio: 4 / 3;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius);
+  object-fit: contain;
+  width: 100%;
+}
+
+.tour__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.tour__body p {
+  margin: 0;
+}
+
+.tour__name {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  margin: 0;
+}
+
+.tour__name a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.tour__name a:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.tour__excerpt {
+  color: var(--color-text-muted);
+}
+
+.tour__facts {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1) var(--space-3);
+}
+
+.tour__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.tour__side {
+  align-items: flex-end;
+  border-left: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  justify-content: space-between;
+  min-width: 8rem;
+  padding-left: var(--space-4);
+}
+
+.price {
+  color: var(--color-ec-text);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.price--free {
+  color: var(--color-success-text);
+  font-size: var(--font-size-lg);
+}
+
+// ---- Map column ----
+
+.map-column {
+  height: 100%;
+  position: relative;
+}
+
+.tour__side .button {
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.map-column__area {
+  white-space: nowrap;
+  box-shadow: 0 var(--space-1) var(--space-3) rgb(0 0 0 / 0.18);
+  left: 50%;
+  position: absolute;
+  top: var(--space-3);
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.map-column__legend {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  bottom: var(--space-3);
+  display: flex;
+  font-size: var(--font-size-sm);
+  gap: var(--space-2);
+  left: var(--space-3);
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  position: absolute;
+  z-index: 1000;
+}
+
+.legend {
+  border: 1px solid var(--color-control-border);
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0 var(--space-2);
+}
+
+.legend--tour {
+  background: var(--color-surface);
+}
+
+.legend--owned {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  margin-left: var(--space-2);
+}
+
+.area-note {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+}
+
+.link {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.map-link {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  margin-right: var(--space-2);
+  padding: 0;
+}
+
+.map-link:hover {
+  text-decoration: underline;
+}
+
+.legend--group {
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  margin-left: var(--space-2);
+}
+
+// ---- The card of the clicked pin, over the bottom of the map ----
+
+.pin-card {
+  align-items: center;
+  animation: rise 0.2s ease-out;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  bottom: var(--space-3);
+  box-shadow: 0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.2);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 6rem minmax(0, 1fr);
+  left: var(--space-3);
+  padding: var(--space-3);
+  position: absolute;
+  right: calc(var(--control-height) + var(--space-5));
+  z-index: 1000;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-3));
+  }
+}
+
+.pin-card img {
+  aspect-ratio: 4 / 3;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius);
+  object-fit: contain;
+  width: 100%;
+}
+
+.pin-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.pin-card__facts {
+  align-items: center;
+  display: flex;
+  font-size: var(--font-size-sm);
+  gap: var(--space-2);
+}
+
+.pin-card__foot {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-1);
+}
+
+.pin-card__foot .button {
+  text-decoration: none;
+}
+
+.pin-card__price {
+  color: var(--color-ec-text);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.pin-card__close {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  position: absolute;
+  right: var(--space-2);
+  top: var(--space-1);
+}

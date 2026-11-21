@@ -1,0 +1,28 @@
+<section class="hello">
+  <h1>Dobar dan, admin1</h1>
+  <p class="meta">Ovo čeka vašu odluku.</p>
+</section>
+
+<ul class="tasks">
+  @for (task of tasks; track task.title) {
+    @if (task.count > 0) {
+      <li class="task" [class]="'task task--' + task.tone">
+        <span class="task__count">{{ task.count }}</span>
+        <div class="task__body">
+          <strong>{{ task.title }}</strong>
+          <span>{{ task.text }}</span>
+        </div>
+        <a class="button" [routerLink]="base + task.link">{{ task.action }}</a>
+      </li>
+    }
+  }
+</ul>
+
+<dl class="stats">
+  @for (stat of stats; track stat.label) {
+    <div>
+      <dd>{{ stat.value }}</dd>
+      <dt>{{ stat.label }}</dt>
+    </div>
+  }
+</dl>
