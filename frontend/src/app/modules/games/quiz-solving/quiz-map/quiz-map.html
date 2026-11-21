@@ -1,168 +1,279 @@
-<div class="stack">
-  <a class="back-link" routerLink="/games">← Games</a>
-  <header class="page-header">
-    <h1>Mapa izazova</h1>
-  </header>
+@if (quizzes.error() || socialChallenges.error() || locationChallenges.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Izazovi nisu učitani.</strong>
+    <button
+      class="button"
+      type="button"
+      (click)="quizzes.reload(); socialChallenges.reload(); locationChallenges.reload()"
+    >
+      Pokušaj ponovo
+    </button>
+  </div>
+} @else if (!quizzes.hasValue() || !socialChallenges.hasValue() || !locationChallenges.hasValue()) {
+  <p class="state" role="status">Učitavanje izazova…</p>
+} @else {
+  <div class="split">
+    <section class="split__side" aria-label="Izazovi">
+      @if (selected(); as c) {
+        <!-- ===== The chosen challenge ===== -->
+        <button class="back" type="button" (click)="select(null)">← Svi izazovi</button>
 
-  @if (!user()) {
-    <p class="state">Prijavite se da biste rešavali kvizove.</p>
-  } @else if (!isExplorer()) {
-    <p class="state">Rešavanje kvizova dostupno je istraživačima.</p>
-  } @else if (quizzes.error()) {
-    <div class="state state--error" role="alert">
-      <p>Učitavanje kvizova nije uspelo.</p>
-      <button class="button" type="button" (click)="quizzes.reload()">Pokušaj ponovo</button>
-    </div>
-  } @else if (quizzes.hasValue()) {
-    @if (positionError(); as message) {
-      <p class="state state--error" role="alert">{{ message }}</p>
-    }
-    @if (position.error()) {
-      <div class="state state--error" role="alert">
-        <p>Poziciju nije moguće učitati.</p>
-        <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
-      </div>
-    }
+        <div class="split__list detail">
+          <header class="detail-head">
+            <span [class]="'kind kind--' + c.kind"
+              >{{ kindMarks[c.kind] }} {{ kindLabels[c.kind] }}</span
+            >
+            <h1>{{ c.name }}</h1>
+            <p>
+              @if (c.solved) {
+                <span class="badge badge--success">✓ Rešen</span>
+                <span class="badge badge--xp">★ {{ c.xpText }} XP</span>
+              } @else if (c.kind === 'quiz') {
+                <span class="badge badge--xp">★ XP za svako pitanje</span>
+              } @else {
+                <span class="badge badge--xp">★ {{ c.xpText }} XP</span>
+              }
+            </p>
+          </header>
 
-    <div>
+          <!-- Every kind starts with "be there", so the distance comes first. -->
+          @if (!c.solved) {
+            <div class="range" [class.range--in]="c.kind === 'location' && nearLocationStart()">
+              @if (savedPosition() === null) {
+                <strong>📍 Postavite svoju poziciju</strong>
+                <span>Kliknite na mapu tamo gde se nalazite.</span>
+              } @else if (c.kind === 'location' && nearLocationStart()) {
+                <strong>✓ Na mestu ste</strong>
+                <span>Unutar {{ activationMeters }} m od početne tačke.</span>
+              } @else {
+                <strong>Udaljeni ste {{ distanceText() }}</strong>
+                <span>
+                  @if (c.kind === 'location') {
+                    Izazov se aktivira na {{ activationMeters }} m od početne tačke; krug na mapi
+                    pokazuje to mesto.
+                  } @else {
+                    Izazov se započinje na licu mesta. Poziciju pomerate klikom na mapu.
+                  }
+                </span>
+              }
+            </div>
+          }
+
+          @if (positionError(); as message) {
+            <p class="error" role="alert">⚠ {{ message }}</p>
+          }
+
+          @switch (c.kind) {
+            @case ('quiz') {
+              @if (selectedQuiz(); as quiz) {
+                <section class="block">
+                  <h2>Kviz</h2>
+                  <p>{{ quiz.instructions }}</p>
+                  @if (!c.solved) {
+                    <ul class="rules">
+                      <li>Pitanja dolaze jedno po jedno; na svako odgovarate jednom.</li>
+                      <li>Tačnih odgovora može biti više.</li>
+                      <li>Svaki pogrešno označen odgovor oduzima četvrtinu poena tog pitanja.</li>
+                      <li>Kviz započinjete na mestu, a završiti ga možete bilo gde.</li>
+                    </ul>
+                    <button
+                      class="button button--primary main"
+                      type="button"
+                      [disabled]="pending() || !hasPosition()"
+                      (click)="start(quiz)"
+                    >
+                      {{ c.started ? 'Nastavi kviz' : 'Započni kviz' }}
+                    </button>
+                    @if (startError(); as message) {
+                      <p class="error" role="alert">⚠ {{ message }}</p>
+                    }
+                  }
+                </section>
+              }
+            }
+            @case ('social') {
+              <section class="block">
+                <h2>Društveni izazov</h2>
+                <p>
+                  Rešava se kada je dovoljno igrača u krugu izazova u isto vreme, u satima kada je
+                  izazov aktivan.
+                </p>
+                @if (run.error()) {
+                  <div class="state state--error" role="alert">
+                    <strong>Izazov nije učitan.</strong>
+                    <button class="button" type="button" (click)="run.reload()">
+                      Pokušaj ponovo
+                    </button>
+                  </div>
+                } @else if (solved()) {
+                  <div class="won" role="status">
+                    <span class="won__xp">+{{ awardedXp() }} XP</span>
+                    @if (run.hasValue() && run.value().completionMessage; as message) {
+                      <p>{{ message }}</p>
+                    }
+                  </div>
+                } @else if (checking()) {
+                  @if (run.hasValue()) {
+                    <div class="progress" role="status">
+                      <span class="progress__bar" aria-hidden="true">
+                        <span class="progress__fill" [style.width.%]="progressPercent()"></span>
+                      </span>
+                      <span>
+                        {{ run.value().activeParticipantCount }} od
+                        {{ run.value().requiredParticipants }} igrača na mestu
+                      </span>
+                    </div>
+                    <p class="meta">
+                      Ostanite na mestu: vaša pozicija se šalje svakih 10 sekundi dok su ostali
+                      igrači tu.
+                    </p>
+                  }
+                  @if (reportError(); as message) {
+                    <p class="error" role="alert">⚠ {{ message }}</p>
+                  }
+                } @else {
+                  @if (showDroppedOut()) {
+                    <p class="notice notice--muted" role="status">
+                      Niste više u opsegu izazova. Vratite se na mesto i aktivirajte ga ponovo.
+                    </p>
+                  }
+                  <button
+                    class="button button--primary main"
+                    type="button"
+                    [disabled]="pending() || !hasPosition()"
+                    (click)="activate(c.id)"
+                  >
+                    Aktiviraj
+                  </button>
+                  @if (activateError(); as message) {
+                    <p class="error" role="alert">⚠ {{ message }}</p>
+                  }
+                }
+              </section>
+            }
+            @case ('location') {
+              @if (selectedLocation(); as location) {
+                <section class="block">
+                  <h2>Lokacijski izazov</h2>
+                  <p>
+                    {{ location.pointCount }} skrivenih mesta oko početne tačke. Posle aktivacije
+                    dobijate fotografiju svakog mesta, a tačka se priznaje kada stanete na samo
+                    mesto (5 m).
+                  </p>
+                  <a
+                    class="button button--primary main"
+                    [routerLink]="['/games/location-challenges', location.id, 'play']"
+                    >Otvori izazov</a
+                  >
+                </section>
+              }
+            }
+          }
+        </div>
+      } @else {
+        <!-- ===== The list ===== -->
+        <div class="page-header">
+          <h1>Izazovi</h1>
+        </div>
+
+        <div class="chips" role="group" aria-label="Vrsta izazova">
+          @for (item of kindChips(); track item.kind) {
+            <button
+              class="chip"
+              type="button"
+              [class.chip--on]="kind() === item.kind"
+              [attr.aria-pressed]="kind() === item.kind"
+              (click)="kind.set(item.kind)"
+            >
+              {{ item.label }}
+            </button>
+          }
+          <label class="choice solved-toggle">
+            <input
+              type="checkbox"
+              [checked]="showSolved()"
+              (change)="showSolved.set(!showSolved())"
+            />
+            Prikaži rešene ({{ solvedCount() }})
+          </label>
+        </div>
+
+        <p class="meta">
+          📍
+          @if (savedPosition() === null) {
+            Kliknite na mapu tamo gde se nalazite, pa se izazovi poređaju po udaljenosti.
+          } @else {
+            Poziciju pomerate klikom na mapu. Izazovi su poređani po udaljenosti.
+          }
+        </p>
+        @if (positionError(); as message) {
+          <p class="error" role="alert">⚠ {{ message }}</p>
+        }
+
+        <div class="split__list">
+          @if (visible().length === 0) {
+            <div class="state">Nema izazova za izabrani filter.</div>
+          } @else {
+            <ul class="list">
+              @for (item of visible(); track item.id) {
+                <li>
+                  <button
+                    class="item"
+                    type="button"
+                    [class.item--active]="hovered() === item.id"
+                    [class.item--solved]="item.solved"
+                    (mouseenter)="hovered.set(item.id)"
+                    (mouseleave)="hovered.set(null)"
+                    (click)="select(item.id)"
+                  >
+                    <span [class]="'mark mark--' + item.kind" aria-hidden="true">{{
+                      kindMarks[item.kind]
+                    }}</span>
+                    <span class="item__body">
+                      <span class="item__name">{{ item.name }}</span>
+                      <span class="item__meta">
+                        {{ kindLabels[item.kind] }}
+                        @if (item.started) {
+                          · <strong>započet</strong>
+                        }
+                      </span>
+                    </span>
+                    @if (item.solved) {
+                      <span class="badge badge--success">✓ {{ item.xpText }} XP</span>
+                    } @else if (item.kind !== 'quiz') {
+                      <span class="badge badge--xp">★ {{ item.xpText }} XP</span>
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </section>
+
+    <aside class="split__map" aria-label="Mapa izazova">
       <app-location-map
         [locations]="locations()"
+        [cluster]="true"
+        [fill]="true"
+        [fitKey]="kind() + showSolved()"
+        [activeIndex]="activeIndex()"
+        [focusIndex]="focusIndex()"
         [selectable]="!pending()"
-        [position]="position.value() ?? null"
+        [position]="savedPosition()"
+        [target]="routeTarget()"
+        [area]="area()"
+        (locationHover)="hoverPin($event)"
+        (locationClick)="choosePin($event)"
         (selectedChange)="setPosition($event)"
-        (locationClick)="selectPin($event)"
       />
-    </div>
-
-    @if (socialChallenges.error()) {
-      <div class="state state--error" role="alert">
-        <p>Učitavanje društvenih izazova nije uspelo.</p>
-        <button class="button" type="button" (click)="socialChallenges.reload()">
-          Pokušaj ponovo
-        </button>
-      </div>
-    }
-
-    @if (selectedChallenge(); as challenge) {
-      <section class="card stack">
-        <h2>{{ challenge.name }}</h2>
-        @if (run.error()) {
-          <div class="state state--error" role="alert">
-            <p>Učitavanje izazova nije uspelo.</p>
-            <button class="button" type="button" (click)="run.reload()">Pokušaj ponovo</button>
-          </div>
-        } @else if (solved()) {
-          <p>
-            <span class="badge badge--success">✓ Rešen</span>
-            <span class="badge badge--xp">★ {{ awardedXp() }} XP</span>
-          </p>
-          @if (run.hasValue() && run.value().completionMessage; as message) {
-            <p role="status">{{ message }}</p>
-          }
-        } @else if (checking()) {
-          <p><span class="badge badge--xp">★ {{ challenge.xpReward }} XP</span></p>
-          @if (run.hasValue()) {
-            <div class="progress" role="status">
-              <span class="progress__bar" aria-hidden="true">
-                <span class="progress__fill" [style.width.%]="progressPercent()"></span>
-              </span>
-              <span>
-                {{ run.value().activeParticipantCount }} od
-                {{ run.value().requiredParticipants }} igrača
-              </span>
-            </div>
-          }
-          @if (reportError(); as message) {
-            <p class="error" role="alert">{{ message }}</p>
-          }
-        } @else {
-          <p><span class="badge badge--xp">★ {{ challenge.xpReward }} XP</span></p>
-          @if (showDroppedOut()) {
-            <p role="status">Niste više u opsegu izazova.</p>
-          }
-          @if (activateError(); as message) {
-            <p class="error" role="alert">{{ message }}</p>
-          }
-          @if (hasPosition()) {
-            <div class="form-actions">
-              <button
-                class="button button--primary"
-                type="button"
-                [disabled]="pending()"
-                (click)="activate(challenge.id)"
-              >
-                Aktiviraj
-              </button>
-            </div>
-          } @else {
-            <p class="meta">Pozicija nije postavljena. Kliknite na mapu da označite gde se nalazite.</p>
-          }
-        }
-      </section>
-    }
-
-    @if (selectedQuiz(); as quiz) {
-      <section class="card stack">
-        <h2>{{ quiz.name }}</h2>
-        <p>{{ quiz.instructions }}</p>
-        @if (quiz.progress === 'Solved') {
-          <p>
-            <span class="badge badge--success">✓ Rešen</span>
-            <span class="badge badge--xp">★ {{ quiz.earnedXp?.toFixed(2) }} XP</span>
-          </p>
-        } @else {
-          @if (startError(); as message) {
-            <p class="error" role="alert">{{ message }}</p>
-          }
-          @if (hasPosition()) {
-            <div class="form-actions">
-              <button
-                class="button button--primary"
-                type="button"
-                [disabled]="pending()"
-                (click)="start(quiz)"
-              >
-                {{ quiz.progress === 'Started' ? 'Nastavi' : 'Započni' }}
-              </button>
-            </div>
-          } @else {
-            <p class="meta">Pozicija nije postavljena. Kliknite na mapu da označite gde se nalazite.</p>
-          }
-        }
-      </section>
-    }
-
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Naziv</th>
-          <th scope="col" class="col-fit">Stanje</th>
-          <th scope="col" class="col-fit">XP</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (quiz of quizzes.value(); track quiz.id) {
-          <tr>
-            <td>{{ quiz.name }}</td>
-            <td class="col-fit">
-              @if (quiz.progress === 'Solved') {
-                <span class="badge badge--success">✓ Rešen</span>
-              }
-            </td>
-            <td class="col-fit">
-              @if (quiz.progress === 'Solved') {
-                <span class="badge badge--xp">★ {{ quiz.earnedXp?.toFixed(2) }} XP</span>
-              }
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="3" class="meta">Nema objavljenih kvizova.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  } @else if (quizzes.isLoading()) {
-    <p class="state" role="status">Učitavanje kvizova…</p>
-  }
-</div>
+      <p class="legend">
+        <span class="kind kind--quiz">? Kviz</span>
+        <span class="kind kind--social">☺ Društveni</span>
+        <span class="kind kind--location">⌖ Lokacijski</span>
+        <span class="kind kind--solved">✓ Rešen</span>
+      </p>
+    </aside>
+  </div>
+}

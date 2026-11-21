@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { GamesHome } from './games-home/games-home';
 import { LocationChallengeCreate } from './location-challenges/location-challenge-create/location-challenge-create';
 import { LocationChallengeDetails } from './location-challenges/location-challenge-details/location-challenge-details';
 import { LocationChallengeList } from './location-challenges/location-challenge-list/location-challenge-list';
@@ -14,7 +13,7 @@ import { SocialChallengeEditor } from './social-challenge-preparation/social-cha
 import { requireRole } from '../../core/auth/require-role';
 
 export const gamesRoutes: Routes = [
-  { path: '', component: GamesHome, canActivate: [requireRole()] },
+  { path: '', component: QuizMap, canActivate: [requireRole('explorer')] },
   { path: 'challenges', component: ChallengeList, canActivate: [requireRole('administrator')] },
   { path: 'map', component: QuizMap, canActivate: [requireRole('explorer')] },
   { path: 'quizzes/create', component: CreateQuiz, canActivate: [requireRole('administrator')] },

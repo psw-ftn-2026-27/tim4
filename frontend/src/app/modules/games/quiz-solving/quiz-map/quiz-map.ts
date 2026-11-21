@@ -6,14 +6,47 @@ import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
 import { PositionSimulation } from '../../../../shared/position/position-simulation';
 import { repeatEvery } from '../../../../shared/position/repeat-every';
+import { PageResult } from '../../../../shared/api/page-result';
+import { formatKm, formatNumber } from '../../../../shared/util/format';
 import { serverMessage } from '../../../../shared/util/server-message';
 import {
+  LocationChallengeDto,
   QuizMapItemDto,
   SocialChallengeMapItemDto,
   SocialChallengeRunDto,
 } from '../../api/games-api-types';
 import { QuizSolving } from '../quiz-solving';
 
+export type ChallengeKind = 'quiz' | 'social' | 'location';
+type KindFilter = ChallengeKind | 'all';
+
+// One challenge of any kind, as the list and the map show it.
+interface Challenge {
+  kind: ChallengeKind;
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  solved: boolean;
+  started: boolean;
+  // The XP it gives, or for a solved one the XP earned.
+  xpText: string;
+}
+
+const KIND_LABELS: Record<ChallengeKind, string> = {
+  quiz: 'Kviz',
+  social: 'Društveni',
+  location: 'Lokacijski',
+};
+
+const KIND_MARKS: Record<ChallengeKind, string> = { quiz: '?', social: '☺', location: '⌖' };
+
+// A location challenge is activated within this distance of its start
+// (Games:LocationChallenges:ActivationDistanceInMeters on the server).
+const LOCATION_ACTIVATION_METERS = 50;
+
+// The tourist's challenges: quizzes, social and location challenges on one map, the list
+// beside it ordered by distance. Choosing one opens its panel in place of the list.
 @Component({
   imports: [LocationMap, RouterLink],
   selector: 'app-quiz-map',
@@ -40,23 +73,161 @@ export class QuizMap {
     this.isExplorer() ? '/api/positions/mine' : undefined,
   );
 
-  // The quiz pins first, in the same order as the list, then the social challenge pins. A pin's
-  // index below the number of quizzes is the quiz's index; the rest are social challenges.
-  protected readonly locations = computed<MapLocation[]>(() =>
-    [...(this.quizzes.value() ?? []), ...(this.socialChallenges.value() ?? [])].map((item) => ({
-      latitude: item.latitude,
-      longitude: item.longitude,
-      name: item.name,
+  protected readonly locationChallenges = httpResource<PageResult<LocationChallengeDto>>(() =>
+    this.isExplorer() ? '/api/games/location-challenges?page=1&pageSize=100' : undefined,
+  );
+
+  protected readonly kindLabels = KIND_LABELS;
+  protected readonly kindMarks = KIND_MARKS;
+  protected readonly activationMeters = LOCATION_ACTIVATION_METERS;
+  protected readonly formatNumber = formatNumber;
+
+  protected readonly kind = signal<KindFilter>('all');
+  protected readonly showSolved = signal(false);
+
+  // Every challenge of the three kinds, nearest first once the position is known.
+  private readonly all = computed<Challenge[]>(() => {
+    const quizzes: Challenge[] = (this.quizzes.value() ?? []).map((quiz) => ({
+      kind: 'quiz',
+      id: quiz.id,
+      name: quiz.name,
+      latitude: quiz.latitude,
+      longitude: quiz.longitude,
+      solved: quiz.progress === 'Solved',
+      started: quiz.progress === 'Started',
+      xpText: quiz.earnedXp === null ? '' : formatNumber(quiz.earnedXp),
+    }));
+    const social: Challenge[] = (this.socialChallenges.value() ?? []).map((challenge) => ({
+      kind: 'social',
+      id: challenge.id,
+      name: challenge.name,
+      latitude: challenge.latitude,
+      longitude: challenge.longitude,
+      solved: challenge.solved,
+      started: false,
+      xpText: String(challenge.awardedXp ?? challenge.xpReward),
+    }));
+    const location: Challenge[] = (this.locationChallenges.value()?.items ?? []).map(
+      (challenge) => ({
+        kind: 'location',
+        id: challenge.id,
+        name: challenge.name,
+        latitude: challenge.startLatitude,
+        longitude: challenge.startLongitude,
+        solved: false,
+        started: false,
+        xpText: String(challenge.xpReward),
+      }),
+    );
+    const list = [...quizzes, ...social, ...location];
+    const position = this.savedPosition();
+    return position === null
+      ? list
+      : [...list].sort((a, b) => metersBetween(position, a) - metersBetween(position, b));
+  });
+
+  protected readonly solvedCount = computed(() => this.all().filter((item) => item.solved).length);
+
+  protected readonly visible = computed(() =>
+    this.all().filter(
+      (item) =>
+        (this.kind() === 'all' || item.kind === this.kind()) && (this.showSolved() || !item.solved),
+    ),
+  );
+
+  protected readonly kindChips = computed(() =>
+    (['all', 'quiz', 'social', 'location'] as KindFilter[]).map((kind) => ({
+      kind,
+      label: kind === 'all' ? 'Svi' : `${KIND_MARKS[kind]} ${KIND_LABELS[kind]}`,
     })),
   );
 
-  protected readonly selectedIndex = signal<number | null>(null);
-  protected readonly selectedQuiz = computed(() => {
-    const index = this.selectedIndex();
-    return index === null ? null : (this.quizzes.value()?.[index] ?? null);
+  // Reward first, so a solved quiz shows what it gave and the others what they give.
+  protected readonly locations = computed<MapLocation[]>(() =>
+    this.visible().map((item) => ({
+      latitude: item.latitude,
+      longitude: item.longitude,
+      name: item.name,
+      label: item.solved
+        ? `✓ ${KIND_MARKS[item.kind]}`
+        : item.kind === 'quiz'
+          ? `? ${KIND_LABELS.quiz}`
+          : `${KIND_MARKS[item.kind]} ${item.xpText} XP`,
+      tone: item.solved ? 'owned' : item.kind,
+    })),
+  );
+
+  // The challenge chosen from the list or the map; its panel replaces the list.
+  protected readonly selectedKey = signal<string | null>(null);
+  protected readonly selected = computed(
+    () => this.all().find((item) => item.id === this.selectedKey()) ?? null,
+  );
+  protected readonly hovered = signal<string | null>(null);
+  protected readonly activeIndex = computed(() => {
+    const id = this.hovered() ?? this.selectedKey();
+    const index = this.visible().findIndex((item) => item.id === id);
+    return index === -1 ? null : index;
+  });
+  protected readonly focusIndex = computed(() => {
+    const index = this.visible().findIndex((item) => item.id === this.selectedKey());
+    return index === -1 ? null : index;
   });
 
-  protected readonly selectedChallengeId = signal<string | null>(null);
+  protected readonly selectedQuiz = computed(() => {
+    const selected = this.selected();
+    return selected?.kind === 'quiz'
+      ? (this.quizzes.value()?.find((quiz) => quiz.id === selected.id) ?? null)
+      : null;
+  });
+  protected readonly selectedLocation = computed(() => {
+    const selected = this.selected();
+    return selected?.kind === 'location'
+      ? (this.locationChallenges.value()?.items.find((item) => item.id === selected.id) ?? null)
+      : null;
+  });
+
+  // How far the tourist is from the chosen challenge, in a straight line.
+  protected readonly distanceToSelected = computed(() => {
+    const selected = this.selected();
+    const position = this.savedPosition();
+    return selected === null || position === null ? null : metersBetween(position, selected);
+  });
+  protected readonly distanceText = computed(() => {
+    const meters = this.distanceToSelected();
+    return meters === null ? null : formatKm(meters / 1000);
+  });
+  protected readonly nearLocationStart = computed(() => {
+    const meters = this.distanceToSelected();
+    return meters !== null && meters <= LOCATION_ACTIVATION_METERS;
+  });
+
+  // A location challenge shows its activation circle and, while the tourist is outside it,
+  // the walking route to its start.
+  protected readonly area = computed(() => {
+    const location = this.selectedLocation();
+    return location === null
+      ? null
+      : {
+          latitude: location.startLatitude,
+          longitude: location.startLongitude,
+          radiusMeters: LOCATION_ACTIVATION_METERS,
+        };
+  });
+  protected readonly routeTarget = computed(() => {
+    const selected = this.selected();
+    if (selected === null || selected.solved || this.distanceToSelected() === null) {
+      return null;
+    }
+    if (selected.kind === 'location' && this.nearLocationStart()) {
+      return null;
+    }
+    return { latitude: selected.latitude, longitude: selected.longitude };
+  });
+
+  protected readonly selectedChallengeId = computed(() => {
+    const selected = this.selected();
+    return selected?.kind === 'social' ? selected.id : null;
+  });
   protected readonly selectedChallenge = computed(() => {
     const id = this.selectedChallengeId();
     return id === null
@@ -115,7 +286,9 @@ export class QuizMap {
   });
 
   protected readonly showDroppedOut = computed(
-    () => this.droppedOut() || (this.checkedChallengeId() !== null && !this.checking() && !this.solved()),
+    () =>
+      this.droppedOut() ||
+      (this.checkedChallengeId() !== null && !this.checking() && !this.solved()),
   );
 
   protected readonly progressPercent = computed(() => {
@@ -131,16 +304,29 @@ export class QuizMap {
   // It is never stopped: a new activation on the same visit only sets checkedChallengeId again.
   private readonly check = repeatEvery(10_000, () => this.reportSavedPosition());
 
-  protected selectPin(index: number): void {
-    const quizCount = this.quizzes.value()?.length ?? 0;
-    if (index < quizCount) {
-      this.selectQuiz(index);
+  protected choosePin(index: number): void {
+    const item = this.visible()[index];
+    if (item !== undefined) {
+      this.select(item.id);
+    }
+  }
+
+  protected hoverPin(index: number | null): void {
+    this.hovered.set(index === null ? null : (this.visible()[index]?.id ?? null));
+  }
+
+  // Choosing another challenge ends the check of the previous social one; the server stops
+  // counting the player after 10 seconds.
+  protected select(id: string | null): void {
+    if (id === this.selectedKey()) {
       return;
     }
-    const challenge = this.socialChallenges.value()?.[index - quizCount];
-    if (challenge) {
-      this.selectChallenge(challenge.id);
-    }
+    this.selectedKey.set(id);
+    this.startError.set(null);
+    this.checkedChallengeId.set(null);
+    this.droppedOut.set(false);
+    this.activateError.set(null);
+    this.reportError.set(null);
   }
 
   protected async setPosition(coordinates: MapCoordinates): Promise<void> {
@@ -196,26 +382,6 @@ export class QuizMap {
     }
   }
 
-  private selectQuiz(index: number): void {
-    this.startError.set(null);
-    this.selectedIndex.set(index);
-    this.selectChallenge(null);
-  }
-
-  // The section shows one social challenge, so choosing another pin ends the check of the
-  // previous one; the server stops counting the player after 10 seconds.
-  private selectChallenge(id: string | null): void {
-    if (id === this.selectedChallengeId()) return;
-    if (id !== null) {
-      this.selectedIndex.set(null);
-    }
-    this.selectedChallengeId.set(id);
-    this.checkedChallengeId.set(null);
-    this.droppedOut.set(false);
-    this.activateError.set(null);
-    this.reportError.set(null);
-  }
-
   // One tick of the timer: nothing is sent until a challenge is activated and the position is known.
   private async reportSavedPosition(): Promise<void> {
     const challengeId = this.checkedChallengeId();
@@ -245,4 +411,18 @@ export class QuizMap {
       }
     }
   }
+}
+
+// The distance between two points on the Earth, in metres (the haversine formula).
+function metersBetween(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+): number {
+  const rad = (degrees: number) => (degrees * Math.PI) / 180;
+  const h =
+    Math.sin(rad(b.latitude - a.latitude) / 2) ** 2 +
+    Math.cos(rad(a.latitude)) *
+      Math.cos(rad(b.latitude)) *
+      Math.sin(rad(b.longitude - a.longitude) / 2) ** 2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
