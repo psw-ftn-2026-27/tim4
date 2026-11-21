@@ -1,0 +1,20 @@
+<a class="back-link" routerLink="/exploration/mine">← Autorski studio</a>
+
+<div class="page-header">
+  <h1>{{ tour().name }}</h1>
+  <span [class]="status[tour().status].badge">{{ status[tour().status].label }}</span>
+</div>
+
+<nav class="tabs" aria-label="Koraci uređivanja ture">
+  @for (item of steps(); track item.step; let index = $index) {
+    <a
+      class="tabs__tab"
+      [class.tabs__tab--on]="current() === item.step"
+      [attr.aria-current]="current() === item.step ? 'page' : null"
+      [routerLink]="item.link"
+    >
+      <span class="step" [class.step--done]="item.done">{{ item.done ? '✓' : index + 1 }}</span>
+      {{ item.label }}
+    </a>
+  }
+</nav>

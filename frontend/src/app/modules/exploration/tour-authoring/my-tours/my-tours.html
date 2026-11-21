@@ -1,214 +1,136 @@
-<div class="stack">
-  <h1>My tours</h1>
+<div class="page-header">
+  <h1>Autorski studio</h1>
+  <a class="button button--primary" routerLink="/exploration/create">Nova tura</a>
+</div>
 
-  <p><a routerLink="/exploration/create">Create tour</a></p>
-
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
+<div class="tabs" role="tablist" aria-label="Moje ture po stanju">
+  @for (item of tabs(); track item.value) {
+    <button
+      class="tabs__tab"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === item.value"
+      (click)="tab.set(item.value)"
+    >
+      {{ item.label }} <span class="tabs__count">{{ item.count }}</span>
+    </button>
   }
+  <!-- The author's coupons are Payment's page; the tab is a link to it. -->
+  <a class="tabs__tab tabs__tab--apart" routerLink="/payment/coupons">Kuponi →</a>
+</div>
 
-  @if (tours.isLoading()) {
-    <p>Loading your tours...</p>
-  } @else if (tours.error()) {
-    <p class="error">Could not load your tours. Log in and try again.</p>
-  } @else {
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Difficulty</th>
-          <th scope="col">Status</th>
-          <th scope="col">Group size</th>
-          <th scope="col">Transport times</th>
-          <th scope="col">Length</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (tour of tours.value() ?? []; track tour.id) {
-          <tr>
-            <td>{{ tour.name }}</td>
-            <td>{{ tour.difficulty }}</td>
-            <td>
-              @switch (tour.status) {
-                @case ('Draft') {
-                  <span class="badge badge--draft">✎ U pripremi</span>
-                }
-                @case ('Published') {
-                  <span class="badge badge--published">● Objavljena</span>
-                }
-                @case ('Archived') {
-                  <span class="badge badge--archived">▣ Arhivirana</span>
-                }
-              }
-              @if (tour.archivedAt) {
-                · {{ formatTime(tour.archivedAt) }}
-              }
-            </td>
-            <td>{{ tour.recommendedGroupSizeMin }}–{{ tour.recommendedGroupSizeMax }}</td>
-            <td>
-              @for (time of tour.transportTimes; track time.transport) {
-                <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
-              } @empty {
-                <span class="meta">none</span>
-              }
-            </td>
-            <td>{{ tour.lengthInKm.toFixed(2) }} km</td>
-            <td class="actions">
-              <a class="button" [routerLink]="['/exploration/mine', tour.id, 'key-points']">
-                Key points
-              </a>
-              <button class="button" type="button" [disabled]="pending()" (click)="select(tour.id)">
-                Add time
-              </button>
-              @switch (tour.status) {
-                @case ('Draft') {
-                  <button
-                    class="button button--primary"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="startPublish(tour)"
-                  >
-                    Publish
-                  </button>
-                }
-                @case ('Published') {
-                  <button
-                    class="button"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="archive(tour.id)"
-                  >
-                    Archive
-                  </button>
-                }
-                @case ('Archived') {
-                  <button
-                    class="button"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="reactivate(tour.id)"
-                  >
-                    Reactivate
-                  </button>
-                }
-              }
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="7">You have no tours yet.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
+@if (notice(); as message) {
+  <p class="notice notice--success" role="status">✓ {{ message }}</p>
+}
+@if (error(); as message) {
+  <p class="error" role="alert">⚠ {{ message }}</p>
+}
 
-  @if (selectedTourId()) {
-    <form class="card stack" (submit)="addTransportTime($event)">
-      <h2>Add transport time</h2>
+@if (tours.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Ture nisu učitane.</strong>
+    <button class="button" type="button" (click)="tours.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!tours.hasValue()) {
+  <p class="state" role="status">Učitavanje tura…</p>
+} @else if (tours.value().length === 0) {
+  <div class="state">
+    <img src="/images/ilustracije/adventure-map.svg" alt="" />
+    <strong>Još nemate tura.</strong>
+    <span>Tura je niz ključnih tačaka sa pričom. Napravite prvu, pa dodajte tačke na mapi.</span>
+    <a class="button button--primary" routerLink="/exploration/create">Nova tura</a>
+  </div>
+} @else if (visible().length === 0) {
+  <div class="state">Nema tura u ovom stanju.</div>
+} @else {
+  <ul class="rows">
+    @for (tour of visible(); track tour.id) {
+      <li class="row">
+        <div class="row__body">
+          <h2>
+            <a [routerLink]="['/exploration/mine', tour.id]">{{ tour.name }}</a>
+          </h2>
+          <p class="row__facts">
+            <span [class]="status[tour.status].badge">{{ status[tour.status].label }}</span>
+            <span [class]="difficultyBadges[tour.difficulty]">{{
+              difficultyLabels[tour.difficulty]
+            }}</span>
+            <span>{{ formatKm(tour.lengthInKm) }}</span>
+            @if (changed(tour)) {
+              <span class="meta">
+                {{ tour.status === 'Archived' ? 'arhivirana' : 'objavljena' }} {{ changed(tour) }}
+              </span>
+            }
+          </p>
 
-      <div class="field">
-        <label for="transport">Transport</label>
-        <select id="transport" [formField]="form.transport">
-          <option value="Walking">Walking</option>
-          <option value="Bicycle">Bicycle</option>
-          <option value="Car">Car</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="minutes">Minutes</label>
-        <input
-          id="minutes"
-          type="number"
-          [formField]="form.minutes"
-          [attr.aria-invalid]="
-            (form.minutes().dirty() ||
-              form.minutes().touched() ||
-              form.minutes().errors()[0]?.kind === 'parse') &&
-            form.minutes().errors().length > 0
-          "
-        />
-        @if (
-          form.minutes().dirty() ||
-          form.minutes().touched() ||
-          form.minutes().errors()[0]?.kind === 'parse'
-        ) {
-          @for (message of form.minutes().errors().slice(0, 1); track $index) {
-            <p class="error">
-              {{ message.kind === 'parse' ? 'Enter a number.' : message.message }}
-            </p>
-          }
-        }
-      </div>
-
-      <button class="button button--primary" type="submit" [disabled]="pending()">Save</button>
-    </form>
-  }
-
-  @if (publishingTour(); as tour) {
-    <form class="card stack" (submit)="publish($event)">
-      <h2>Publish {{ tour.name }}</h2>
-
-      <div class="field">
-        <label for="pricing-type">Pricing</label>
-        <select
-          id="pricing-type"
-          [formField]="publishForm.pricingType"
-          [attr.aria-invalid]="
-            (publishForm.pricingType().dirty() || publishForm.pricingType().touched()) &&
-            publishForm.pricingType().errors().length > 0
-          "
-        >
-          <option value=""></option>
-          <option value="Free">Free</option>
-          <option value="Paid">Paid</option>
-        </select>
-        @if (publishForm.pricingType().dirty() || publishForm.pricingType().touched()) {
-          @for (message of publishForm.pricingType().errors(); track $index) {
-            <p class="error">{{ message.message }}</p>
-          }
-        }
-      </div>
-
-      @if (publishForm.pricingType().value() === 'Paid') {
-        <div class="field">
-          <label for="price">Price</label>
-          <input
-            id="price"
-            type="number"
-            step="1"
-            [formField]="publishForm.amount"
-            [attr.aria-invalid]="
-              (publishForm.amount().dirty() ||
-                publishForm.amount().touched() ||
-                publishForm.amount().errors()[0]?.kind === 'parse') &&
-              publishForm.amount().errors().length > 0
-            "
-          />
-          @if (
-            publishForm.amount().dirty() ||
-            publishForm.amount().touched() ||
-            publishForm.amount().errors()[0]?.kind === 'parse'
-          ) {
-            @for (message of publishForm.amount().errors().slice(0, 1); track $index) {
-              <p class="error">
-                {{
-                  message.kind === 'parse' ? 'Cena mora biti ceo broj EC veći od nule.' : message.message
-                }}
+          @if (tour.status === 'Draft') {
+            <!-- A draft says what it still lacks, so the author is never surprised by "Objavi". -->
+            <div class="ready">
+              <p class="progress">
+                <span class="progress__bar" aria-hidden="true"
+                  ><span
+                    class="progress__fill"
+                    [style.width.%]="(readyCount(tour) / readiness(tour).length) * 100"
+                  ></span
+                ></span>
+                Spremno za objavu: {{ readyCount(tour) }} od {{ readiness(tour).length }}
               </p>
+              <ul class="ready__list">
+                @for (item of readiness(tour); track item.label) {
+                  <li [class.ready__done]="item.done">
+                    {{ item.done ? '✓' : '○' }} {{ item.label }}
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+
+        <div class="row__actions">
+          @switch (tour.status) {
+            @case ('Draft') {
+              <a class="button button--primary" [routerLink]="['/exploration/mine', tour.id]"
+                >Nastavi uređivanje</a
+              >
+            }
+            @case ('Published') {
+              <a class="button" [routerLink]="['/exploration/tours', tour.id]"
+                >Pogledaj kao turista</a
+              >
+              @if (archiving() === tour.id) {
+                <div class="confirm">
+                  <p>Arhivirana tura nestaje iz pretrage. Kupci je i dalje imaju.</p>
+                  <button
+                    class="button button--danger"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="archive(tour)"
+                  >
+                    Arhiviraj
+                  </button>
+                  <button class="button" type="button" (click)="archiving.set(null)">
+                    Odustani
+                  </button>
+                </div>
+              } @else {
+                <button class="quiet" type="button" (click)="archiving.set(tour.id)">
+                  Arhiviraj…
+                </button>
+              }
+            }
+            @case ('Archived') {
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="reactivate(tour)"
+              >
+                Objavi ponovo
+              </button>
             }
           }
         </div>
-      }
-
-      <div class="actions">
-        <button class="button button--primary" type="submit" [disabled]="pending()">Publish</button>
-        <button class="button" type="button" [disabled]="pending()" (click)="cancelPublish()">
-          Cancel
-        </button>
-      </div>
-    </form>
-  }
-</div>
+      </li>
+    }
+  </ul>
+}
