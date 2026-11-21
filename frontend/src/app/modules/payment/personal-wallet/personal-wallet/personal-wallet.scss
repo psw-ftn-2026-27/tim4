@@ -1,19 +1,131 @@
-.balance {
-  width: fit-content;
+h2,
+h3,
+p {
+  margin: 0;
 }
 
-.balance__value {
-  margin-bottom: 0;
-  margin-top: var(--space-2);
+.page-header {
+  margin-bottom: var(--space-4);
+}
+
+.balance .button,
+.state .button {
+  text-decoration: none;
+}
+
+.layout {
+  align-items: start;
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(18rem, 1fr) minmax(0, 2fr);
+}
+
+// ---- What the tourist has ----
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: sticky;
+  top: 5rem;
+}
+
+.balance {
+  background: var(--color-ec-bg);
+  border-radius: var(--radius);
+  color: var(--color-ec-text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+}
+
+.balance__label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .balance__amount {
+  font-size: calc(var(--font-size-xl) * 1.6);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.balance__amount small {
+  font-size: var(--font-size-lg);
+}
+
+.balance .button {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  text-decoration: none;
+}
+
+.tile {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: auto 1fr auto;
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none;
+}
+
+.tile:hover {
+  border-color: var(--color-accent);
+}
+
+.tile__icon {
   font-size: var(--font-size-xl);
 }
 
-.pagination {
+.tile__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.tile__body span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.how {
+  border: 1px dashed var(--color-control-border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.how h2 {
+  font-size: var(--font-size-md);
+}
+
+// ---- History ----
+
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.history__head {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.empty img {
+  max-width: 12rem;
+}
+
+.empty .button {
+  text-decoration: none;
 }

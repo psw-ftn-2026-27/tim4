@@ -12,6 +12,7 @@ import {
 } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
+import { formatDate } from '../../../../shared/util/format';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { PageResult } from '../../../../shared/api/page-result';
 import { GiftCardDto, WalletBalanceDto } from '../../api/payment-api-types';
@@ -42,10 +43,10 @@ const PAGE_SIZE = 10;
 })
 export class MyGiftCards {
   private readonly personalGiftCards = inject(PersonalGiftCards);
-  protected readonly auth = inject(Auth);
+  private readonly auth = inject(Auth);
 
   protected readonly maxMessageLength = MAX_MESSAGE_LENGTH;
-  protected readonly isExplorer = computed(
+  private readonly isExplorer = computed(
     () => this.auth.user()?.roles.includes('explorer') ?? false,
   );
   protected readonly boughtPage = signal(1);
@@ -90,6 +91,37 @@ export class MyGiftCards {
     });
   });
 
+  // The form opens with "Pokloni karticu" next to the title and closes after a gift is sent.
+  protected readonly giving = signal(false);
+  protected readonly tab = signal<'received' | 'bought'>('received');
+  protected readonly quickAmounts = [20, 50, 100];
+
+  protected readonly amount = computed(() => this.giftCardForm.amount().value() ?? 0);
+  protected readonly walletBalance = computed(() =>
+    this.balance.hasValue() ? this.balance.value().availableBalance : 0,
+  );
+  protected readonly after = computed(() => this.walletBalance() - this.amount());
+  protected readonly userEmail = computed(() => this.auth.user()?.email ?? '');
+  // A card is valid for three years from today, as the server sets it.
+  protected readonly previewValidUntil = computed(() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 3);
+    return formatDate(date.toISOString());
+  });
+
+  protected readonly tabs = computed(() => [
+    {
+      value: 'received' as const,
+      label: 'Dobijene',
+      count: this.received.hasValue() ? this.received.value().totalCount : 0,
+    },
+    {
+      value: 'bought' as const,
+      label: 'Poklonjene',
+      count: this.bought.hasValue() ? this.bought.value().totalCount : 0,
+    },
+  ]);
+
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly success = signal<string | null>(null);
@@ -102,6 +134,15 @@ export class MyGiftCards {
     this.receivedPage.update((page) =>
       Math.min(Math.max(page + step, 1), this.receivedPageCount()),
     );
+  }
+
+  protected setAmount(value: number): void {
+    this.giftCardForm.amount().value.set(value);
+  }
+
+  protected open(): void {
+    this.giving.set(true);
+    this.success.set(null);
   }
 
   protected reload(): void {
@@ -129,7 +170,9 @@ export class MyGiftCards {
         message: this.giftCardForm.message().value().trim(),
       });
       this.giftCardForm().reset({ ...EMPTY_GIFT_CARD });
-      this.success.set(`Poklon kartica od ${amount} EC je poslata korisniku ${recipientEmail}.`);
+      this.giving.set(false);
+      this.tab.set('bought');
+      this.success.set(`✓ Poklon kartica od ${amount} EC je poslata korisniku ${recipientEmail}.`);
       this.balance.reload();
       // The new card is first on page 1 of the bought cards; changing the page reloads the list by itself.
       if (this.boughtPage() === 1) {
