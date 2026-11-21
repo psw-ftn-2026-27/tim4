@@ -1,0 +1,126 @@
+<div class="quiz">
+  <a class="back-link" routerLink="/design-preview/prototype/tourist/challenges">← Izazovi</a>
+
+  <div class="proto-switch" role="group" aria-label="Stanje kviza u prototipu">
+    <span class="meta">Prototip:</span>
+    <button
+      type="button"
+      class="proto-switch__option"
+      [class.proto-switch__option--on]="start() === 'new'"
+      (click)="setStart('new')"
+    >
+      Tek započet
+    </button>
+    <button
+      type="button"
+      class="proto-switch__option"
+      [class.proto-switch__option--on]="start() === 'resume'"
+      (click)="setStart('resume')"
+    >
+      Nastavak, 2 od {{ total }}
+    </button>
+    <button
+      type="button"
+      class="proto-switch__option"
+      [class.proto-switch__option--on]="start() === 'done'"
+      (click)="setStart('done')"
+    >
+      Rešen
+    </button>
+  </div>
+
+  <header class="head">
+    <p class="head__kind">
+      <span class="kind">? Kviz</span>
+      <span class="badge badge--xp">★ do {{ maxXp }} XP</span>
+    </p>
+    <h1>{{ quiz.name }}</h1>
+    @if (!finished()) {
+      <div class="progress">
+        <span class="progress__bar" aria-hidden="true"
+          ><span class="progress__fill" [style.width]="progress()"></span
+        ></span>
+        <span>Pitanje {{ answered() + 1 }} od {{ total }}</span>
+      </div>
+    }
+  </header>
+
+  @if (question(); as q) {
+    @if (saved(); as number) {
+      <p class="saved" role="status">✓ Odgovor na pitanje {{ number }} je sačuvan.</p>
+    }
+
+    <fieldset class="question">
+      <legend>
+        <span class="question__meta">Vredi {{ q.xp }} XP</span>
+        <span class="question__text">{{ q.text }}</span>
+      </legend>
+
+      <p class="question__hint">Označite sve tačne odgovore. Može ih biti više od jednog.</p>
+
+      <div class="options">
+        @for (option of q.options; track $index) {
+          <label class="option" [class.option--on]="selected().includes($index)">
+            <input
+              type="checkbox"
+              [checked]="selected().includes($index)"
+              (change)="toggle($index)"
+            />
+            <span>{{ option }}</span>
+          </label>
+        }
+      </div>
+
+      <p class="question__warn">
+        Pogrešno označen odgovor oduzima četvrtinu poena pitanja. Na pitanje odgovarate jednom i
+        posle ne možete da se vratite.
+      </p>
+
+      <div class="form-actions">
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="selected().length === 0"
+          (click)="answer()"
+        >
+          {{ isLast() ? 'Odgovori i završi kviz' : 'Odgovori' }}
+        </button>
+        @if (selected().length === 0) {
+          <span class="meta">Označite bar jedan odgovor.</span>
+        }
+      </div>
+    </fieldset>
+
+    <p class="leave meta">
+      Možete da prekinete: odgovori su sačuvani, a kviz nastavljate sa mape izazova.
+      <a routerLink="/design-preview/prototype/tourist/challenges">Prekini za sada</a>
+    </p>
+  } @else {
+    <section class="result" role="status" aria-labelledby="result-title">
+      <span class="result__check" aria-hidden="true">★</span>
+      <h2 id="result-title">Kviz je rešen</h2>
+      <p class="result__xp">
+        <strong>{{ earnedText() }}</strong> od {{ maxXp }} XP
+      </p>
+      <div class="progress result__bar">
+        <span class="progress__bar" aria-hidden="true"
+          ><span class="progress__fill" [style.width]="percent() + '%'"></span
+        ></span>
+        <span>{{ percent() }} %</span>
+      </div>
+      @if (earned() < maxXp) {
+        <p class="meta">
+          Za delimično tačan odgovor dobijate deo poena, a svaki pogrešno označen odgovor oduzima
+          četvrtinu poena tog pitanja.
+        </p>
+      }
+      <p class="meta">Kviz se rešava jednom. Na mapi izazova sada je označen kao rešen.</p>
+      <div class="form-actions result__actions">
+        <a class="button button--primary" routerLink="/design-preview/prototype/tourist/challenges"
+          >Nazad na izazove</a
+        >
+        <a class="button" routerLink="/design-preview/prototype/tourist/tours">Pretraži ture</a>
+      </div>
+    </section>
+  }
+</div>

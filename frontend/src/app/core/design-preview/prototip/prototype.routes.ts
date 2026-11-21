@@ -23,6 +23,7 @@ import { TouristWallet } from './tourist-wallet/tourist-wallet';
 import { TouristShell } from './tourist-shell/tourist-shell';
 import { TouristTourDetails } from './tourist-tour-details/tourist-tour-details';
 import { TouristTours } from './tourist-tours/tourist-tours';
+import { TouristQuiz } from './tourist-quiz/tourist-quiz';
 
 // A screen of the new navigation that is not drawn yet.
 const todo = (path: string, title: string, plan: string) => ({
@@ -51,11 +52,7 @@ export const prototypeRoutes: Routes = [
       { path: 'tours', component: TouristTours },
       { path: 'tours/:id', component: TouristTourDetails },
       { path: 'challenges', component: TouristChallenges },
-      todo(
-        'quiz',
-        'Rešavanje kviza',
-        'Postojeći ekran ostaje: pitanje po pitanje, sa povratkom na Izazove.',
-      ),
+      { path: 'quiz', component: TouristQuiz },
       { path: 'journeys', component: TouristJourneys },
       { path: 'active-tour', component: TouristActiveTour },
       { path: 'studio', component: TouristStudio },

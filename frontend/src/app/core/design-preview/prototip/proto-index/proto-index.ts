@@ -37,6 +37,7 @@ const TOURIST: ProtoScreen[] = [
   { path: 'tourist/journeys', title: 'Moja putovanja', scenario: 'S3 Prođi turu', ready: true },
   { path: 'tourist/active-tour', title: 'Aktivna tura', scenario: 'S3 Prođi turu', ready: true },
   { path: 'tourist/challenges', title: 'Izazovi na mapi', scenario: 'S4 Igraj', ready: true },
+  { path: 'tourist/quiz', title: 'Rešavanje kviza', scenario: 'S4 Igraj', ready: true },
   {
     path: 'tourist/wallet',
     title: 'Novčanik i poklon kartice',

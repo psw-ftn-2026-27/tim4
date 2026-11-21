@@ -850,3 +850,62 @@ export const explorers: ProtoExplorer[] = [
     lastCredit: '01.11.2026.',
   },
 ];
+
+// ---- S4: solving a quiz (challenge q1) ----
+
+export interface ProtoQuestion {
+  text: string;
+  options: string[];
+  // Indexes of the correct options; a question may have more than one.
+  correct: number[];
+  xp: number;
+}
+
+export const quizQuestions: ProtoQuestion[] = [
+  {
+    text: 'Koje godine je završena Gradska kuća?',
+    options: ['1848.', '1895.', '1918.', '1931.'],
+    correct: [1],
+    xp: 20,
+  },
+  {
+    text: 'Koje figure se nalaze na fasadi Gradske kuće?',
+    options: ['Alegorijske ženske figure', 'Konjanici', 'Lavovi', 'Grbovi gradova'],
+    correct: [0, 3],
+    xp: 30,
+  },
+  {
+    text: 'Šta se nalazi u kuli Gradske kuće?',
+    options: ['Sat', 'Zvono', 'Vidikovac za posetioce', 'Gradska biblioteka'],
+    correct: [0, 1],
+    xp: 25,
+  },
+  {
+    text: 'Ko je projektovao zgradu?',
+    options: ['Đorđe Tabaković', 'Đorđe Molnar', 'Nikola Tesla'],
+    correct: [1],
+    xp: 20,
+  },
+  {
+    text: 'Koje zgrade gledaju na Trg slobode?',
+    options: ['Katedrala', 'Gradska kuća', 'Hotel Vojvodina', 'Petrovaradinska tvrđava'],
+    correct: [0, 1, 2],
+    xp: 25,
+  },
+];
+
+// The server's rule (Question.Score): each ticked correct option gives xp / correct count,
+// each ticked wrong one takes xp / 4, never below zero.
+export function questionScore(question: ProtoQuestion, selected: number[]): number {
+  const share = question.xp / question.correct.length;
+  const score = selected.reduce(
+    (sum, option) => sum + (question.correct.includes(option) ? share : -question.xp / 4),
+    0,
+  );
+  return Math.max(0, score);
+}
+
+// "37,5" rather than "37.50".
+export function xpText(xp: number): string {
+  return String(Math.round(xp * 10) / 10).replace('.', ',');
+}
