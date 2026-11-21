@@ -31,9 +31,9 @@ function today(): string {
 })
 export class MyCoupons {
   private readonly ownerCoupons = inject(OwnerCoupons);
-  protected readonly auth = inject(Auth);
+  private readonly auth = inject(Auth);
 
-  protected readonly isExplorer = computed(
+  private readonly isExplorer = computed(
     () => this.auth.user()?.roles.includes('explorer') ?? false,
   );
   protected readonly page = signal(1);
@@ -69,6 +69,15 @@ export class MyCoupons {
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
+  // The form opens with "Nov kupon" next to the title and closes after a coupon is made.
+  protected readonly creating = signal(false);
+
+  protected open(): void {
+    this.creating.set(true);
+    this.notice.set(null);
+    this.error.set(null);
+  }
 
   protected formatDate(value: string): string {
     const [year, month, day] = value.split('-');
@@ -109,6 +118,8 @@ export class MyCoupons {
         productId: productId === '' ? null : productId,
       });
       this.couponForm().reset({ ...EMPTY_COUPON });
+      this.creating.set(false);
+      this.notice.set('Kupon je napravljen. Kod pošaljite turistima; oni ga unose pri plaćanju.');
       // The newest coupon is first on page 1; changing the page reloads the list by itself.
       if (this.page() === 1) {
         this.coupons.reload();
