@@ -7,13 +7,15 @@
           kinds[t.kind].mark
         }}</span>
         <span class="line__body">
-          <strong>{{ kinds[t.kind].label }}</strong>
-          <span class="meta">
-            @if (t.kind === 'Purchase' && t.purchaseId) {
-              <a [routerLink]="['/payment/purchases', t.purchaseId]">Detalji kupovine</a> ·
-            }
-            {{ time(t.submittedAt) }}
-          </span>
+          <!-- A purchase's name is the link to its receipt; the rest are plain lines. -->
+          @if (t.kind === 'Purchase' && t.purchaseId) {
+            <a class="line__name" [routerLink]="['/payment/purchases', t.purchaseId]">{{
+              kinds[t.kind].label
+            }}</a>
+          } @else {
+            <strong>{{ kinds[t.kind].label }}</strong>
+          }
+          <span class="meta">{{ time(t.submittedAt) }}</span>
         </span>
         @if (t.status === 'Cancelled') {
           <span class="badge badge--muted">Stornirano</span>
