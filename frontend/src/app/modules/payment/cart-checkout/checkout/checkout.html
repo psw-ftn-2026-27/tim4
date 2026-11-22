@@ -17,7 +17,9 @@
       <section class="stack" aria-labelledby="pay-items-title">
         <h2 id="pay-items-title">Šta plaćate</h2>
         <app-cart-items [items]="summary.items" />
-        <a class="meta" routerLink="/payment/cart">Izmeni korpu</a>
+        <div class="form-actions">
+          <a class="button" routerLink="/payment/cart">Izmeni korpu</a>
+        </div>
       </section>
 
       <section class="card stack" aria-labelledby="coupon-title">

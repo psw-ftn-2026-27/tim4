@@ -63,20 +63,7 @@ p {
 }
 
 .tile {
-  align-items: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  color: var(--color-text);
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: auto 1fr auto;
   padding: var(--space-3) var(--space-4);
-  text-decoration: none;
-}
-
-.tile:hover {
-  border-color: var(--color-accent);
 }
 
 .tile__icon {
