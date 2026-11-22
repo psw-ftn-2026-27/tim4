@@ -370,6 +370,32 @@
       </div>
     </div>
 
+    <h3>Linkovi i prelazi</h3>
+    <p class="meta">
+      Prelaz na drugu stranicu je ili <code>.button</code> sa glagolom („Otvori novčanik”, „Pretraži
+      ture”), ili cela kartica ili red koji je link (<code>.link-card</code>): naslov je ime stvari,
+      bez podvlačenja, a ivica postaje akcent na prelaz miša. Podvučen tekst je link samo usred
+      rečenice (u <code>.notice</code> ili <code>.state</code>), u <code>.back-link</code> i kao ime
+      stavke u tabeli ili spisku. Samostalan tekst sa strelicom („Otvori →”, „Sve ture →”) se ne
+      koristi.
+    </p>
+    <div class="card stack sample-frame">
+      <div class="form-actions">
+        <a class="button" routerLink="/design-preview">Otvori novčanik</a>
+      </div>
+      <a class="link-card" routerLink="/design-preview">
+        <span aria-hidden="true">☺</span>
+        <span class="link-card__body">
+          <strong>Zajedno na Štrandu</strong>
+          <span class="meta">Društveni izazov · 14 m</span>
+        </span>
+        <span class="badge badge--xp">★ 80 XP</span>
+      </a>
+      <p class="notice notice--success">
+        ✓ Preference su sačuvane. <a routerLink="/design-preview">Pretraži ture</a>
+      </p>
+    </div>
+
     <h3>Jezičci</h3>
     <p class="meta">
       <code>.tabs</code> deli jednu stranicu na poglede, na primer spisak po stanju. Dugmad sa

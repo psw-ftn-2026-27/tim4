@@ -40,6 +40,11 @@ export class TouristStart {
   readonly justRegistered = input(false);
 
   protected readonly difficulty = DIFFICULTY;
+  protected readonly kindLabels: Record<string, string> = {
+    '?': 'Kviz',
+    '☺': 'Društveni izazov',
+    '⌖': 'Lokacijski izazov',
+  };
 
   // 204 No Content (nothing in progress, no position, no preference) reads as null.
   private readonly activeTour = httpResource<ActiveTourDto | null>(

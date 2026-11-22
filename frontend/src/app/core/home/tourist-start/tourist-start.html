@@ -50,18 +50,23 @@
 
   <div class="widgets">
     <section class="block">
-      <div class="block__head">
-        <h2>Izazovi u blizini</h2>
-        <a routerLink="/games">Mapa →</a>
-      </div>
+      <h2>Izazovi u blizini</h2>
       @if (near().length === 0) {
         <p class="meta">Trenutno nema izazova koje niste rešili.</p>
       } @else {
         <ul class="list">
           @for (item of near(); track item.id) {
             <li>
-              <a routerLink="/games">{{ item.mark }} {{ item.name }}</a>
-              <span class="meta">{{ distance(item.meters) }}</span>
+              <a class="link-card" routerLink="/games">
+                <span class="mark" aria-hidden="true">{{ item.mark }}</span>
+                <span class="link-card__body">
+                  <strong>{{ item.name }}</strong>
+                  <span class="meta">{{ kindLabels[item.mark] }}</span>
+                </span>
+                @if (item.meters !== null) {
+                  <span class="meta">{{ distance(item.meters) }}</span>
+                }
+              </a>
             </li>
           }
         </ul>
@@ -71,33 +76,33 @@
           </p>
         }
       }
+      <div class="block__foot">
+        <a class="button" routerLink="/games">Otvori mapu izazova</a>
+      </div>
     </section>
 
     <section class="block">
-      <div class="block__head">
-        <h2>Novčanik</h2>
-        <a routerLink="/payment">Otvori →</a>
-      </div>
+      <h2>Novčanik</h2>
       <p class="wallet-amount">{{ balance() ?? '…' }} <small>EC</small></p>
       @if (giftCard(); as card) {
         <p class="meta">🎁 Poklon kartica od {{ card.amount }} EC čeka na plaćanje.</p>
       } @else if (balance() === 0) {
         <p class="meta">EC uplaćuje administrator.</p>
       }
+      <div class="block__foot">
+        <a class="button" routerLink="/payment">Otvori novčanik</a>
+      </div>
     </section>
   </div>
 }
 
 @if (suggested().length > 0) {
   <section class="block">
-    <div class="block__head">
-      <h2>{{ isNew() ? 'Za početak' : suggestedTitle() }}</h2>
-      <a routerLink="/exploration">Sve ture →</a>
-    </div>
+    <h2>{{ isNew() ? 'Za početak' : suggestedTitle() }}</h2>
     <ul class="suggested">
       @for (item of suggested(); track item.tour.id) {
         <li>
-          <a class="mini-tour" [routerLink]="['/exploration/tours', item.tour.id]">
+          <a class="link-card mini-tour" [routerLink]="['/exploration/tours', item.tour.id]">
             <span class="mini-tour__body">
               <strong>{{ item.tour.name }}</strong>
               <span class="mini-tour__facts">
@@ -113,5 +118,8 @@
         </li>
       }
     </ul>
+    <div class="block__foot">
+      <a class="button" routerLink="/exploration">Pretraži sve ture</a>
+    </div>
   </section>
 }

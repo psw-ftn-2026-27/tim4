@@ -245,6 +245,13 @@ preview disagree, fix the preview.
   the window; only `.split__list` scrolls. Never a wide map above or below the list. The card
   under the mouse and its pin highlight each other (`activeIndex`, `locationHover`), and a
   card's "⌖ Na mapi" sets `focusIndex` (example: `/design-preview/map`, Spisak i mapa).
+- Links: going to another page is either a `.button` whose text is a verb ("Otvori novčanik",
+  "Pretraži ture"), or a whole card or row that is the link, `.link-card`, whose title is the
+  thing's name. Underlined text is a link only inside a sentence (in a `.notice` or a `.state`),
+  as the `.back-link`, and as an item's name in a table or a list. A standalone text with an
+  arrow ("Otvori →", "Sve ture →") is never used; the guest's landing page (`core/home` hero
+  and closing) is the one place with arrows, as part of its buttons (example: `/design-preview`,
+  Linkovi i prelazi).
 - Views of one page are `.tabs`, filters that apply at once are `.chips`
   (example: `/design-preview`, Jezičci, Čipovi).
 - Control height: buttons, inputs and selects share `--control-height`, already set by
@@ -303,7 +310,8 @@ preview disagree, fix the preview.
    value, no coordinates, no English.
 6. Every command: a disabled button while pending, a success notice or an error next to the
    button; what cannot be undone asks in `.confirm`.
-7. No link to a section of the bar; the next step only inside a notice or a state.
+7. No link to a section of the bar; the next step only inside a notice or a state. Every other
+   way to another page is a `.button` or a `.link-card`, never "text →".
 8. Compare with `/design-preview` and with the screen's prototype on
    `/design-preview/prototype`, when it has one.
 

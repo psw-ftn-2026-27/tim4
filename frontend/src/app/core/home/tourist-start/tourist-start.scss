@@ -170,18 +170,8 @@ p {
   padding: var(--space-4);
 }
 
-.block__head {
-  align-items: baseline;
-  display: flex;
-  justify-content: space-between;
-}
-
-.block__head h2 {
+.block h2 {
   font-size: var(--font-size-md);
-}
-
-.block__head a {
-  font-size: var(--font-size-sm);
 }
 
 .list {
@@ -256,4 +246,29 @@ p {
 
 .state {
   margin: 0;
+}
+
+// The way on from a block: one button at its foot, never a text link in its corner.
+.block__foot {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: auto;
+}
+
+.mark {
+  align-items: center;
+  background: var(--color-muted-bg);
+  border-radius: 50%;
+  display: inline-flex;
+  flex: none;
+  height: var(--space-6);
+  justify-content: center;
+  width: var(--space-6);
+}
+
+// The suggested tours are link cards standing as columns.
+.mini-tour.link-card {
+  align-items: stretch;
+  flex-direction: column;
+  padding: 0;
 }
