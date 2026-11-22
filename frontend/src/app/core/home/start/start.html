@@ -7,102 +7,33 @@
     </div>
   </div>
 
-  @if (isAdmin()) {
-    <div class="goals goals--two">
-      <div class="goal goal--play">
-        <img class="goal__art" src="/images/ilustracije/winner.svg" alt="" />
-        <div class="goal__head">
-          <p class="goal__kicker">Izazovi</p>
-          <h2>Kvizovi i izazovi na mapi</h2>
-          <p>Napravite, objavite i povucite kvizove, društvene i lokacijske izazove.</p>
-        </div>
-        <div class="goal__links">
-          <a class="goal__main" routerLink="/games/admin">
-            <span>Izazovi</span><span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </div>
+  <div class="goals goals--two">
+    <div class="goal goal--play">
+      <img class="goal__art" src="/images/ilustracije/winner.svg" alt="" />
+      <div class="goal__head">
+        <p class="goal__kicker">Izazovi</p>
+        <h2>Kvizovi i izazovi na mapi</h2>
+        <p>Napravite, objavite i povucite kvizove, društvene i lokacijske izazove.</p>
       </div>
-
-      <div class="goal goal--explore">
-        <img class="goal__art" src="/images/ilustracije/my-current-location.svg" alt="" />
-        <div class="goal__head">
-          <p class="goal__kicker">Novčanici</p>
-          <h2>EC za turiste</h2>
-          <p>Novi turisti nemaju EC i ne mogu ništa da kupe dok im ga ne uplatite.</p>
-        </div>
-        <div class="goal__links">
-          <a class="goal__main" routerLink="/payment/administration">
-            <span>Novčanici</span><span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  } @else {
-    <div class="goals goals--three">
-      <div class="goal goal--explore">
-        <img class="goal__art" src="/images/ilustracije/finding-the-way.svg" alt="" />
-        <div class="goal__head">
-          <p class="goal__kicker">Istražite</p>
-          <h2>Pronađite sledeću turu</h2>
-          <p>Pretražite ture po mestu, težini i prevozu, pa krenite od tačke do tačke.</p>
-        </div>
-        <div class="goal__links">
-          <a class="goal__main" routerLink="/exploration">
-            <span>Pretraži ture</span><span class="arrow" aria-hidden="true">→</span>
-          </a>
-          <a routerLink="/exploration/active">
-            <span>Tura u toku <small>· nastavite gde ste stali</small></span>
-            <span class="arrow" aria-hidden="true">→</span>
-          </a>
-          <a routerLink="/exploration/preferences">
-            <span>Preference tura <small>· šta volite da obilazite</small></span>
-            <span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="goal goal--play">
-        <img class="goal__art" src="/images/ilustracije/winner.svg" alt="" />
-        <div class="goal__head">
-          <p class="goal__kicker">Igrajte</p>
-          <h2>Izazovi na mapi</h2>
-          <p>Kviz, skrivena mesta i izazovi koje rešavate zajedno, za XP.</p>
-        </div>
-        <div class="goal__links">
-          <a class="goal__main" routerLink="/games">
-            <span>Izazovi</span><span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="goal goal--create">
-        <img class="goal__art" src="/images/ilustracije/adventure-map.svg" alt="" />
-        <div class="goal__head">
-          <p class="goal__kicker">Stvarajte</p>
-          <h2>Ispričajte svoje mesto</h2>
-          <p>Sastavite turu od ključnih tačaka i prodajte je drugim turistima.</p>
-        </div>
-        <div class="goal__links">
-          <a class="goal__main" routerLink="/exploration/create">
-            <span>Nova tura</span><span class="arrow" aria-hidden="true">→</span>
-          </a>
-          <a routerLink="/exploration/mine">
-            <span>Autorski studio</span><span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </div>
+      <div class="goal__links">
+        <a class="goal__main" routerLink="/games/challenges">
+          <span>Izazovi</span><span class="arrow" aria-hidden="true">→</span>
+        </a>
       </div>
     </div>
 
-    <p class="tip">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M9 18h6" />
-        <path d="M10 22h4" />
-        <path d="M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2Z" />
-      </svg>
-      <span
-        ><b>Savet:</b> EC za kupovinu tura uplaćuje administrator. Dok čekate, besplatne ture i
-        izazovi su vam odmah dostupni.</span
-      >
-    </p>
-  }
+    <div class="goal goal--explore">
+      <img class="goal__art" src="/images/ilustracije/my-current-location.svg" alt="" />
+      <div class="goal__head">
+        <p class="goal__kicker">Novčanici</p>
+        <h2>EC za turiste</h2>
+        <p>Novi turisti nemaju EC i ne mogu ništa da kupe dok im ga ne uplatite.</p>
+      </div>
+      <div class="goal__links">
+        <a class="goal__main" routerLink="/payment/administration">
+          <span>Novčanici</span><span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </div>
 </section>

@@ -29,7 +29,8 @@ frontend/src/
     _components.scss         global classes: button, card, form field, table
   app/
     core/                    auth (state, interceptor, requireRole, login,
-                             register), home, not-found, design-preview
+                             register), home (the tourist's start page reads
+                             module endpoints, see below), not-found, design-preview
                              (style guide), app.routes.ts                     [platform]
     shared/
       util/                  serverMessage; format: dates, numbers, lengths     [platform]
@@ -163,6 +164,11 @@ construct means adding a lesson, so treat it as a platform decision.
   It imports only those modules' `api/` types. A module never does this; a module's group
   service calls `BarRefresh.refresh()` (`shared/bar`) right after a command that changes the
   cart, the balance or the tour in progress while the user stays on the page.
+- The tourist's start page (`core/home/tourist-start`) is the second place outside a module
+  that reads module endpoints: the tour in progress, the wallet and gift cards, the
+  position and preference, published tours, and the three challenge maps, to answer "what
+  now?". Like the shell, it imports only those modules' `api/` types and only reads; every
+  action on it is a link to the module's own page.
 - `core/auth/auth-interceptor.ts` may use the RxJS `tap` operator: on a 401 to a request
   that carried the token it signs the user out and opens the login page with the
   current address to come back to.

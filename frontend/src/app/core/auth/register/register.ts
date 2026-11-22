@@ -53,7 +53,9 @@ export class Register {
     try {
       await this.auth.register(this.form.email().value(), this.form.password().value());
       this.analytics.track('sign_up', {});
-      await this.router.navigateByUrl(safeReturnUrl(this.returnUrl()));
+      // Without a page to return to, a new tourist starts with the first steps.
+      const returnUrl = safeReturnUrl(this.returnUrl());
+      await this.router.navigateByUrl(returnUrl === '/' ? '/?novi=1' : returnUrl);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Registracija nije uspela. Pokušajte ponovo.'));
     } finally {
