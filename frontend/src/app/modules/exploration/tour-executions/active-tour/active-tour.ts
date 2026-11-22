@@ -63,6 +63,10 @@ export class ActiveTour {
   // True once a check reached a key point, until the tourist closes its secret.
   private readonly justReached = signal(false);
 
+  // The "next point" card covers the map's left side (26rem and its margin), so the view is
+  // fitted to the right of it.
+  protected readonly nextCardWidth = 26 * 16 + 16;
+
   protected readonly menuOpen = signal(false);
   protected readonly secretsOpen = signal(false);
 
