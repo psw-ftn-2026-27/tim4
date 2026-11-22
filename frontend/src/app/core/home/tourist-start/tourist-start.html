@@ -24,11 +24,9 @@
   </ol>
 } @else {
   <!-- ===== Returning tourist ===== -->
+  <!-- The balance is not repeated here: the bar already shows it on every page. -->
   <section class="hello">
     <h1>Zdravo, {{ name() }}</h1>
-    @if (balance() !== null) {
-      <span class="badge badge--ec">◎ {{ balance() }} EC</span>
-    }
   </section>
 
   @if (active(); as tour) {
@@ -81,18 +79,20 @@
       </div>
     </section>
 
-    <section class="block">
-      <h2>Novčanik</h2>
-      <p class="wallet-amount">{{ balance() ?? '…' }} <small>EC</small></p>
-      @if (giftCard(); as card) {
-        <p class="meta">🎁 Poklon kartica od {{ card.amount }} EC čeka na plaćanje.</p>
-      } @else if (balance() === 0) {
-        <p class="meta">EC uplaćuje administrator.</p>
-      }
-      <div class="block__foot">
-        <a class="button" routerLink="/payment">Otvori novčanik</a>
-      </div>
-    </section>
+    <!-- The wallet block only when it has news beyond the balance, which the bar shows. -->
+    @if (giftCard() !== null || balance() === 0) {
+      <section class="block">
+        <h2>Novčanik</h2>
+        @if (giftCard(); as card) {
+          <p class="meta">🎁 Poklon kartica od {{ card.amount }} EC čeka na plaćanje.</p>
+        } @else {
+          <p class="meta">EC uplaćuje administrator.</p>
+        }
+        <div class="block__foot">
+          <a class="button" routerLink="/payment">Otvori novčanik</a>
+        </div>
+      </section>
+    }
   </div>
 }
 

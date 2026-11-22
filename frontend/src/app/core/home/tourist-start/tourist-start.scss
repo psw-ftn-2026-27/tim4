@@ -188,12 +188,6 @@ p {
   flex-direction: column;
 }
 
-.wallet-amount {
-  color: var(--color-ec-text);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-}
-
 .suggested {
   display: grid;
   gap: var(--space-3);
@@ -203,7 +197,15 @@ p {
   padding: 0;
 }
 
+// Every card has the height of the row, whatever the length of the tour's name.
+.suggested li {
+  display: flex;
+  flex-direction: column;
+}
+
 .mini-tour {
+  flex: 1;
+
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   color: var(--color-text);
@@ -219,13 +221,25 @@ p {
 
 .mini-tour__body {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
 }
 
+// The name always takes two lines, so a short name does not make a lower card; a longer one
+// is cut with an ellipsis.
+.mini-tour__body strong {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  min-height: 2lh;
+  overflow: hidden;
+}
+
 .mini-tour__facts {
   align-items: center;
+  margin-top: auto;
   display: flex;
   justify-content: space-between;
 }
