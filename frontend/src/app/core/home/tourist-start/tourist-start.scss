@@ -150,10 +150,12 @@ p {
   max-width: 20rem;
 }
 
+// As many columns as there are blocks, so two blocks share the width instead of leaving a gap.
 .widgets {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
 }
 
 // ---- Shared blocks ----
