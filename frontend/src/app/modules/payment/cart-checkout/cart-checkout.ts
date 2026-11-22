@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { BarRefresh } from '../../../shared/bar/bar-refresh';
 import { ApplyCouponDto, ConfirmCheckoutDto } from '../api/payment-api-types';
 
 const BASE_URL = '/api/payment/cart';
@@ -8,9 +9,12 @@ const BASE_URL = '/api/payment/cart';
 @Injectable({ providedIn: 'root' })
 export class CartCheckout {
   private readonly http = inject(HttpClient);
+  private readonly barRefresh = inject(BarRefresh);
 
   async removeCartItem(itemId: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${BASE_URL}/items/${itemId}`));
+    // The cart count in the bar changes while the tourist stays in the cart.
+    this.barRefresh.refresh();
   }
 
   prepareCartCheckout(): Promise<string> {

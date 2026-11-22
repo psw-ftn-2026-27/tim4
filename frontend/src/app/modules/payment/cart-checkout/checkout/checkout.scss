@@ -163,3 +163,8 @@
 .state .button {
   text-decoration: none;
 }
+
+// The page's title and the first section's heading need room between them.
+.page-header {
+  margin-bottom: var(--space-4);
+}
