@@ -1,80 +1,62 @@
-<div class="stack">
-  <header class="page-header">
-    <h1>Lokacijski izazovi</h1>
-    @if (isAdministrator()) {
-      <a class="button button--primary" routerLink="create">Kreiraj izazov</a>
-    }
-  </header>
+<app-admin-tabs
+  current="location"
+  actionLabel="Nov lokacijski izazov"
+  actionLink="/games/location-challenges/create"
+/>
 
-  @if (!user()) {
-    <p class="state">Prijavite se da biste videli lokacijske izazove.</p>
-  } @else if (!canBrowse()) {
-    <p class="state">Nemate pristup lokacijskim izazovima.</p>
-  } @else if (challenges.isLoading()) {
-    <p class="state" role="status">Učitavanje izazova…</p>
-  } @else if (challenges.error()) {
-    <div class="state state--error" role="alert">
-      <p>Učitavanje izazova nije uspelo.</p>
-      <button class="button" type="button" (click)="challenges.reload()">Pokušaj ponovo</button>
+@if (challenges.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Izazovi nisu učitani.</strong>
+    <button class="button" type="button" (click)="challenges.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!challenges.hasValue()) {
+  <p class="state" role="status">Učitavanje izazova…</p>
+} @else if (challenges.value(); as result) {
+  @if (result.items.length === 0) {
+    <div class="state">
+      <strong>Još nema lokacijskih izazova.</strong>
+      <span
+        >Lokacijski izazov skriva mesta oko početne tačke; turista ih traži po fotografiji.</span
+      >
     </div>
-  } @else if (challenges.value(); as result) {
-    @if (!result.items.length) {
-      <p class="state">Trenutno nema lokacijskih izazova.</p>
-    } @else {
-      <div class="stack">
-        <app-location-map
-          [locations]="locations()"
-          [position]="position.hasValue() ? position.value() : null"
-          [selectable]="canSetPosition() && !positionPending()"
-          (selectedChange)="setPosition($event)"
-        />
-        @if (canSetPosition()) {
-          @if (positionError(); as message) {
-            <p class="state state--error" role="alert">{{ message }}</p>
-          } @else if (position.error()) {
-            <p class="state state--error" role="alert">Poziciju nije moguće učitati.</p>
-            <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
-          } @else if (positionPending() || position.isLoading()) {
-            <p class="state" role="status">Učitavanje pozicije…</p>
-          } @else if (position.hasValue() && !position.value()) {
-            <p>Pozicija nije postavljena. Kliknite na mapu da označite gde se nalazite.</p>
-          }
-        }
-      </div>
-      <table class="table table--cards">
+  } @else {
+    <p class="meta">
+      Lokacijski izazov je vidljiv turistima čim se napravi; objava i povlačenje za ovu vrstu još ne
+      postoje.
+    </p>
+    <div class="table-wrap">
+      <table class="table">
         <thead>
           <tr>
             <th scope="col">Naziv</th>
-            <th scope="col" class="col-fit">Skrivenih tačaka</th>
+            <th scope="col" class="col-fit">Skrivenih mesta</th>
             <th scope="col" class="col-fit">Nagrada</th>
-            @if (isAdministrator() || canSetPosition()) {
-              <th scope="col">Radnje</th>
-            }
+            <th scope="col" class="col-actions">Radnje</th>
           </tr>
         </thead>
         <tbody>
           @for (challenge of result.items; track challenge.id) {
             <tr>
-              <td data-label="Naziv">{{ challenge.name }}</td>
-              <td class="col-fit" data-label="Skrivenih tačaka">{{ challenge.pointCount }}</td>
-              <td class="col-fit" data-label="Nagrada">
-                <span class="badge badge--xp">{{ challenge.xpReward }} XP</span>
+              <td>
+                <a [routerLink]="['/games/location-challenges', challenge.id]">{{
+                  challenge.name
+                }}</a>
               </td>
-              @if (isAdministrator()) {
-                <td class="col-actions">
-                  <a class="button" [routerLink]="[challenge.id]">Pogledaj</a>
-                </td>
-              } @else if (canSetPosition()) {
-                <td class="col-actions">
-                  <a class="button" [routerLink]="[challenge.id, 'play']">Pogledaj</a>
-                </td>
-              }
+              <td class="col-fit">{{ challenge.pointCount }}</td>
+              <td class="col-fit">
+                <span class="badge badge--xp">★ {{ challenge.xpReward }} XP</span>
+              </td>
+              <td class="col-actions">
+                <a class="button" [routerLink]="['/games/location-challenges', challenge.id]"
+                  >Pogledaj</a
+                >
+              </td>
             </tr>
           }
         </tbody>
       </table>
-    }
-    @if (result.totalCount > pageSize) {
+    </div>
+    @if (pageCount() > 1) {
       <nav class="pagination" aria-label="Strane lokacijskih izazova">
         <button
           class="button"
@@ -88,7 +70,7 @@
         <button
           class="button"
           type="button"
-          [disabled]="page() * pageSize >= result.totalCount"
+          [disabled]="page() >= pageCount()"
           (click)="page.set(page() + 1)"
         >
           Sledeća
@@ -96,4 +78,4 @@
       </nav>
     }
   }
-</div>
+}

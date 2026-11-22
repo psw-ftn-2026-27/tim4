@@ -1,0 +1,20 @@
+<div class="page-header">
+  <h1>Izazovi</h1>
+  <a class="button button--primary" [routerLink]="actionLink()">{{ actionLabel() }}</a>
+</div>
+
+<nav class="tabs" aria-label="Vrste izazova">
+  @for (tab of tabs; track tab.kind) {
+    <a
+      class="tabs__tab"
+      [class.tabs__tab--on]="current() === tab.kind"
+      [attr.aria-current]="current() === tab.kind ? 'page' : null"
+      [routerLink]="tab.link"
+    >
+      {{ tab.label }}
+      @if (counts()[tab.kind] !== undefined) {
+        <span class="tabs__count">{{ counts()[tab.kind] }}</span>
+      }
+    </a>
+  }
+</nav>

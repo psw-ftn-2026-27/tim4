@@ -1,156 +1,152 @@
-<section class="stack">
-  <h1>Društveni izazovi</h1>
-  @if (!isAdministrator()) {
-    <p>Pregled društvenih izazova dostupan je administratoru.</p>
+<app-admin-tabs
+  current="social"
+  actionLabel="Nov društveni izazov"
+  actionLink="/games/social-challenges/create"
+/>
+
+@if (notice(); as message) {
+  <p class="notice notice--success" role="status">✓ {{ message }}</p>
+}
+
+@if (challenges.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Izazovi nisu učitani.</strong>
+    <button class="button" type="button" (click)="challenges.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!challenges.hasValue()) {
+  <p class="state" role="status">Učitavanje izazova…</p>
+} @else if (challenges.value(); as result) {
+  @if (result.items.length === 0) {
+    <div class="state">
+      <strong>Još nema društvenih izazova.</strong>
+      <span>Društveni izazov rešava grupa igrača koja se nađe na mestu u isto vreme.</span>
+    </div>
   } @else {
-    <a class="button button--primary" routerLink="/games/social-challenges/create">
-      Kreiraj izazov
-    </a>
-    @if (challenges.isLoading()) {
-      <p>Učitavanje izazova…</p>
-    } @else if (challenges.error()) {
-      <p class="error" role="alert">Učitavanje izazova nije uspelo.</p>
-    } @else if (challenges.value(); as result) {
-      @if (result.items.length === 0) {
-        <p>Nema izazova za prikaz.</p>
-      } @else {
-        <div class="table-scroll">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Naziv</th>
-                <th>Vreme aktivnosti</th>
-                <th>Broj učesnika</th>
-                <th>Opseg (m)</th>
-                <th>XP nagrada</th>
-                <th>Završna poruka</th>
-                <th>Lokacija</th>
-                <th>Stanje</th>
-                <th class="col-actions" colspan="3">Radnje</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (challenge of result.items; track challenge.id) {
-                <tr>
-                  <td>{{ challenge.name }}</td>
-                  <td>{{ challenge.start }} – {{ challenge.end }}</td>
-                  <td>{{ challenge.requiredParticipants }}</td>
-                  <td>{{ challenge.rangeInMeters }}</td>
-                  <td>{{ challenge.xpReward }}</td>
-                  <td>{{ challenge.completionMessage }}</td>
-                  <td>
-                    @if (challenge.latitude !== null && challenge.longitude !== null) {
-                      {{ challenge.latitude }}, {{ challenge.longitude }}
-                    } @else {
-                      Lokacija nije postavljena.
-                    }
-                  </td>
-                  <td>
-                    @switch (challenge.status) {
-                      @case ('Draft') {
-                        <span class="badge badge--draft">✎ Nacrt</span>
-                      }
-                      @case ('Published') {
-                        <span class="badge badge--published">● Objavljen</span>
-                      }
-                      @case ('Retired') {
-                        <span class="badge badge--retired">⊘ Povučen</span>
-                      }
-                      @case ('Archived') {
-                        <span class="badge badge--archived">▣ Arhiviran</span>
-                      }
-                    }
-                  </td>
-                  @if (selectedId() === challenge.id) {
-                    <td colspan="3">
-                      <p>Da li želiš da obrišeš ovaj izazov?</p>
-                      <div class="form-actions">
-                        <button
-                          class="button"
-                          type="button"
-                          (click)="deleteChallenge(challenge.id)"
-                          [disabled]="pending()"
-                        >
-                          Obriši
-                        </button>
-                        <button
-                          class="button"
-                          type="button"
-                          (click)="cancelDelete()"
-                          [disabled]="pending()"
-                        >
-                          Otkaži
-                        </button>
-                      </div>
-                      @if (error(); as message) {
-                        <p class="error" role="alert">{{ message }}</p>
-                      }
-                    </td>
-                  } @else {
-                    <td class="col-actions">
-                      @if (challenge.status === 'Draft' && !pending()) {
-                        <a [routerLink]="['/games/social-challenges', challenge.id, 'edit']"
-                          >Izmeni</a
-                        >
-                      }
-                    </td>
-                    <td class="col-actions">
-                      @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
-                        <button
-                          class="button"
-                          type="button"
-                          (click)="requestDelete(challenge.id)"
-                          [disabled]="pending()"
-                        >
-                          Obriši
-                        </button>
-                      }
-                    </td>
-                    <td class="col-actions">
-                      @if (challenge.status !== 'Archived') {
-                        <button
-                          class="button"
-                          type="button"
-                          (click)="changeState(challenge)"
-                          [disabled]="pending()"
-                        >
-                          @switch (challenge.status) {
-                            @case ('Draft') { Objavi }
-                            @case ('Published') { Povuci }
-                            @case ('Retired') { Arhiviraj }
-                          }
-                        </button>
-                      }
-                      @if (stateErrorId() === challenge.id && error(); as message) {
-                        <p class="error" role="alert">{{ message }}</p>
-                      }
-                    </td>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Naziv</th>
+            <th scope="col" class="col-fit">Aktivan svaki dan</th>
+            <th scope="col" class="col-fit">Igrača</th>
+            <th scope="col" class="col-fit">Opseg</th>
+            <th scope="col" class="col-fit">Nagrada</th>
+            <th scope="col" class="col-fit">Stanje</th>
+            <th scope="col" class="col-actions" colspan="3">Radnje</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (challenge of result.items; track challenge.id) {
+            <tr>
+              <td>
+                {{ challenge.name }}
+                @if (challenge.latitude === null) {
+                  <span class="meta"> · mesto nije postavljeno</span>
+                }
+              </td>
+              <td class="col-fit">{{ hours(challenge.start, challenge.end) }}</td>
+              <td class="col-fit">{{ challenge.requiredParticipants }}</td>
+              <td class="col-fit">{{ challenge.rangeInMeters }} m</td>
+              <td class="col-fit">
+                <span class="badge badge--xp">★ {{ challenge.xpReward }} XP</span>
+              </td>
+              <td class="col-fit">
+                <span [class]="statusLabels[challenge.status].badge">{{
+                  statusLabels[challenge.status].label
+                }}</span>
+              </td>
+              @if (selectedId() === challenge.id) {
+                <td colspan="3">
+                  <div class="confirm">
+                    <p>Obrisati „{{ challenge.name }}”? Ovo ne može da se poništi.</p>
+                    <button
+                      class="button button--danger"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="deleteChallenge(challenge.id)"
+                    >
+                      Obriši
+                    </button>
+                    <button class="button" type="button" (click)="cancelDelete()">Odustani</button>
+                  </div>
+                  @if (error(); as message) {
+                    <p class="error" role="alert">⚠ {{ message }}</p>
                   }
-                </tr>
+                </td>
+              } @else {
+                <td class="col-actions">
+                  @if (challenge.status === 'Draft') {
+                    <a
+                      class="button"
+                      [routerLink]="['/games/social-challenges', challenge.id, 'edit']"
+                      >Izmeni</a
+                    >
+                  }
+                </td>
+                <td class="col-actions">
+                  @if (challenge.status !== 'Archived') {
+                    <button
+                      class="button"
+                      type="button"
+                      [class.button--primary]="challenge.status === 'Draft'"
+                      [disabled]="pending()"
+                      (click)="changeState(challenge)"
+                    >
+                      @switch (challenge.status) {
+                        @case ('Draft') {
+                          Objavi
+                        }
+                        @case ('Published') {
+                          Povuci
+                        }
+                        @case ('Retired') {
+                          Arhiviraj
+                        }
+                      }
+                    </button>
+                  }
+                  @if (stateErrorId() === challenge.id && error(); as message) {
+                    <p class="error" role="alert">⚠ {{ message }}</p>
+                  }
+                </td>
+                <td class="col-actions">
+                  @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="requestDelete(challenge.id)"
+                    >
+                      Obriši…
+                    </button>
+                  }
+                </td>
               }
-            </tbody>
-          </table>
-        </div>
-      }
-      <nav aria-label="Straničenje izazova">
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (pageCount() > 1) {
+      <nav class="pagination" aria-label="Strane izazova">
         <button
           class="button"
           type="button"
-          (click)="changePage(page() - 1)"
           [disabled]="page() === 1 || pending()"
+          (click)="changePage(page() - 1)"
         >
           Prethodna
         </button>
-        <span>Strana {{ page() }}</span>
+        <span>Strana {{ page() }} od {{ pageCount() }}</span>
         <button
           class="button"
           type="button"
+          [disabled]="page() >= pageCount() || pending()"
           (click)="changePage(page() + 1)"
-          [disabled]="page() * pageSize >= result.totalCount || pending()"
         >
           Sledeća
         </button>
       </nav>
     }
   }
-</section>
+}

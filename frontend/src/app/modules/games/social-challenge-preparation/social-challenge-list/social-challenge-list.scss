@@ -1,9 +1,15 @@
-.table-scroll {
-  overflow-x: auto;
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-nav {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+.notice,
+.state,
+.error {
+  margin: 0;
+}
+
+.table .button {
+  text-decoration: none;
 }

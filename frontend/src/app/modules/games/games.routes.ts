@@ -14,13 +14,13 @@ import { requireRole } from '../../core/auth/require-role';
 
 export const gamesRoutes: Routes = [
   { path: '', component: QuizMap, canActivate: [requireRole('explorer')] },
-  { path: 'challenges', component: ChallengeList, canActivate: [requireRole('administrator')] },
+  { path: 'admin', component: ChallengeList, canActivate: [requireRole('administrator')] },
   { path: 'map', component: QuizMap, canActivate: [requireRole('explorer')] },
   { path: 'quizzes/create', component: CreateQuiz, canActivate: [requireRole('administrator')] },
   { path: 'quizzes/:id/solve', component: QuizSolve, canActivate: [requireRole('explorer')] },
   { path: 'quizzes/:id', component: QuizDetail, canActivate: [requireRole('administrator')] },
   {
-    path: 'social-challenges',
+    path: 'admin/social',
     component: SocialChallengeList,
     canActivate: [requireRole('administrator')],
   },
@@ -34,7 +34,11 @@ export const gamesRoutes: Routes = [
     component: SocialChallengeEditor,
     canActivate: [requireRole('administrator')],
   },
-  { path: 'location-challenges', component: LocationChallengeList, canActivate: [requireRole()] },
+  {
+    path: 'admin/location',
+    component: LocationChallengeList,
+    canActivate: [requireRole('administrator')],
+  },
   {
     path: 'location-challenges/create',
     component: LocationChallengeCreate,
