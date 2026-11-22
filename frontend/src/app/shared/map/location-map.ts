@@ -123,6 +123,9 @@ export class LocationMap {
   readonly cluster = input(false);
   // The map fills the height of its parent instead of its usual 400px; the page sets that height.
   readonly fill = input(false);
+  // Pixels on the left that a card floating over the map covers (the active tour's "next point"),
+  // so fitting the view keeps every pin and the position out from under it.
+  readonly fitInsetLeft = input(0);
 
   // The length of the path along the roads, in kilometres, sent once the routes of all
   // segments have arrived after the locations change.
@@ -402,7 +405,11 @@ export class LocationMap {
     } else if (points.length === 1) {
       map.setView(points[0], SINGLE_LOCATION_ZOOM, { animate });
     } else {
-      map.fitBounds(L.latLngBounds(points), { padding: [48, 48], animate });
+      map.fitBounds(L.latLngBounds(points), {
+        paddingTopLeft: [48 + this.fitInsetLeft(), 48],
+        paddingBottomRight: [48, 48],
+        animate,
+      });
     }
   }
 

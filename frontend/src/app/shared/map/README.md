@@ -40,6 +40,7 @@ rutiranje: koriste samo ulaze i izlaze opisane ispod.
 | `locationHover`        | izlaz, `number \| null`     | pozicija pina pod mišem, `null` kada miš izađe                                                               |
 | `viewChange`           | izlaz, `MapBounds`          | vidljiva oblast, posle pomeranja ili zumiranja koje je uradio korisnik (ne stranica)                         |
 | `targetDistanceChange` | izlaz, `number`             | dužina pešačke rute od `position` do `target`, u metrima                                                     |
+| `fitInsetLeft`         | ulaz, podrazumevano `0`     | širina u pikselima koju levo pokriva kartica preko mape; namestanje pogleda je zaobilazi                     |
 
 Dužina putanje je zbir dužina pešačkih ruta po putevima između uzastopnih lokacija;
 poslednja lokacija nije spojena sa prvom. Za svaki deo putanje (dve uzastopne lokacije)

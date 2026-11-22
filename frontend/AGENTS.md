@@ -43,6 +43,9 @@ frontend/src/
                              see its README, example at /design-preview/map    [platform]
       analytics/             Analytics (Google Analytics 4): consent, page views,
                              the event catalog; see "Analytics" below          [platform]
+      bar/                   BarRefresh: a command that changes the cart, the
+                             balance or the tour in progress without leaving
+                             the page tells the bar to read them again         [platform]
       position/              PositionSimulation: the command that sets the tourist's
                              position; repeatEvery: a page's periodic check;
                              see its README, example at /design-preview/map    [platform]
@@ -157,7 +160,9 @@ construct means adding a lesson, so treat it as a platform decision.
 - The app shell (`app.ts`) is also the one place outside a module that reads module
   endpoints: the cart count, the wallet balance and the tour in progress, three
   `httpResource`s that repeat after every navigation (`Router.lastSuccessfulNavigation`).
-  It imports only those modules' `api/` types. A module never does this.
+  It imports only those modules' `api/` types. A module never does this; a module's group
+  service calls `BarRefresh.refresh()` (`shared/bar`) right after a command that changes the
+  cart, the balance or the tour in progress while the user stays on the page.
 - `core/auth/auth-interceptor.ts` may use the RxJS `tap` operator: on a 401 to a request
   that carried the token it signs the user out and opens the login page with the
   current address to come back to.

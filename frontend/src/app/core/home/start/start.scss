@@ -221,6 +221,10 @@ a:hover .arrow {
   .goals--three {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .goals--two {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 // On a wide window all goals sit in one row, so the cards keep the prototype's size
@@ -232,6 +236,10 @@ a:hover .arrow {
 
   .goals--three {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .goals--two {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

@@ -5,6 +5,7 @@ import { Auth } from './core/auth/auth';
 import type { ActiveTourDto } from './modules/exploration/api/exploration-api-types';
 import type { CartDto, WalletBalanceDto } from './modules/payment/api/payment-api-types';
 import { Analytics } from './shared/analytics/analytics';
+import { BarRefresh } from './shared/bar/bar-refresh';
 import { Consent } from './shared/analytics/consent';
 
 @Component({
@@ -19,6 +20,7 @@ export class App {
   // Injected here so that page views are recorded from the first navigation on.
   protected readonly analytics = inject(Analytics);
   private readonly router = inject(Router);
+  private readonly barRefresh = inject(BarRefresh);
 
   // Which of the three bar states to show. A user with both roles sees the administrator bar.
   protected readonly role = computed(() => {
@@ -37,10 +39,11 @@ export class App {
 
   // The three live values of the tourist's bar: the cart count, the balance and the tour in
   // progress. The app shell is the one place outside a module that reads module endpoints
-  // (frontend/AGENTS.md, "The app shell"). Each request repeats after every navigation, so a
-  // page that changes the cart or the wallet updates the bar once the user moves on.
+  // (frontend/AGENTS.md, "The app shell"). Each request repeats after every navigation and after
+  // BarRefresh (shared/bar), which a command calls when it changes them without leaving the page.
   private readonly explorerUrl = (url: string) => () => {
     this.router.lastSuccessfulNavigation();
+    this.barRefresh.changed();
     return this.role() === 'explorer' ? url : undefined;
   };
 
