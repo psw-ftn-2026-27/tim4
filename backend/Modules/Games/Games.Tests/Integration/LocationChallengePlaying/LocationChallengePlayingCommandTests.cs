@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Application.LocationChallengePlaying;
+using Games.Domain.Experience;
 using Games.Domain.LocationChallenges;
 using Games.Infrastructure.Persistence;
 using Games.Tests.Integration.Seeds;
@@ -15,16 +16,12 @@ namespace Games.Tests.Integration.LocationChallengePlaying;
 
 public sealed class LocationChallengePlayingCommandTests : BaseIntegrationTest
 {
-    private readonly LocationChallenge _challenge;
-    private readonly HiddenLocation _point;
+    private readonly LocationChallenge _challenge = LocationChallengeAttemptSeed.Challenge;
+    private readonly HiddenLocation _point = LocationChallengeAttemptSeed.Point;
 
     public LocationChallengePlayingCommandTests(GamesApiFactory factory) : base(factory)
     {
-        var start = new ChallengeLocation(45.25, 19.85);
-        _point = new HiddenLocation(new ChallengeLocation(45.26, 19.86), "/images/hidden.png");
-        _challenge = new LocationChallenge("Lokacijski izazov", start, 25, [_point]);
-        var attempt = _challenge.Activate(WellKnownUsers.Explorer, start, 0);
-        Factory.Reseed<GamesDbContext>([.. GamesSeed.All, _challenge, attempt]);
+        Factory.Reseed<GamesDbContext>([.. GamesSeed.All, _challenge, LocationChallengeAttemptSeed.ActiveAttempt]);
     }
 
     [Fact]
@@ -76,6 +73,26 @@ public sealed class LocationChallengePlayingCommandTests : BaseIntegrationTest
         attempt.DiscoveredPointIds.Should().ContainSingle().Which.Should().Be(_point.PointId);
         attempt.CompletedAt.Should().NotBeNull();
         attempt.AwardedXp.Should().Be(25);
+        var award = context.XpAwards.Should().ContainSingle().Which;
+        award.UserId.Should().Be(WellKnownUsers.Explorer);
+        award.ChallengeType.Should().Be(ChallengeType.Location);
+        award.ChallengeId.Should().Be(_challenge.Id);
+        award.Xp.Should().Be(attempt.AwardedXp);
+        award.EarnedAt.Should().Be(attempt.CompletedAt!.Value);
+    }
+
+    [Fact]
+    public async Task Repeating_the_last_discovery_keeps_a_single_xp_award()
+    {
+        var award = LocationChallengeAttemptSeed.Award;
+        Factory.Reseed<GamesDbContext>([.. GamesSeed.All, _challenge, LocationChallengeAttemptSeed.CompletedAttempt, award]);
+        using var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        using var response = await client.PostAsJsonAsync(Address(), new CheckLocationDto(_point.Latitude, _point.Longitude));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var context = Factory.CreateContext<GamesDbContext>();
+        context.XpAwards.Should().ContainSingle().Which.Id.Should().Be(award.Id);
     }
 
     [Fact]
@@ -92,6 +109,7 @@ public sealed class LocationChallengePlayingCommandTests : BaseIntegrationTest
         attempt.DiscoveredPointIds.Should().BeEmpty();
         attempt.AwardedXp.Should().Be(0);
         attempt.CompletedAt.Should().BeNull();
+        context.XpAwards.Should().BeEmpty();
     }
 
     [Fact]

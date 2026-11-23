@@ -1,9 +1,11 @@
 using Games.Application;
+using Games.Domain.Experience;
 using Games.Domain.LocationChallenges;
 using Games.Domain.QuizAttempts;
 using Games.Domain.Quizzes;
 using Games.Domain.SocialChallengeRuns;
 using Games.Domain.SocialChallenges;
+using Games.Infrastructure.Persistence.Experience;
 using Games.Infrastructure.Persistence.QuizAttempts;
 using Games.Infrastructure.Persistence.SocialChallengeRuns;
 using Games.Infrastructure.Persistence.Quizzes;
@@ -23,6 +25,7 @@ internal sealed class GamesDbContext : DbContext, IUnitOfWork
     public DbSet<LocationChallengeAttempt> LocationChallengeAttempts => Set<LocationChallengeAttempt>();
     public DbSet<SocialChallenge> SocialChallenges => Set<SocialChallenge>();
     public DbSet<SocialChallengeRun> SocialChallengeRuns => Set<SocialChallengeRun>();
+    public DbSet<EarnedXp> XpAwards => Set<EarnedXp>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -33,5 +36,6 @@ internal sealed class GamesDbContext : DbContext, IUnitOfWork
         builder.ConfigureLocationChallengeAttempts();
         builder.ConfigureSocialChallenges();
         builder.ConfigureSocialChallengeRuns();
+        builder.ConfigureXpAwards();
     }
 }
