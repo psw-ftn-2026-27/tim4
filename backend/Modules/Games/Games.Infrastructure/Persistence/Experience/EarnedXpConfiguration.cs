@@ -6,7 +6,7 @@ namespace Games.Infrastructure.Persistence.Experience;
 
 internal static class EarnedXpConfiguration
 {
-    public static void ConfigureXpAwards(this ModelBuilder builder)
+    public static void ConfigureEarnedXps(this ModelBuilder builder)
     {
         ConfigureEarnedXp(builder.Entity<EarnedXp>());
     }

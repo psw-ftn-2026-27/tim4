@@ -36,6 +36,6 @@ internal sealed class GamesDbContext : DbContext, IUnitOfWork
         builder.ConfigureLocationChallengeAttempts();
         builder.ConfigureSocialChallenges();
         builder.ConfigureSocialChallengeRuns();
-        builder.ConfigureXpAwards();
+        builder.ConfigureEarnedXps();
     }
 }
