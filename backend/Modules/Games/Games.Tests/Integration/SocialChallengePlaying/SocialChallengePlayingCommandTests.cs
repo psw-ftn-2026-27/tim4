@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Application.SocialChallengePlaying;
+using Games.Domain.Experience;
 using Games.Domain.LocationChallenges;
 using Games.Domain.SocialChallengeRuns;
 using Games.Domain.SocialChallenges;
@@ -84,6 +85,8 @@ public sealed class SocialChallengePlayingCommandTests : BaseIntegrationTest
     public async Task Location_that_completes_the_required_players_solves_the_run_and_stores_the_award()
     {
         using var client = Factory.CreateClientFor(_waitingPlayer, "explorer");
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var awardCountBefore = arrangeContext.XpAwards.Count();
 
         var response = await client.PostAsJsonAsync(
             $"{Url}/{_waitingChallenge.Id}/run/location", new SocialChallengePositionDto(45.2396, 19.8227));
@@ -94,6 +97,11 @@ public sealed class SocialChallengePlayingCommandTests : BaseIntegrationTest
         run.SolvedAt.Should().NotBeNull();
         run.AwardedXp.Should().Be(_waitingChallenge.XpReward);
         run.Participants.Select(participant => participant.UserId).Should()
+            .BeEquivalentTo(_waitingRun.Participants.Select(participant => participant.UserId));
+        context.XpAwards.Count().Should().Be(awardCountBefore + _waitingRun.Participants.Count);
+        context.XpAwards
+            .Where(award => award.ChallengeType == ChallengeType.Social && award.ChallengeId == _waitingChallenge.Id)
+            .Select(award => award.UserId).Should()
             .BeEquivalentTo(_waitingRun.Participants.Select(participant => participant.UserId));
     }
 

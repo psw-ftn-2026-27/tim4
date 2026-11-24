@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Application.QuizSolving;
+using Games.Domain.Experience;
 using Games.Infrastructure.Persistence;
 using Games.Tests.Integration.Seeds;
 using Shared.Tests;
@@ -85,11 +86,13 @@ public class QuizSolvingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Answer_to_the_last_question_is_stored_and_the_attempt_is_solved()
+    public async Task Answer_to_the_last_question_is_stored_the_attempt_is_solved_and_the_xp_is_recorded()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var seeded = QuizAttemptSeed.ExplorerMonasteriesAttemptBeforeLastQuestion;
         var lastQuestionId = QuizSeed.PublishedMonasteriesQuiz.Questions[^1].Id;
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var awardCountBefore = arrangeContext.XpAwards.Count();
 
         var response = await client.PostAsJsonAsync(
             $"/api/games/quizzes/{seeded.QuizId}/attempt/questions/{lastQuestionId}/answer", new AnswerDto([0]));
@@ -101,6 +104,11 @@ public class QuizSolvingCommandTests : BaseIntegrationTest
         attempt.Answers[^1].QuestionId.Should().Be(lastQuestionId);
         attempt.Answers[^1].SelectedOptions.Should().Equal(0);
         attempt.CompletedAt.Should().NotBeNull();
+        assertContext.XpAwards.Count().Should().Be(awardCountBefore + 1);
+        var award = assertContext.XpAwards.Single(award =>
+            award.UserId == WellKnownUsers.Explorer && award.ChallengeType == ChallengeType.Quiz
+            && award.ChallengeId == seeded.QuizId);
+        award.EarnedAt.Should().Be(attempt.CompletedAt!.Value);
     }
 
     [Fact]
@@ -109,6 +117,8 @@ public class QuizSolvingCommandTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var seeded = QuizAttemptSeed.ExplorerMonasteriesAttemptBeforeLastQuestion;
         var answeredQuestionId = QuizSeed.PublishedMonasteriesQuiz.Questions[0].Id;
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var awardCountBefore = arrangeContext.XpAwards.Count();
 
         var response = await client.PostAsJsonAsync(
             $"/api/games/quizzes/{seeded.QuizId}/attempt/questions/{answeredQuestionId}/answer", new AnswerDto([1]));
@@ -118,6 +128,23 @@ public class QuizSolvingCommandTests : BaseIntegrationTest
         var attempt = assertContext.QuizAttempts.Single(attempt => attempt.Id == seeded.Id);
         attempt.Answers.Should().HaveCount(seeded.Answers.Count);
         attempt.CompletedAt.Should().BeNull();
+        assertContext.XpAwards.Count().Should().Be(awardCountBefore);
+    }
+
+    [Fact]
+    public async Task Answer_to_an_already_solved_quiz_is_rejected_and_earns_no_xp_again()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var quiz = QuizSeed.PublishedMonasteriesQuiz;
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var awardCountBefore = arrangeContext.XpAwards.Count();
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/games/quizzes/{quiz.Id}/attempt/questions/{quiz.Questions[^1].Id}/answer", new AnswerDto([0]));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.XpAwards.Count().Should().Be(awardCountBefore);
     }
 
     [Fact]

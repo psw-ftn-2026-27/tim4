@@ -1,3 +1,4 @@
+using Games.Domain.Experience;
 using Games.Domain.Quizzes;
 using Shared.Domain.Exceptions;
 
@@ -5,7 +6,7 @@ namespace Games.Domain.QuizAttempts;
 
 public sealed class QuizAnswering
 {
-    public void Answer(Quiz quiz, QuizAttempt attempt, Guid questionId, IReadOnlyList<int> selectedOptions, DateTime now)
+    public EarnedXp? Answer(Quiz quiz, QuizAttempt attempt, Guid questionId, IReadOnlyList<int> selectedOptions, DateTime now)
     {
         if (attempt.QuizId != quiz.Id)
         {
@@ -24,6 +25,6 @@ public sealed class QuizAnswering
         }
 
         var isLastQuestion = nextQuestion == quiz.Questions[^1];
-        attempt.RecordAnswer(questionId, selectedOptions, nextQuestion.Score(selectedOptions), isLastQuestion, now);
+        return attempt.RecordAnswer(questionId, selectedOptions, nextQuestion.Score(selectedOptions), isLastQuestion, now);
     }
 }

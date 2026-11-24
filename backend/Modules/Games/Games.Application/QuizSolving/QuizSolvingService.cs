@@ -1,3 +1,4 @@
+using Games.Application.Experience;
 using Games.Application.QuizAttempts;
 using Games.Application.Quizzes;
 using Games.Domain.QuizAttempts;
@@ -10,14 +11,16 @@ public sealed class QuizSolvingService
 {
     private readonly IQuizRepository _quizRepository;
     private readonly IQuizAttemptRepository _attemptRepository;
+    private readonly IEarnedXpRepository _earnedXpRepository;
     private readonly QuizAnswering _quizAnswering;
     private readonly IUnitOfWork _unitOfWork;
 
     public QuizSolvingService(IQuizRepository quizRepository, IQuizAttemptRepository attemptRepository,
-        QuizAnswering quizAnswering, IUnitOfWork unitOfWork)
+        IEarnedXpRepository earnedXpRepository, QuizAnswering quizAnswering, IUnitOfWork unitOfWork)
     {
         _quizRepository = quizRepository;
         _attemptRepository = attemptRepository;
+        _earnedXpRepository = earnedXpRepository;
         _quizAnswering = quizAnswering;
         _unitOfWork = unitOfWork;
     }
@@ -48,7 +51,12 @@ public sealed class QuizSolvingService
             throw new NotFoundException($"Quiz {quizId} has not been started.");
         }
 
-        _quizAnswering.Answer(quiz, attempt, questionId, dto.SelectedOptions ?? [], DateTime.UtcNow);
+        var award = _quizAnswering.Answer(quiz, attempt, questionId, dto.SelectedOptions ?? [], DateTime.UtcNow);
+        if (award is not null)
+        {
+            _earnedXpRepository.Add(award);
+        }
+
         await _unitOfWork.SaveChangesAsync();
     }
 
