@@ -86,12 +86,14 @@ public sealed class LocationChallengeCommandTests : BaseIntegrationTest
     {
         using var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         using var form = CreateForm(2, includeLastPhoto: false);
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var challengeCountBefore = arrangeContext.LocationChallenges.Count();
 
         using var response = await client.PostAsync(Address, form);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var context = Factory.CreateContext<GamesDbContext>();
-        context.LocationChallenges.Should().BeEmpty();
+        context.LocationChallenges.Count().Should().Be(challengeCountBefore);
     }
 
     [Fact]

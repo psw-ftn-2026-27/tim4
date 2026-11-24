@@ -31,7 +31,8 @@ public sealed class LocationChallengeQueryTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        var challenge = body.GetProperty("items").EnumerateArray().Should().ContainSingle().Subject;
+        var challenge = body.GetProperty("items").EnumerateArray()
+            .Should().ContainSingle(item => item.GetProperty("id").GetGuid() == _challenge.Id).Which;
         challenge.GetProperty("startLatitude").GetDouble().Should().Be(45.25);
         challenge.GetProperty("pointCount").GetInt32().Should().Be(1);
         challenge.GetRawText().Should().NotContain("45.26789").And.NotContain("19.86789")
