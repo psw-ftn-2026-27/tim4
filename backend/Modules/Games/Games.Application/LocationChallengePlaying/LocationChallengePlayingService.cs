@@ -1,3 +1,4 @@
+using Games.Application.Experience;
 using Games.Application.LocationChallenges;
 using Games.Domain.LocationChallenges;
 using Shared.Domain.Exceptions;
@@ -8,15 +9,17 @@ public sealed class LocationChallengePlayingService
 {
     private readonly ILocationChallengeRepository _challenges;
     private readonly ILocationChallengeAttemptRepository _attempts;
+    private readonly IEarnedXpRepository _xpAwards;
     private readonly IUnitOfWork _unitOfWork;
     private readonly LocationChallengeActivation _activation;
 
     public LocationChallengePlayingService(
         ILocationChallengeRepository challenges, ILocationChallengeAttemptRepository attempts,
-        IUnitOfWork unitOfWork, LocationChallengeActivation activation)
+        IEarnedXpRepository xpAwards, IUnitOfWork unitOfWork, LocationChallengeActivation activation)
     {
         _challenges = challenges;
         _attempts = attempts;
+        _xpAwards = xpAwards;
         _unitOfWork = unitOfWork;
         _activation = activation;
     }
@@ -40,7 +43,13 @@ public sealed class LocationChallengePlayingService
         var attempt = await _attempts.GetByChallengeAndUserAsync(challengeId, userId)
             ?? throw new NotFoundException("Aktivni pokušaj nije pronađen.");
         var challenge = await GetChallengeAsync(challengeId);
-        attempt.CheckLocation(challenge, pointId, new ChallengeLocation(position.Latitude, position.Longitude), DateTime.UtcNow);
+        var award = attempt.CheckLocation(challenge, pointId,
+            new ChallengeLocation(position.Latitude, position.Longitude), DateTime.UtcNow);
+        if (award is not null)
+        {
+            _xpAwards.Add(award);
+        }
+
         await _unitOfWork.SaveChangesAsync();
     }
 

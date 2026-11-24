@@ -1,3 +1,4 @@
+using Games.Domain.Experience;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -27,7 +28,7 @@ public sealed class LocationChallengeAttempt : AggregateRoot
         DiameterInMeters = radiusInMeters;
     }
 
-    public void CheckLocation(LocationChallenge challenge, Guid pointId, ChallengeLocation position, DateTime utcNow)
+    public EarnedXp? CheckLocation(LocationChallenge challenge, Guid pointId, ChallengeLocation position, DateTime utcNow)
     {
         if (challenge.Id != ChallengeId)
         {
@@ -36,7 +37,7 @@ public sealed class LocationChallengeAttempt : AggregateRoot
 
         if (CompletedAt.HasValue || _discoveredPointIds.Contains(pointId))
         {
-            return;
+            return null;
         }
 
         var point = challenge.HiddenLocations.SingleOrDefault(location => location.PointId == pointId)
@@ -50,10 +51,13 @@ public sealed class LocationChallengeAttempt : AggregateRoot
         _discoveredPointIds = [.. _discoveredPointIds, pointId];
         Version++;
 
-        if (_discoveredPointIds.Length == challenge.HiddenLocations.Count)
+        if (_discoveredPointIds.Length != challenge.HiddenLocations.Count)
         {
-            CompletedAt = utcNow;
-            AwardedXp = challenge.XpReward;
+            return null;
         }
+
+        CompletedAt = utcNow;
+        AwardedXp = challenge.XpReward;
+        return new EarnedXp(UserId, ChallengeType.Location, ChallengeId, AwardedXp, utcNow);
     }
 }

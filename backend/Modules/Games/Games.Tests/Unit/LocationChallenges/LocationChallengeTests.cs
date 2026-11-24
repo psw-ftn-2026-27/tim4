@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Games.Domain.Experience;
 using Games.Domain.LocationChallenges;
 using Shared.Domain.Exceptions;
 using Xunit;
@@ -71,8 +72,9 @@ public sealed class LocationChallengeTests
         var attempt = challenge.Activate(Guid.NewGuid(), Start, 10);
         var point = challenge.HiddenLocations[0];
 
-        attempt.CheckLocation(challenge, point.PointId, point.Location(), DateTime.UnixEpoch);
+        var award = attempt.CheckLocation(challenge, point.PointId, point.Location(), DateTime.UnixEpoch);
 
+        award.Should().BeNull();
         attempt.CompletedAt.Should().BeNull();
         attempt.AwardedXp.Should().Be(0);
     }
@@ -85,8 +87,9 @@ public sealed class LocationChallengeTests
         var first = challenge.HiddenLocations[0];
         attempt.CheckLocation(challenge, first.PointId, first.Location(), DateTime.UnixEpoch);
 
-        attempt.CheckLocation(challenge, first.PointId, first.Location(), DateTime.UnixEpoch.AddMinutes(1));
+        var award = attempt.CheckLocation(challenge, first.PointId, first.Location(), DateTime.UnixEpoch.AddMinutes(1));
 
+        award.Should().BeNull();
         attempt.DiscoveredPointIds.Should().ContainSingle().Which.Should().Be(first.PointId);
         attempt.CompletedAt.Should().BeNull();
         attempt.AwardedXp.Should().Be(0);
@@ -102,8 +105,14 @@ public sealed class LocationChallengeTests
         attempt.CheckLocation(challenge, first.PointId, first.Location(), DateTime.UnixEpoch);
         var finishedAt = DateTime.UnixEpoch.AddMinutes(1);
 
-        attempt.CheckLocation(challenge, last.PointId, last.Location(), finishedAt);
+        var award = attempt.CheckLocation(challenge, last.PointId, last.Location(), finishedAt);
 
+        award.Should().NotBeNull();
+        award!.UserId.Should().Be(attempt.UserId);
+        award.ChallengeType.Should().Be(ChallengeType.Location);
+        award.ChallengeId.Should().Be(challenge.Id);
+        award.Xp.Should().Be(challenge.XpReward);
+        award.EarnedAt.Should().Be(finishedAt);
         attempt.CompletedAt.Should().Be(finishedAt);
         attempt.AwardedXp.Should().Be(challenge.XpReward);
     }
@@ -119,8 +128,9 @@ public sealed class LocationChallengeTests
         }
         var last = challenge.HiddenLocations[1];
 
-        attempt.CheckLocation(challenge, last.PointId, last.Location(), DateTime.UnixEpoch.AddMinutes(1));
+        var award = attempt.CheckLocation(challenge, last.PointId, last.Location(), DateTime.UnixEpoch.AddMinutes(1));
 
+        award.Should().BeNull();
         attempt.CompletedAt.Should().Be(DateTime.UnixEpoch);
         attempt.AwardedXp.Should().Be(challenge.XpReward);
         attempt.DiscoveredPointIds.Should().HaveCount(2);

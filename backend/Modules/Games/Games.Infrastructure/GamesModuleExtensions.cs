@@ -1,5 +1,6 @@
 using System.Globalization;
 using Games.Application;
+using Games.Application.Experience;
 using Games.Application.LocationChallengeAuthoring;
 using Games.Application.LocationChallengeBrowsing;
 using Games.Application.LocationChallengePlaying;
@@ -16,6 +17,7 @@ using Games.Application.SocialChallengeRuns;
 using Games.Application.SocialChallenges;
 using Games.Domain.SocialChallengeRuns;
 using Games.Infrastructure.Persistence;
+using Games.Infrastructure.Persistence.Experience;
 using Games.Infrastructure.Persistence.LocationChallenges;
 using Games.Infrastructure.Persistence.QuizAttempts;
 using Games.Infrastructure.Persistence.SocialChallengeRuns;
@@ -36,6 +38,7 @@ public static class GamesModuleExtensions
         services.AddAutoMapper(mapper => mapper.AddProfile<GamesMapperProfile>());
 
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<GamesDbContext>());
+        services.AddScoped<IEarnedXpRepository, EarnedXpRepository>();
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IQuizReadRepository, QuizReadRepository>();
 
