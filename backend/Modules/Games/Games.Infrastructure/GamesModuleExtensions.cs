@@ -4,6 +4,7 @@ using Games.Application.Experience;
 using Games.Application.LocationChallengeAuthoring;
 using Games.Application.LocationChallengeBrowsing;
 using Games.Application.LocationChallengePlaying;
+using Games.Application.PlayerExperience;
 using Games.Application.LocationChallenges;
 using Games.Application.QuizAttempts;
 using Games.Application.QuizAuthoring;
@@ -39,6 +40,8 @@ public static class GamesModuleExtensions
 
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<GamesDbContext>());
         services.AddScoped<IEarnedXpRepository, EarnedXpRepository>();
+        services.AddScoped<IEarnedXpReadRepository, EarnedXpReadRepository>();
+        services.AddScoped<PlayerExperienceQueries>();
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IQuizReadRepository, QuizReadRepository>();
 

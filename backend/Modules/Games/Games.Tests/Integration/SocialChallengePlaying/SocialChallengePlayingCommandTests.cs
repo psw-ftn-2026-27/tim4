@@ -68,6 +68,23 @@ public sealed class SocialChallengePlayingCommandTests : BaseIntegrationTest
         context.SocialChallengeRuns.Count().Should().Be(runCountBefore);
     }
 
+    [Fact]
+    public async Task Explorer_who_already_solved_a_challenge_cannot_join_it_again_and_earns_no_xp_again()
+    {
+        using var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var runCountBefore = arrangeContext.SocialChallengeRuns.Count();
+        var awardCountBefore = arrangeContext.XpAwards.Count();
+
+        var response = await client.PostAsJsonAsync(
+            $"{Url}/{SocialChallengeSeed.PublishedAllDay.Id}/run", NearAllDayChallenge);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var context = Factory.CreateContext<GamesDbContext>();
+        context.SocialChallengeRuns.Count().Should().Be(runCountBefore);
+        context.XpAwards.Count().Should().Be(awardCountBefore);
+    }
+
     [Theory]
     [InlineData(null, HttpStatusCode.Unauthorized)]
     [InlineData("administrator", HttpStatusCode.Forbidden)]

@@ -187,3 +187,7 @@ export interface SocialChallengePositionDto {
   latitude: number;
   longitude: number;
 }
+
+export interface TotalXpDto {
+  totalXp: number;
+}
