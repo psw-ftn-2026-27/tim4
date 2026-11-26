@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Games.Domain.Experience;
 using Games.Domain.QuizAttempts;
 using Shared.Domain.Exceptions;
 using Xunit;
@@ -17,13 +18,45 @@ public class QuizAttemptTests
     }
 
     [Fact]
-    public void Attempt_is_not_solved_while_questions_remain_unanswered()
+    public void Attempt_is_not_solved_while_questions_remain_unanswered_and_earns_no_xp()
     {
         var attempt = new QuizAttempt(Guid.NewGuid(), Guid.NewGuid());
 
-        attempt.RecordAnswer(Guid.NewGuid(), [0], 100, false, AnsweredAt);
+        var award = attempt.RecordAnswer(Guid.NewGuid(), [0], 100, false, AnsweredAt);
 
         attempt.CompletedAt.Should().BeNull();
+        award.Should().BeNull();
+    }
+
+    [Fact]
+    public void Solving_the_attempt_awards_the_player_the_xp_earned_on_all_answers()
+    {
+        var quizId = Guid.NewGuid();
+        var playerId = Guid.NewGuid();
+        var attempt = new QuizAttempt(quizId, playerId);
+        attempt.RecordAnswer(Guid.NewGuid(), [0], 40, false, AnsweredAt);
+
+        var award = attempt.RecordAnswer(Guid.NewGuid(), [0], 60, true, AnsweredAt);
+
+        award.Should().NotBeNull();
+        award!.UserId.Should().Be(playerId);
+        award.ChallengeType.Should().Be(ChallengeType.Quiz);
+        award.ChallengeId.Should().Be(quizId);
+        award.Xp.Should().Be(100);
+        award.EarnedAt.Should().Be(AnsweredAt);
+    }
+
+    [Theory]
+    [InlineData(12.4, 12)]
+    [InlineData(12.5, 13)]
+    [InlineData(12.6, 13)]
+    public void Earned_xp_is_rounded_to_the_nearest_whole_number(double earnedXp, int expectedXp)
+    {
+        var attempt = new QuizAttempt(Guid.NewGuid(), Guid.NewGuid());
+
+        var award = attempt.RecordAnswer(Guid.NewGuid(), [0], earnedXp, true, AnsweredAt);
+
+        award!.Xp.Should().Be(expectedXp);
     }
 
     [Fact]

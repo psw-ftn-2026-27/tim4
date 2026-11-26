@@ -1,3 +1,4 @@
+using Games.Domain.Experience;
 using Games.Domain.LocationChallenges;
 using Games.Domain.SocialChallenges;
 using Shared.Domain;
@@ -30,7 +31,8 @@ public sealed class SocialChallengeRun : AggregateRoot
         _participants.Add(new RunParticipant(userId, now));
     }
 
-    public void ReportLocation(SocialChallenge challenge, Guid userId, ChallengeLocation position, DateTime now)
+    public IReadOnlyList<EarnedXp> ReportLocation(SocialChallenge challenge, Guid userId, ChallengeLocation position,
+        DateTime now)
     {
         if (challenge.Id != ChallengeId)
         {
@@ -50,11 +52,16 @@ public sealed class SocialChallengeRun : AggregateRoot
         }
 
         _participants.RemoveAll(participant => !IsActive(participant, now));
-        if (ActiveParticipantCount(now) >= challenge.RequiredParticipants)
+        if (ActiveParticipantCount(now) < challenge.RequiredParticipants)
         {
-            SolvedAt = now;
-            AwardedXp = challenge.XpReward;
+            return [];
         }
+
+        SolvedAt = now;
+        AwardedXp = challenge.XpReward;
+        return _participants
+            .Select(participant => new EarnedXp(participant.UserId, ChallengeType.Social, ChallengeId, AwardedXp, now))
+            .ToList();
     }
 
     public int ActiveParticipantCount(DateTime now)

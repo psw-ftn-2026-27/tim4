@@ -1,3 +1,4 @@
+using Games.Application.Experience;
 using Games.Application.SocialChallengeRuns;
 using Games.Application.SocialChallenges;
 using Games.Domain.LocationChallenges;
@@ -11,14 +12,16 @@ public sealed class SocialChallengePlayingService
 {
     private readonly ISocialChallengeRepository _challenges;
     private readonly ISocialChallengeRunRepository _runs;
+    private readonly IEarnedXpRepository _xpAwards;
     private readonly SocialChallengeJoining _joining;
     private readonly IUnitOfWork _unitOfWork;
 
     public SocialChallengePlayingService(ISocialChallengeRepository challenges, ISocialChallengeRunRepository runs,
-        SocialChallengeJoining joining, IUnitOfWork unitOfWork)
+        IEarnedXpRepository xpAwards, SocialChallengeJoining joining, IUnitOfWork unitOfWork)
     {
         _challenges = challenges;
         _runs = runs;
+        _xpAwards = xpAwards;
         _joining = joining;
         _unitOfWork = unitOfWork;
     }
@@ -44,7 +47,13 @@ public sealed class SocialChallengePlayingService
         var run = await _runs.GetActiveByChallengeAsync(challengeId)
             ?? throw new NotFoundException("Aktivna izvedba izazova ne postoji.");
 
-        run.ReportLocation(challenge, userId, new ChallengeLocation(position.Latitude, position.Longitude), DateTime.UtcNow);
+        var awards = run.ReportLocation(challenge, userId,
+            new ChallengeLocation(position.Latitude, position.Longitude), DateTime.UtcNow);
+        foreach (var award in awards)
+        {
+            _xpAwards.Add(award);
+        }
+
         await _unitOfWork.SaveChangesAsync();
     }
 

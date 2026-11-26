@@ -1,3 +1,4 @@
+using Games.Domain.Experience;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -21,7 +22,7 @@ public sealed class QuizAttempt : AggregateRoot
         PlayerId = playerId;
     }
 
-    public void RecordAnswer(Guid questionId, IReadOnlyList<int> selectedOptions, double earnedXp,
+    public EarnedXp? RecordAnswer(Guid questionId, IReadOnlyList<int> selectedOptions, double earnedXp,
         bool isLastQuestion, DateTime now)
     {
         EnsureCanContinue();
@@ -31,10 +32,14 @@ public sealed class QuizAttempt : AggregateRoot
         }
 
         _answers.Add(new GivenAnswer(questionId, selectedOptions, earnedXp));
-        if (isLastQuestion)
+        if (!isLastQuestion)
         {
-            CompletedAt = now;
+            return null;
         }
+
+        CompletedAt = now;
+        var roundedXp = (int)Math.Round(EarnedXp(), MidpointRounding.AwayFromZero);
+        return new EarnedXp(PlayerId, ChallengeType.Quiz, QuizId, roundedXp, now);
     }
 
     public void EnsureCanContinue()

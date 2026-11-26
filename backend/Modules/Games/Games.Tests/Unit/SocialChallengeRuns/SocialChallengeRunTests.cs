@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Games.Domain.Experience;
 using Games.Domain.LocationChallenges;
 using Games.Domain.SocialChallengeRuns;
 using Games.Domain.SocialChallenges;
@@ -21,11 +22,19 @@ public sealed class SocialChallengeRunTests
         var run = new SocialChallengeJoining().Join(challenge, null, [], first, AtChallenge, Start);
         new SocialChallengeJoining().Join(challenge, run, [], second, AtChallenge, Start.AddSeconds(1));
 
-        run.ReportLocation(challenge, first, AtChallenge, Start.AddSeconds(2));
+        var awards = run.ReportLocation(challenge, first, AtChallenge, Start.AddSeconds(2));
 
         run.SolvedAt.Should().Be(Start.AddSeconds(2));
         run.AwardedXp.Should().Be(challenge.XpReward);
         run.Participants.Select(participant => participant.UserId).Should().BeEquivalentTo([first, second]);
+        awards.Select(award => award.UserId).Should().BeEquivalentTo([first, second]);
+        awards.Should().AllSatisfy(award =>
+        {
+            award.ChallengeType.Should().Be(ChallengeType.Social);
+            award.ChallengeId.Should().Be(challenge.Id);
+            award.Xp.Should().Be(challenge.XpReward);
+            award.EarnedAt.Should().Be(Start.AddSeconds(2));
+        });
     }
 
     [Fact]
@@ -39,10 +48,11 @@ public sealed class SocialChallengeRunTests
         new SocialChallengeJoining().Join(challenge, run, [], onTheLimit, AtChallenge, Start.AddSeconds(2));
         new SocialChallengeJoining().Join(challenge, run, [], reporter, AtChallenge, Start.AddSeconds(5));
 
-        run.ReportLocation(challenge, reporter, AtChallenge, Start.AddSeconds(12));
+        var awards = run.ReportLocation(challenge, reporter, AtChallenge, Start.AddSeconds(12));
 
         run.SolvedAt.Should().Be(Start.AddSeconds(12));
         run.Participants.Select(participant => participant.UserId).Should().BeEquivalentTo([onTheLimit, reporter]);
+        awards.Select(award => award.UserId).Should().BeEquivalentTo([onTheLimit, reporter]);
     }
 
     [Fact]
@@ -54,10 +64,11 @@ public sealed class SocialChallengeRunTests
         var run = new SocialChallengeJoining().Join(challenge, null, [], leaving, AtChallenge, Start);
         new SocialChallengeJoining().Join(challenge, run, [], staying, AtChallenge, Start);
 
-        run.ReportLocation(challenge, leaving, FarFromChallenge, Start.AddSeconds(1));
+        var awards = run.ReportLocation(challenge, leaving, FarFromChallenge, Start.AddSeconds(1));
 
         run.Participants.Should().ContainSingle().Which.UserId.Should().Be(staying);
         run.SolvedAt.Should().BeNull();
+        awards.Should().BeEmpty();
     }
 
     private static SocialChallenge CreatePublishedChallenge(int requiredParticipants)
