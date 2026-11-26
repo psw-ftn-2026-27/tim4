@@ -1,0 +1,75 @@
+<div class="auth">
+  <form class="auth__form" novalidate (submit)="submit($event)">
+    <h1>Prijava</h1>
+    <p class="meta">Dobro došli nazad. Nastavite gde ste stali.</p>
+
+    @if (error(); as message) {
+      <p class="form-error" role="alert">⚠ {{ message }}</p>
+    }
+
+    <div class="field">
+      <label for="login-email">Mejl</label>
+      <input
+        id="login-email"
+        type="email"
+        autocomplete="email"
+        [formField]="loginForm.email"
+        [attr.aria-invalid]="loginForm.email().touched() && loginForm.email().invalid()"
+      />
+      @if (loginForm.email().touched()) {
+        @for (e of loginForm.email().errors().slice(0, 1); track $index) {
+          <p class="error">{{ e.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="login-password">Lozinka</label>
+      <div class="password">
+        <input
+          id="login-password"
+          [type]="showPassword() ? 'text' : 'password'"
+          autocomplete="current-password"
+          [formField]="loginForm.password"
+          [attr.aria-invalid]="loginForm.password().touched() && loginForm.password().invalid()"
+        />
+        <button
+          class="password__toggle"
+          type="button"
+          [attr.aria-pressed]="showPassword()"
+          (click)="showPassword.set(!showPassword())"
+        >
+          {{ showPassword() ? 'Sakrij' : 'Prikaži' }}
+        </button>
+      </div>
+      @if (loginForm.password().touched()) {
+        @for (e of loginForm.password().errors().slice(0, 1); track $index) {
+          <p class="error">{{ e.message }}</p>
+        }
+      }
+    </div>
+
+    <button class="button button--primary auth__submit" type="submit" [disabled]="pending()">
+      {{ pending() ? 'Prijavljivanje…' : 'Prijavi se' }}
+    </button>
+
+    <p class="meta">
+      Prototip: mejl koji počinje sa „admin“ otvara administraciju; lozinka „pogresna“ pokazuje
+      grešku.
+    </p>
+
+    <p class="auth__switch">
+      Nemate nalog? <a routerLink="/design-preview/prototype/guest/register">Registrujte se</a>
+    </p>
+  </form>
+
+  <aside class="auth__side">
+    <img src="/images/ilustracije/finding-the-way.svg" alt="" />
+    <h2>Vaše ture vas čekaju</h2>
+    <ul>
+      <li>Nastavite turu tamo gde ste stali</li>
+      <li>Izazovi u blizini i vaš XP</li>
+      <li>Novčanik i poklon kartice</li>
+    </ul>
+  </aside>
+</div>

@@ -1,0 +1,133 @@
+<div class="stage">
+  <app-proto-map
+    [pins]="pins()"
+    [path]="tour.keyPoints"
+    [roadPath]="true"
+    [cluster]="false"
+    [position]="position()"
+    [target]="next()"
+    [selectable]="!completed()"
+    (mapClick)="move($event)"
+    (targetMeters)="routeMeters.set($event)"
+  />
+
+  @if (!completed()) {
+    <!-- ===== Top: where to go next ===== -->
+    <section class="next" aria-live="polite">
+      <p class="next__tour">
+        <span class="badge badge--published">▶ U toku</span>
+        {{ tour.name }}
+      </p>
+      @if (next(); as point) {
+        <p class="next__label">Sledeća tačka · {{ reached() + 1 }} od {{ total }}</p>
+        <h1>{{ point.name }}</h1>
+        @if (distance(); as away) {
+          <p class="next__way">
+            <strong>{{ away }}</strong>
+            @if (minutes(); as min) {
+              <span>· oko {{ min }} min peške</span>
+            }
+          </p>
+        }
+      }
+      <p class="next__hint">
+        📍 Poziciju pomerate klikom na mapu.
+        <button class="hint__link" type="button" (click)="walkToNext()">
+          Idi do sledeće (prototip)
+        </button>
+      </p>
+      <span class="next__bar" aria-hidden="true"
+        ><span class="next__fill" [style.width]="progress()"></span
+      ></span>
+    </section>
+
+    <!-- ===== Top right: the tour's menu ===== -->
+    <div class="menu">
+      <button
+        class="menu__button"
+        type="button"
+        aria-label="Meni ture"
+        [attr.aria-expanded]="menuOpen()"
+        (click)="menuOpen.set(!menuOpen()); confirmingAbandon.set(false)"
+      >
+        ⋯
+      </button>
+      @if (menuOpen()) {
+        <div class="menu__panel">
+          <a [routerLink]="'/design-preview/prototype/tourist/tours/' + tour.id">Opis ture</a>
+          @if (confirmingAbandon()) {
+            <p>Napuštena tura ne može da se nastavi. Otkrivene tajne ostaju sačuvane.</p>
+            <a class="button button--danger" routerLink="/design-preview/prototype/tourist/journeys"
+              >Napusti turu</a
+            >
+            <button class="button" type="button" (click)="confirmingAbandon.set(false)">
+              Odustani
+            </button>
+          } @else {
+            <button class="menu__danger" type="button" (click)="confirmingAbandon.set(true)">
+              Napusti turu…
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ===== Bottom left: secrets found so far ===== -->
+    <section class="drawer" [class.drawer--open]="secretsOpen()">
+      <button class="drawer__handle" type="button" (click)="secretsOpen.set(!secretsOpen())">
+        🔓 Otkrivene tajne ({{ found().length }})
+        <span aria-hidden="true">{{ secretsOpen() ? '▾' : '▴' }}</span>
+      </button>
+      @if (secretsOpen()) {
+        <ol class="drawer__list">
+          @for (item of found(); track item.index) {
+            <li>
+              <strong>{{ item.index + 1 }}. {{ item.name }}</strong>
+              <span>{{ item.secret }}</span>
+            </li>
+          } @empty {
+            <li class="meta">Tajna se otkriva kada stignete do tačke.</li>
+          }
+        </ol>
+      }
+    </section>
+
+    <!-- ===== The moment: a reached point's secret over the map ===== -->
+    @if (newSecret(); as item) {
+      <div class="reveal" role="dialog" aria-labelledby="reveal-title">
+        <article class="reveal__card">
+          <p class="reveal__label">✓ Stigli ste · tačka {{ item.index + 1 }} od {{ total }}</p>
+          <h2 id="reveal-title">{{ item.name }}</h2>
+          <p class="reveal__secret">„{{ item.secret }}“</p>
+          <button class="button button--primary" type="button" (click)="justReached.set(null)">
+            Nastavi do sledeće tačke
+          </button>
+        </article>
+      </div>
+    }
+  } @else {
+    <!-- ===== Finished ===== -->
+    <div class="reveal">
+      <article class="reveal__card reveal__card--wide">
+        <span class="done-check" aria-hidden="true">✓</span>
+        <h2>Tura je završena!</h2>
+        <p>Prošli ste svih {{ total }} tačaka ture „{{ tour.name }}“.</p>
+        <ol class="done-list">
+          @for (item of found(); track item.index) {
+            <li>
+              <strong>{{ item.index + 1 }}. {{ item.name }}</strong>
+              <span>{{ item.secret }}</span>
+            </li>
+          }
+        </ol>
+        <div class="form-actions">
+          <a class="button button--primary" routerLink="/design-preview/prototype/tourist/journeys"
+            >Moja putovanja</a
+          >
+          <a class="button" routerLink="/design-preview/prototype/tourist/tours">Pretraži ture</a>
+        </div>
+        <button class="hint__link" type="button" (click)="restart()">Ponovi prototip</button>
+      </article>
+    </div>
+  }
+</div>

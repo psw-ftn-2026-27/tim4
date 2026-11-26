@@ -1,0 +1,34 @@
+<p class="proto-note">
+  <a routerLink="/design-preview/prototype">← Prototipi</a>
+  <span>Prototip · <strong>administrator</strong> (admin1@explorer.dev) · izmišljeni podaci</span>
+</p>
+
+<div class="proto-app">
+  <header class="bar">
+    <nav class="bar__inner" aria-label="Glavna navigacija">
+      <a class="brand" [routerLink]="base">
+        <span class="brand__mark" aria-hidden="true">◈</span> Explorer
+        <span class="brand__role">Administracija</span>
+      </a>
+
+      <div class="sections">
+        <a [routerLink]="base + '/challenges'" routerLinkActive="active">Izazovi</a>
+        <a [routerLink]="base + '/wallets'" routerLinkActive="active">Novčanici</a>
+        <a [routerLink]="base + '/tours'" routerLinkActive="active">Ture</a>
+      </div>
+
+      <div class="mine">
+        <details class="user-menu">
+          <summary><span class="avatar" aria-hidden="true">A</span> admin1</summary>
+          <div class="user-menu__list">
+            <a routerLink="/design-preview/prototype">Odjava</a>
+          </div>
+        </details>
+      </div>
+    </nav>
+  </header>
+
+  <main class="proto-main">
+    <router-outlet />
+  </main>
+</div>

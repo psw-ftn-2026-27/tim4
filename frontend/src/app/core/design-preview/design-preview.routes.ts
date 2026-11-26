@@ -18,4 +18,8 @@ export const designPreviewRoutes: Routes = [
   { path: 'tour-preferences', component: TourPreferences },
   { path: 'admin-challenges', component: AdminChallenges },
   { path: 'map', component: MapView },
+  {
+    path: 'prototype',
+    loadChildren: () => import('./prototype/prototype.routes').then((m) => m.prototypeRoutes),
+  },
 ];
