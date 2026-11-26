@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
+import { distanceKm } from '../../../../shared/map/path-length';
 import { PositionSimulation } from '../../../../shared/position/position-simulation';
 import { repeatEvery } from '../../../../shared/position/repeat-every';
 import { PageResult } from '../../../../shared/api/page-result';
@@ -123,7 +124,7 @@ export class QuizMap {
     const position = this.savedPosition();
     return position === null
       ? list
-      : [...list].sort((a, b) => metersBetween(position, a) - metersBetween(position, b));
+      : [...list].sort((a, b) => distanceKm(position, a) - distanceKm(position, b));
   });
 
   protected readonly solvedCount = computed(() => this.all().filter((item) => item.solved).length);
@@ -190,7 +191,7 @@ export class QuizMap {
   protected readonly distanceToSelected = computed(() => {
     const selected = this.selected();
     const position = this.savedPosition();
-    return selected === null || position === null ? null : metersBetween(position, selected);
+    return selected === null || position === null ? null : distanceKm(position, selected) * 1000;
   });
   protected readonly distanceText = computed(() => {
     const meters = this.distanceToSelected();
@@ -411,18 +412,4 @@ export class QuizMap {
       }
     }
   }
-}
-
-// The distance between two points on the Earth, in metres (the haversine formula).
-function metersBetween(
-  a: { latitude: number; longitude: number },
-  b: { latitude: number; longitude: number },
-): number {
-  const rad = (degrees: number) => (degrees * Math.PI) / 180;
-  const h =
-    Math.sin(rad(b.latitude - a.latitude) / 2) ** 2 +
-    Math.cos(rad(a.latitude)) *
-      Math.cos(rad(b.latitude)) *
-      Math.sin(rad(b.longitude - a.longitude) / 2) ** 2;
-  return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }

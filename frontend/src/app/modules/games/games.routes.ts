@@ -15,7 +15,8 @@ import { requireRole } from '../../core/auth/require-role';
 export const gamesRoutes: Routes = [
   { path: '', component: QuizMap, canActivate: [requireRole('explorer')] },
   { path: 'admin', component: ChallengeList, canActivate: [requireRole('administrator')] },
-  { path: 'map', component: QuizMap, canActivate: [requireRole('explorer')] },
+  // The old address of the challenges map, kept so saved links still work.
+  { path: 'map', redirectTo: '', pathMatch: 'full' },
   { path: 'quizzes/create', component: CreateQuiz, canActivate: [requireRole('administrator')] },
   { path: 'quizzes/:id/solve', component: QuizSolve, canActivate: [requireRole('explorer')] },
   { path: 'quizzes/:id', component: QuizDetail, canActivate: [requireRole('administrator')] },

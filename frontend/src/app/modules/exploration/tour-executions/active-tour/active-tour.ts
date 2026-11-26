@@ -6,7 +6,7 @@ import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
 import { PositionSimulation } from '../../../../shared/position/position-simulation';
 import { repeatEvery } from '../../../../shared/position/repeat-every';
-import { formatKm } from '../../../../shared/util/format';
+import { formatKm, formatProgress } from '../../../../shared/util/format';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { ActiveTourDto, TourExecutionDto } from '../../api/exploration-api-types';
 import { TourExecutions } from '../tour-executions';
@@ -117,7 +117,7 @@ export class ActiveTour {
     const active = this.activeTour.hasValue() ? this.activeTour.value() : null;
     return active === null
       ? '0%'
-      : `${(active.reachedKeyPointCount / active.keyPoints.length) * 100}%`;
+      : formatProgress(active.reachedKeyPointCount, active.keyPoints.length);
   });
 
   // The next key point is the map's target, so the map draws the route from the position to it.

@@ -19,6 +19,11 @@
       <div class="newcomers__text">
         <h2 id="newcomers-title">{{ empty().length }} turista bez EC</h2>
         <p>Bez EC ne mogu da kupe nijednu plaćenu turu. Najčešće su to novi nalozi.</p>
+        @if (onePageOfMany()) {
+          <p class="meta">
+            Odnosi se na turiste sa ove strane ({{ page() }} od {{ pageCount() }}).
+          </p>
+        }
       </div>
       @if (confirmingBulk()) {
         <div class="confirm newcomers__confirm">
@@ -33,7 +38,14 @@
           >
             {{ pending() ? 'Uplata…' : 'Uplati' }}
           </button>
-          <button class="button" type="button" (click)="confirmingBulk.set(false)">Odustani</button>
+          <button
+            class="button"
+            type="button"
+            [disabled]="pending()"
+            (click)="confirmingBulk.set(false)"
+          >
+            Odustani
+          </button>
         </div>
       } @else {
         <div class="newcomers__actions">

@@ -1,6 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { formatProgress } from '../../../../shared/util/format';
 import { ActiveTourDto } from '../../api/exploration-api-types';
 
 // The tourist's own tours. Today the server knows only the tour in progress, so the page shows
@@ -44,6 +45,6 @@ export class MyJourneys {
     const active = this.active();
     return active === null
       ? '0%'
-      : `${(active.reachedKeyPointCount / active.keyPoints.length) * 100}%`;
+      : formatProgress(active.reachedKeyPointCount, active.keyPoints.length);
   });
 }

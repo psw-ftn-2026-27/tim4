@@ -7,8 +7,8 @@ import { ExplorerWalletDto, WalletTransactionDto } from '../../api/payment-api-t
 import { WalletTransactions } from '../../personal-wallet/wallet-transactions/wallet-transactions';
 import { WalletAdministrationService } from '../wallet-administration';
 
-// The server's largest page; the search and the "Bez EC" filter work within it, because the
-// server has no search yet.
+// The server's largest page; the search, the "Bez EC" filter and the credit for all of them
+// work within it, because the server has no search yet. The page says so when there are more.
 const PAGE_SIZE = 100;
 const HISTORY_PAGE_SIZE = 20;
 
@@ -64,6 +64,9 @@ export class WalletAdministration {
     () => this.people().find((user) => user.userId === this.selectedId()) ?? null,
   );
   protected readonly amount = computed(() => this.paymentForm.amount().value() ?? 0);
+
+  // More tourists than one page: the "Bez EC" count and the search cover only this page.
+  protected readonly onePageOfMany = computed(() => this.pageCount() > 1);
 
   protected readonly pageCount = computed(() =>
     Math.max(1, Math.ceil((this.users.value()?.totalCount ?? 0) / PAGE_SIZE)),
@@ -124,26 +127,34 @@ export class WalletAdministration {
     }
   }
 
-  // One credit per tourist without EC, one after another; the server has no command for many.
+  // One credit per tourist without EC, one after another; the server has no command for many
+  // yet. A second click while it runs does nothing. If some fail, the others keep their EC and
+  // a new click credits only those still without EC, so nobody is credited twice.
   protected async creditAllEmpty(): Promise<void> {
+    if (this.pending()) {
+      return;
+    }
     const people = this.empty();
     const amount = this.bulkAmount();
     this.pending.set(true);
     this.error.set(null);
     this.notice.set(null);
     let done = 0;
-    for (const user of people) {
-      try {
-        await this.commands.credit(user.userId, { amount });
-        done++;
-      } catch {
-        // Counted below; the others still get their EC.
+    try {
+      for (const user of people) {
+        try {
+          await this.commands.credit(user.userId, { amount });
+          done++;
+        } catch {
+          // Counted below; the others still get their EC.
+        }
       }
+    } finally {
+      this.pending.set(false);
+      this.confirmingBulk.set(false);
+      this.users.reload();
+      this.transactions.reload();
     }
-    this.pending.set(false);
-    this.confirmingBulk.set(false);
-    this.users.reload();
-    this.transactions.reload();
     if (done === people.length) {
       this.notice.set(`Svaki od ${done} turista je dobio ${amount} EC.`);
     } else {

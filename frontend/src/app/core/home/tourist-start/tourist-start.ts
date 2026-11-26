@@ -15,7 +15,8 @@ import type {
 import type { GiftCardDto, WalletBalanceDto } from '../../../modules/payment/api/payment-api-types';
 import { CoordinatesDto } from '../../../shared/api/coordinates-dto';
 import { PageResult } from '../../../shared/api/page-result';
-import { formatKm } from '../../../shared/util/format';
+import { distanceKm } from '../../../shared/map/path-length';
+import { formatKm, formatProgress } from '../../../shared/util/format';
 
 const DIFFICULTY: Record<TourDifficulty, { label: string; badge: string }> = {
   Easy: { label: 'Lako', badge: 'badge badge--easy' },
@@ -169,7 +170,7 @@ export class TouristStart {
       })),
     ].map((item) => ({
       ...item,
-      meters: position === null ? null : metersBetween(position, item),
+      meters: position === null ? null : distanceKm(position, item) * 1000,
     }));
     return all.sort((a, b) => (a.meters ?? 0) - (b.meters ?? 0)).slice(0, 3);
   });
@@ -178,7 +179,7 @@ export class TouristStart {
     const active = this.active();
     return active === null
       ? '0%'
-      : `${(active.reachedKeyPointCount / active.keyPoints.length) * 100}%`;
+      : formatProgress(active.reachedKeyPointCount, active.keyPoints.length);
   });
 
   protected distance(meters: number | null): string {
@@ -204,18 +205,4 @@ export class TouristStart {
 
 function point(item: { latitude: number; longitude: number }) {
   return { latitude: item.latitude, longitude: item.longitude };
-}
-
-// The distance between two points on the Earth, in metres (the haversine formula).
-function metersBetween(
-  a: { latitude: number; longitude: number },
-  b: { latitude: number; longitude: number },
-): number {
-  const rad = (degrees: number) => (degrees * Math.PI) / 180;
-  const h =
-    Math.sin(rad(b.latitude - a.latitude) / 2) ** 2 +
-    Math.cos(rad(a.latitude)) *
-      Math.cos(rad(b.latitude)) *
-      Math.sin(rad(b.longitude - a.longitude) / 2) ** 2;
-  return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }

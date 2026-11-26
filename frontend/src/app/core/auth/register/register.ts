@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Analytics } from '../../../shared/analytics/analytics';
 import { serverMessage } from '../../../shared/util/server-message';
 import { Auth } from '../auth';
-import { safeReturnUrl } from '../login/login';
+import { safeReturnUrl } from '../safe-return-url';
 
 @Component({
   imports: [FormField, RouterLink],

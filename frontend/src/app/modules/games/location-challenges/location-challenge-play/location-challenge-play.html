@@ -1,9 +1,9 @@
-<a class="back-link" routerLink="/games/map">← Izazovi</a>
+<a class="back-link" routerLink="/games">← Izazovi</a>
 
 @if (detailsMissing()) {
   <div class="state">
     <strong>Lokacijski izazov nije pronađen.</strong>
-    <a class="button" routerLink="/games/map">Izazovi</a>
+    <a class="button" routerLink="/games">Izazovi</a>
   </div>
 } @else if (details.error()) {
   <div class="state state--error" role="alert">

@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
 import { LocationMap, MapBounds, MapLocation } from '../../../../shared/map/location-map';
+import { distanceKm } from '../../../../shared/map/path-length';
 import {
   PublishedTourDto,
   PublishedTourSearchDto,
@@ -258,7 +259,10 @@ export class TourList {
     }
     const latitude = (view.north + view.south) / 2;
     const longitude = (view.east + view.west) / 2;
-    const radiusInKm = Math.max(0.1, kmBetween(latitude, longitude, view.north, view.east));
+    const radiusInKm = Math.max(
+      0.1,
+      distanceKm({ latitude, longitude }, { latitude: view.north, longitude: view.east }),
+    );
     const area = { latitude, longitude, radiusInKm: Math.round(radiusInKm * 10) / 10 };
     this.area.set(area);
     this.areaView.set(view);
@@ -343,15 +347,6 @@ function wholeNumber(value: number | null): number | null {
 
 function positiveNumber(value: number | null): number | null {
   return value === null || Number.isNaN(value) || value <= 0 ? null : value;
-}
-
-// The distance between two points on the Earth, in kilometres (the haversine formula).
-function kmBetween(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const rad = (degrees: number) => (degrees * Math.PI) / 180;
-  const a =
-    Math.sin(rad(lat2 - lat1) / 2) ** 2 +
-    Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(rad(lon2 - lon1) / 2) ** 2;
-  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 // Empty criteria are left out of the URL.

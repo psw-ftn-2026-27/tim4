@@ -1,11 +1,11 @@
 <div class="quiz">
-  <a class="back-link" routerLink="/games/map">← Izazovi</a>
+  <a class="back-link" routerLink="/games">← Izazovi</a>
 
   @if (notStarted()) {
     <div class="state">
       <strong>Ovaj kviz niste započeli.</strong>
       <span>Kviz se započinje na licu mesta, sa mape izazova.</span>
-      <a class="button" routerLink="/games/map">Izazovi</a>
+      <a class="button" routerLink="/games">Izazovi</a>
     </div>
   } @else if (attempt.error()) {
     <div class="state state--error" role="alert">
@@ -52,7 +52,7 @@
         }
         <p class="meta">Kviz se rešava jednom. Na mapi izazova sada je označen kao rešen.</p>
         <div class="form-actions result__actions">
-          <a class="button button--primary" routerLink="/games/map">Nazad na izazove</a>
+          <a class="button button--primary" routerLink="/games">Nazad na izazove</a>
         </div>
       </section>
     } @else if (data.currentQuestion; as question) {

@@ -3,14 +3,7 @@ import { FormField, email, form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { Analytics } from '../../../shared/analytics/analytics';
 import { Auth } from '../auth';
-
-// Where to go after signing in: the page that sent the user here (requireRole or an expired
-// session), but only an address of this app, never one that leads elsewhere.
-export function safeReturnUrl(returnUrl: string | undefined): string {
-  return returnUrl !== undefined && returnUrl.startsWith('/') && !returnUrl.startsWith('//')
-    ? returnUrl
-    : '/';
-}
+import { safeReturnUrl } from '../safe-return-url';
 
 @Component({
   imports: [FormField, RouterLink],
