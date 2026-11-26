@@ -127,6 +127,12 @@ export interface PublishedTourDto {
   isInProgress: boolean;
 }
 
+export interface PurchasedTourDto {
+  tour: TourDto;
+  pinLocation: LocationDto;
+  isInProgress: boolean;
+}
+
 export interface RecordLocationSearchDto {
   latitude: number;
   longitude: number;

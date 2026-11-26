@@ -398,6 +398,106 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Buyer_sees_the_details_of_an_archived_tour()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var tour = TourSeed.ArchivedOldTownWalk;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.Id.Should().Be(tour.Id);
+        details.IsPurchased.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Tourist_who_did_not_buy_an_archived_tour_is_told_it_does_not_exist()
+    {
+        var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
+
+        var response = await client.GetAsync($"/api/exploration/tours/{TourSeed.ArchivedOldTownWalk.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Purchased_list_holds_the_paid_free_and_archived_tours_the_tourist_bought_and_not_a_tour_only_another_tourist_bought()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<List<PurchasedTourDto>>("/api/exploration/tours/purchased", JsonOptions);
+
+        tours.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Should().Contain(tour => tour.Tour.Id == TourSeed.ArchivedOldTownWalk.Id && tour.Tour.Status == TourStatus.Archived);
+        tours.Should().NotContain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+    }
+
+    [Fact]
+    public async Task Bought_product_that_is_not_a_tour_is_left_out_of_the_purchased_list()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<List<PurchasedTourDto>>("/api/exploration/tours/purchased", JsonOptions);
+
+        tours.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedVineyardsByBicycleEasy.Id);
+        tours.Should().NotContain(tour => tour.Tour.Id == TourProductSeed.GameForFree.EntityId);
+        tours.Should().OnlyContain(tour => TourSeed.All.Select(seeded => seeded.Id).Contains(tour.Tour.Id));
+    }
+
+    [Fact]
+    public async Task Tourist_without_purchases_gets_an_empty_purchased_list()
+    {
+        var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
+
+        var tours = await client.GetFromJsonAsync<List<PurchasedTourDto>>("/api/exploration/tours/purchased", JsonOptions);
+
+        tours.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Purchased_list_marks_the_tour_in_progress()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var inProgressTourId = TourExecutionSeed.ExplorersVineyardsByBicycleWithFirstKeyPointReached.TourId;
+
+        var tours = await client.GetFromJsonAsync<List<PurchasedTourDto>>("/api/exploration/tours/purchased", JsonOptions);
+
+        tours.Should().ContainSingle(tour => tour.IsInProgress)
+            .Which.Tour.Id.Should().Be(inProgressTourId);
+    }
+
+    [Fact]
+    public async Task Purchased_tour_is_pinned_at_its_first_key_point_even_when_it_is_hidden_until_purchase()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var hiddenFirstKeyPoint = TourSeed.PublishedFortressWithHiddenFirstKeyPoint.KeyPoints[0].Location;
+
+        var tours = await client.GetFromJsonAsync<List<PurchasedTourDto>>("/api/exploration/tours/purchased", JsonOptions);
+
+        tours.Should().ContainSingle(tour => tour.Tour.Id == TourSeed.PublishedFortressWithHiddenFirstKeyPoint.Id)
+            .Which.PinLocation.Should().Be(new LocationDto(hiddenFirstKeyPoint.Latitude, hiddenFirstKeyPoint.Longitude));
+    }
+
+    [Fact]
+    public async Task Anonymous_user_has_no_purchased_list()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.GetAsync("/api/exploration/tours/purchased");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_has_no_purchased_list()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.GetAsync("/api/exploration/tours/purchased");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task Draft_tour_cannot_be_opened_by_a_visitor()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");

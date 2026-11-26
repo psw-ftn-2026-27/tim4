@@ -11,9 +11,11 @@ public sealed class TourStarting
     public TourExecution Start(Tour tour, Guid touristId, bool isPurchased, TourExecution? inProgress, Location location,
         DateTime now)
     {
-        if (tour.Status != TourStatus.Published)
+        // Archiving takes a tour out of the offer, but its buyers keep it. Each allowed status is named,
+        // so a new status never becomes startable by accident.
+        if (tour.Status != TourStatus.Published && tour.Status != TourStatus.Archived)
         {
-            throw new DomainException("Pokrenuti se može samo objavljena tura.");
+            throw new DomainException("Pokrenuti se može samo objavljena ili arhivirana tura.");
         }
         if (!isPurchased)
         {

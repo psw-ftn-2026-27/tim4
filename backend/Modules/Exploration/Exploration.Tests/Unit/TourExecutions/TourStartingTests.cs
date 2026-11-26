@@ -12,7 +12,7 @@ public class TourStartingTests
     private static readonly Location Position = new(45.25, 19.85);
 
     [Fact]
-    public void Tour_that_is_not_published_cannot_be_started()
+    public void Draft_tour_cannot_be_started_even_when_bought()
     {
         var draft = CreateDraftTour();
 
@@ -22,11 +22,33 @@ public class TourStartingTests
     }
 
     [Fact]
+    public void Bought_archived_tour_can_be_started()
+    {
+        var archived = CreatePublishedTour();
+        archived.Archive();
+
+        var execution = new TourStarting().Start(archived, Tourist, true, null, Position, DateTime.UtcNow);
+
+        execution.TourId.Should().Be(archived.Id);
+    }
+
+    [Fact]
     public void Tour_the_tourist_has_not_bought_cannot_be_started()
     {
         var tour = CreatePublishedTour();
 
         var start = () => new TourStarting().Start(tour, Tourist, false, null, Position, DateTime.UtcNow);
+
+        start.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_tour_the_tourist_has_not_bought_cannot_be_started()
+    {
+        var archived = CreatePublishedTour();
+        archived.Archive();
+
+        var start = () => new TourStarting().Start(archived, Tourist, false, null, Position, DateTime.UtcNow);
 
         start.Should().Throw<DomainException>();
     }

@@ -34,6 +34,12 @@ p {
   gap: var(--space-2);
 }
 
+.current__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .current__body h2 {
   font-family: var(--font-display);
   font-size: var(--font-size-xl);
@@ -56,4 +62,64 @@ p {
 
 .state .button {
   text-decoration: none;
+}
+
+// The bought tours: their cards on the left, the map of where each starts on the right.
+.purchased {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.journey {
+  align-items: flex-start;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+// The card whose pin is under the mouse or was chosen.
+.journey--active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.journey h3 {
+  font-size: var(--font-size-lg);
+  margin: 0;
+}
+
+.journey__facts {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1) var(--space-3);
+}
+
+.journey__map-link {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0;
+}
+
+.journey__map-link:hover {
+  text-decoration: underline;
 }

@@ -39,9 +39,16 @@ public sealed class TourBrowsingController : ControllerBase
         return await _browsingQueries.GetPublishedAsync(search, User.GetUserId(), page, pageSize);
     }
 
+    [HttpGet("purchased")]
+    [Authorize(Roles = "explorer")]
+    public async Task<ActionResult<List<PurchasedTourDto>>> GetPurchased()
+    {
+        return await _browsingQueries.GetPurchasedAsync(User.GetUserId());
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TourDetailsDto>> GetDetails(Guid id)
     {
-        return await _browsingQueries.GetPublishedDetailsAsync(id, User.GetUserId());
+        return await _browsingQueries.GetDetailsAsync(id, User.GetUserId());
     }
 }

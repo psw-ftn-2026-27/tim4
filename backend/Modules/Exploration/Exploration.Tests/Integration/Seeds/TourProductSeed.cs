@@ -1,4 +1,5 @@
 using Payment.Domain.Products;
+using Shared.Tests;
 
 namespace Exploration.Tests.Integration.Seeds;
 
@@ -13,6 +14,8 @@ internal static class TourProductSeed
     public static readonly Product FortressWithHiddenFirstKeyPointFor40;
     // A product left behind for a draft tour, so that publishing it at another price conflicts.
     public static readonly Product DraftQuayFor25;
+    // A product of another module's content (a game), so that a purchase of something other than a tour exists.
+    public static readonly Product GameForFree;
 
     static TourProductSeed()
     {
@@ -22,7 +25,8 @@ internal static class TourProductSeed
         ArchivedOldTownWalkFor20 = new Product(TourSeed.ArchivedOldTownWalk.Id, TourSeed.ArchivedOldTownWalk.Name, TourSeed.ArchivedOldTownWalk.AuthorId, 20);
         FortressWithHiddenFirstKeyPointFor40 = new Product(TourSeed.PublishedFortressWithHiddenFirstKeyPoint.Id, TourSeed.PublishedFortressWithHiddenFirstKeyPoint.Name, TourSeed.PublishedFortressWithHiddenFirstKeyPoint.AuthorId, 40);
         DraftQuayFor25 = new Product(TourSeed.PublishableQuayWithExistingProduct.Id, TourSeed.PublishableQuayWithExistingProduct.Name, TourSeed.PublishableQuayWithExistingProduct.AuthorId, 25);
+        GameForFree = new Product(Guid.NewGuid(), "Kviz o tvrđavi", WellKnownUsers.SecondExplorer, 0);
     }
 
-    public static Product[] All => [VineyardsFor30, MonasteriesForFree, VineyardsByBicycleFor60, ArchivedOldTownWalkFor20, FortressWithHiddenFirstKeyPointFor40, DraftQuayFor25];
+    public static Product[] All => [VineyardsFor30, MonasteriesForFree, VineyardsByBicycleFor60, ArchivedOldTownWalkFor20, FortressWithHiddenFirstKeyPointFor40, DraftQuayFor25, GameForFree];
 }
