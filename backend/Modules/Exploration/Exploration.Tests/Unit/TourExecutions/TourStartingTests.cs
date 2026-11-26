@@ -43,6 +43,17 @@ public class TourStartingTests
     }
 
     [Fact]
+    public void Archived_tour_the_tourist_has_not_bought_cannot_be_started()
+    {
+        var archived = CreatePublishedTour();
+        archived.Archive();
+
+        var start = () => new TourStarting().Start(archived, Tourist, false, null, Position, DateTime.UtcNow);
+
+        start.Should().Throw<DomainException>();
+    }
+
+    [Fact]
     public void Starting_a_tour_whose_session_is_in_progress_continues_that_session_instead_of_making_a_new_one()
     {
         var tour = CreatePublishedTour();

@@ -97,7 +97,7 @@ internal sealed class TourReadRepository : ITourReadRepository
         return tours.ToDictionary(tour => tour.Id, tour => tour.Locations.First());
     }
 
-    public Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId, bool includeArchived)
+    public Task<TourDetailsDto?> GetDetailsAsync(Guid tourId, bool includeArchived)
     {
         return _dbContext.Tours
             .Where(tour => tour.Id == tourId

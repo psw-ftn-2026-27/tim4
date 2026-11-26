@@ -24,7 +24,7 @@ public interface ITourReadRepository
 
     // Null when the tour does not exist or is neither published nor, when includeArchived is true, archived.
     // Holds every key point with its secret.
-    Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId, bool includeArchived);
+    Task<TourDetailsDto?> GetDetailsAsync(Guid tourId, bool includeArchived);
 
     // Null when the tour does not exist or belongs to another author.
     Task<List<KeyPointDto>?> GetKeyPointsOfAuthoredTourAsync(Guid tourId, Guid authorId);

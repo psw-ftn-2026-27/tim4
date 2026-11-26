@@ -133,10 +133,10 @@ public sealed class TourBrowsingQueries
 
     // An archived tour is out of the offer, so only its buyers can still open it; for everyone else
     // it does not exist.
-    public async Task<TourDetailsDto> GetPublishedDetailsAsync(Guid tourId, Guid viewerId)
+    public async Task<TourDetailsDto> GetDetailsAsync(Guid tourId, Guid viewerId)
     {
         var isPurchased = await _paymentApi.HasPurchasedAsync(viewerId, tourId);
-        var tour = await _tourReadRepository.GetPublishedDetailsAsync(tourId, isPurchased)
+        var tour = await _tourReadRepository.GetDetailsAsync(tourId, includeArchived: isPurchased)
             ?? throw new NotFoundException($"Tour {tourId} does not exist.");
         var inProgressTourId = await _executionReadRepository.GetInProgressTourIdAsync(viewerId);
         tour = tour with { IsPurchased = isPurchased, IsInProgress = tour.Id == inProgressTourId };

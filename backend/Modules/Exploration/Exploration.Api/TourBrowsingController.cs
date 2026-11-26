@@ -49,6 +49,6 @@ public sealed class TourBrowsingController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TourDetailsDto>> GetDetails(Guid id)
     {
-        return await _browsingQueries.GetPublishedDetailsAsync(id, User.GetUserId());
+        return await _browsingQueries.GetDetailsAsync(id, User.GetUserId());
     }
 }
