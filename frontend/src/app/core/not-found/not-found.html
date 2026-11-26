@@ -1,0 +1,11 @@
+<div class="state not-found">
+  <img src="/images/ilustracije/finding-the-way.svg" alt="" />
+  @if (kind() === 'forbidden') {
+    <h1>Nemate pristup ovoj stranici</h1>
+    <p>Ova stranica je za drugu vrstu naloga.</p>
+  } @else {
+    <h1>Stranica ne postoji</h1>
+    <p>Adresa je možda pogrešno upisana, ili je stranica premeštena.</p>
+  }
+  <a class="button button--primary" routerLink="/">Na početnu</a>
+</div>

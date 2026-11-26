@@ -1,36 +1,24 @@
-<div class="table-wrap">
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">Proizvod</th>
-        <th scope="col">Cena</th>
+<ul class="lines">
+  @for (item of items(); track item.id) {
+    <li class="line">
+      <h3>
+        <!-- The product is a tour; its page belongs to Exploration and is reached by its address. -->
+        <a [routerLink]="['/exploration/tours', item.entityId]">{{ item.name }}</a>
+      </h3>
+      <div class="line__price">
+        <span class="line__amount">{{ item.price === 0 ? 'Besplatno' : item.price + ' EC' }}</span>
         @if (removable()) {
-          <th scope="col">Uklanjanje</th>
+          <button
+            class="quiet"
+            type="button"
+            [disabled]="pending()"
+            [attr.aria-label]="'Ukloni ' + item.name + ' iz korpe'"
+            (click)="removeItem.emit(item.id)"
+          >
+            Ukloni
+          </button>
         }
-      </tr>
-    </thead>
-    <tbody>
-      @for (item of items(); track item.id) {
-        <tr>
-          <td>{{ item.name }}</td>
-          <td>
-            <span class="badge badge--ec">{{ item.price }} EC</span>
-          </td>
-          @if (removable()) {
-            <td>
-              <button
-                class="button"
-                type="button"
-                [disabled]="pending()"
-                [attr.aria-label]="'Ukloni ' + item.name + ' iz korpe'"
-                (click)="removeItem.emit(item.id)"
-              >
-                Ukloni
-              </button>
-            </td>
-          }
-        </tr>
-      }
-    </tbody>
-  </table>
-</div>
+      </div>
+    </li>
+  }
+</ul>

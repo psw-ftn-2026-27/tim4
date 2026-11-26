@@ -1,5 +1,5 @@
-<div class="card stack">
-  <p><a routerLink="/games/challenges">Nazad na izazove</a></p>
+<div class="page--narrow stack">
+  <a class="back-link" routerLink="/games/admin">← Izazovi</a>
 
   @if (quiz.isLoading()) {
     <p>Učitavanje kviza...</p>
@@ -12,7 +12,12 @@
       @if (editing()) {
         <h1>Izmena kviza</h1>
 
-        <app-quiz-form [quizForm]="form" [pending]="pending()" [error]="error()" (save)="save($event)" />
+        <app-quiz-form
+          [quizForm]="form"
+          [pending]="pending()"
+          [error]="error()"
+          (save)="save($event)"
+        />
 
         <button class="button" type="button" [disabled]="pending()" (click)="cancelEdit()">
           Otkaži

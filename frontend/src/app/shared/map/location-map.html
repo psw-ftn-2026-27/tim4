@@ -1,1 +1,18 @@
 <div class="map"></div>
+
+<!-- "To my position" (only when there is one) and "show everything", above the zoom buttons. -->
+<div class="controls">
+  @if (hasPosition()) {
+    <button
+      type="button"
+      title="Moja pozicija"
+      aria-label="Pomeri mapu na moju poziciju"
+      (click)="toPosition()"
+    >
+      ◉
+    </button>
+  }
+  <button type="button" title="Prikaži sve" aria-label="Prikaži sve na mapi" (click)="showAll()">
+    ⤢
+  </button>
+</div>

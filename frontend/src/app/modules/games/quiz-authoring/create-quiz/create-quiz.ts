@@ -46,7 +46,7 @@ export class CreateQuiz {
     this.error.set(null);
     try {
       await this.quizAuthoring.create(quiz);
-      await this.router.navigate(['/games/challenges']);
+      await this.router.navigate(['/games/admin']);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Kviz nije sačuvan.'));
     } finally {

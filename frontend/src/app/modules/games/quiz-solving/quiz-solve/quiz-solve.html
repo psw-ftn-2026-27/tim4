@@ -1,73 +1,114 @@
-<div class="stack">
-  <a class="back-link" routerLink="/games/map">← Mapa izazova</a>
-  <header class="page-header">
-    <h1>{{ attempt.hasValue() ? attempt.value().name : 'Rešavanje kviza' }}</h1>
-  </header>
+<div class="quiz">
+  <a class="back-link" routerLink="/games">← Izazovi</a>
 
-  @if (!user()) {
-    <p class="state">Prijavite se da biste rešavali kvizove.</p>
-  } @else if (!isExplorer()) {
-    <p class="state">Rešavanje kvizova dostupno je istraživačima.</p>
-  } @else if (notStarted()) {
+  @if (notStarted()) {
     <div class="state">
-      <p>Ovaj kviz niste započeli. Započnite ga sa mape izazova.</p>
-      <a routerLink="/games/map">← Mapa izazova</a>
+      <strong>Ovaj kviz niste započeli.</strong>
+      <span>Kviz se započinje na licu mesta, sa mape izazova.</span>
+      <a class="button" routerLink="/games">Izazovi</a>
     </div>
   } @else if (attempt.error()) {
     <div class="state state--error" role="alert">
-      <p>Učitavanje kviza nije uspelo.</p>
+      <strong>Kviz nije učitan.</strong>
       <button class="button" type="button" (click)="attempt.reload()">Pokušaj ponovo</button>
     </div>
+  } @else if (!attempt.hasValue()) {
+    <p class="state" role="status">Učitavanje kviza…</p>
   } @else if (attempt.value(); as data) {
-    <p>{{ data.instructions }}</p>
-    <div class="progress">
-      <span class="progress__bar" aria-hidden="true">
-        <span
-          class="progress__fill"
-          [style.width.%]="(data.answeredCount / data.questionCount) * 100"
-        ></span>
-      </span>
-      <span>{{ data.answeredCount }} od {{ data.questionCount }}</span>
-    </div>
+    <header class="head">
+      <p class="head__kind"><span class="kind">? Kviz</span></p>
+      <h1>{{ data.name }}</h1>
+      @if (!data.result) {
+        <div class="progress">
+          <span class="progress__bar" aria-hidden="true"
+            ><span
+              class="progress__fill"
+              [style.width.%]="(data.answeredCount / data.questionCount) * 100"
+            ></span
+          ></span>
+          <span>Pitanje {{ data.answeredCount + 1 }} od {{ data.questionCount }}</span>
+        </div>
+      }
+    </header>
 
     @if (data.result; as result) {
-      <section class="card stack" role="status">
-        <h2>Kviz je rešen</h2>
-        <p>
-          <span class="badge badge--xp">★ {{ earnedXpText() }} od {{ result.totalXp }} XP</span>
-          {{ percentageText() }}
+      <section class="result" role="status" aria-labelledby="result-title">
+        <span class="result__check" aria-hidden="true">★</span>
+        <h2 id="result-title">Kviz je rešen</h2>
+        <p class="result__xp">
+          <strong>{{ earnedXpText() }}</strong> od {{ result.totalXp }} XP
         </p>
+        <div class="progress result__bar">
+          <span class="progress__bar" aria-hidden="true"
+            ><span class="progress__fill" [style.width.%]="percent()"></span
+          ></span>
+          <span>{{ percent() }} %</span>
+        </div>
+        @if (!fullScore()) {
+          <p class="meta">
+            Za delimično tačan odgovor dobijate deo poena, a svaki pogrešno označen odgovor oduzima
+            četvrtinu poena tog pitanja.
+          </p>
+        }
+        <p class="meta">Kviz se rešava jednom. Na mapi izazova sada je označen kao rešen.</p>
+        <div class="form-actions result__actions">
+          <a class="button button--primary" routerLink="/games">Nazad na izazove</a>
+        </div>
       </section>
     } @else if (data.currentQuestion; as question) {
-      <fieldset class="field-group">
-        <legend>{{ question.text }}</legend>
-        @for (option of question.options; track $index) {
-          <label class="choice" [for]="'option-' + $index">
-            <input
-              [id]="'option-' + $index"
-              type="checkbox"
-              [checked]="selected().includes($index)"
-              (change)="toggle($index)"
-            />
-            {{ option }}
-          </label>
-        }
-      </fieldset>
-      @if (error(); as message) {
-        <p class="error" role="alert">{{ message }}</p>
+      @if (saved(); as number) {
+        <p class="saved" role="status">✓ Odgovor na pitanje {{ number }} je sačuvan.</p>
       }
-      <div class="form-actions">
-        <button
-          class="button button--primary"
-          type="button"
-          [disabled]="pending() || attempt.isLoading()"
-          (click)="answer(question.id)"
-        >
-          Sledeće
-        </button>
-      </div>
+
+      <fieldset class="question">
+        <legend>
+          <span class="question__text">{{ question.text }}</span>
+        </legend>
+
+        <p class="question__hint">Označite sve tačne odgovore. Može ih biti više od jednog.</p>
+
+        <div class="options">
+          @for (option of question.options; track $index) {
+            <label class="option" [class.option--on]="selected().includes($index)">
+              <input
+                type="checkbox"
+                [checked]="selected().includes($index)"
+                (change)="toggle($index)"
+              />
+              <span>{{ option }}</span>
+            </label>
+          }
+        </div>
+
+        <p class="question__warn">
+          Pogrešno označen odgovor oduzima četvrtinu poena pitanja. Na pitanje odgovarate jednom i
+          posle ne možete da se vratite.
+        </p>
+
+        @if (error(); as message) {
+          <p class="error" role="alert">⚠ {{ message }}</p>
+        }
+
+        <div class="form-actions">
+          <button
+            class="button button--primary"
+            type="button"
+            [disabled]="pending() || selected().length === 0"
+            (click)="answer(question.id)"
+          >
+            {{
+              data.answeredCount + 1 === data.questionCount ? 'Odgovori i završi kviz' : 'Odgovori'
+            }}
+          </button>
+          @if (selected().length === 0) {
+            <span class="meta">Označite bar jedan odgovor.</span>
+          }
+        </div>
+      </fieldset>
+
+      <p class="leave meta">
+        Možete da prekinete: odgovori su sačuvani, a kviz nastavljate sa mape izazova.
+      </p>
     }
-  } @else if (attempt.isLoading()) {
-    <p class="state" role="status">Učitavanje kviza…</p>
   }
 </div>

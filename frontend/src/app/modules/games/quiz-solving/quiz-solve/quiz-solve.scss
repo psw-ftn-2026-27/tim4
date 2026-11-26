@@ -1,0 +1,209 @@
+// One centred column: a quiz has no list or map beside it, so the question sits in the middle.
+.quiz {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0 auto;
+  max-width: 44rem;
+  padding-bottom: var(--space-6);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+.back-link {
+  align-self: flex-start;
+}
+
+// ---- Head ----
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.head__kind {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.kind {
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.head h1 {
+  font-family: var(--font-display);
+}
+
+.saved {
+  animation: fade 0.3s ease-out;
+  color: var(--color-success-text);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+// ---- The question ----
+
+.question {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-5) var(--space-6) var(--space-6);
+}
+
+legend {
+  display: flex;
+  flex-direction: column;
+  float: left;
+  gap: var(--space-2);
+  padding: 0;
+  width: 100%;
+}
+
+.question__meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.question__text {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  line-height: 1.3;
+}
+
+.question__hint {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+// Each option is a whole row to click, not a small checkbox.
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.option {
+  align-items: center;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.option:hover {
+  border-color: var(--color-accent);
+}
+
+.option--on {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  font-weight: 600;
+}
+
+.option input {
+  accent-color: var(--color-accent);
+  height: var(--space-4);
+  margin: 0;
+  width: var(--space-4);
+}
+
+.question__warn {
+  background: var(--color-muted-bg);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.form-actions {
+  align-items: center;
+  margin: 0;
+}
+
+.leave {
+  text-align: center;
+}
+
+// ---- Result ----
+
+.result {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.result__check {
+  align-items: center;
+  animation: pop 0.45s ease-out;
+  background: var(--color-xp-bg);
+  border-radius: 50%;
+  box-shadow: 0 0 0 var(--space-3) color-mix(in srgb, var(--color-xp-bg) 50%, transparent);
+  color: var(--color-xp-text);
+  display: inline-flex;
+  font-size: var(--font-size-xl);
+  height: calc(var(--space-6) * 1.75);
+  justify-content: center;
+  margin-bottom: var(--space-2);
+  width: calc(var(--space-6) * 1.75);
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+  }
+}
+
+.result h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+}
+
+.result__xp {
+  font-size: var(--font-size-lg);
+}
+
+.result__xp strong {
+  font-size: calc(var(--font-size-xl) * 1.6);
+}
+
+.result__bar {
+  width: min(100%, 20rem);
+}
+
+.result__actions {
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+.result__actions .button,
+.state .button {
+  text-decoration: none;
+}

@@ -1,5 +1,52 @@
+:host {
+  display: block;
+  position: relative;
+}
+
 .map {
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   height: 400px;
+}
+
+// With the fill input the map takes its parent's height: the map column of a list beside a map,
+// or a whole screen like the active tour. The page gives the parent its height.
+:host(.fill) {
+  height: 100%;
+}
+
+:host(.fill) .map {
+  height: 100%;
+  min-height: 20rem;
+}
+
+.controls {
+  bottom: calc(var(--space-6) * 2.6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: absolute;
+  right: var(--space-3);
+  // Above Leaflet's panes and below its zoom buttons' level, which is 1000.
+  z-index: 1000;
+}
+
+.controls button {
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-lg);
+  height: var(--control-height);
+  line-height: 1;
+  width: var(--control-height);
+}
+
+.controls button:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }

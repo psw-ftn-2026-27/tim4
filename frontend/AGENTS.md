@@ -28,19 +28,25 @@ frontend/src/
     _layout.scss             page container, stack, grid helpers
     _components.scss         global classes: button, card, form field, table
   app/
-    core/                    auth (state, interceptor, login, register), home,
-                             design-preview (style guide), app.routes.ts      [platform]
+    core/                    auth (state, interceptor, requireRole, login,
+                             register), home (the tourist's start page reads
+                             module endpoints, see below), not-found, design-preview
+                             (style guide), app.routes.ts                     [platform]
     shared/
-      util/                  serverMessage                                     [platform]
+      util/                  serverMessage; format: dates, numbers, lengths     [platform]
       image-upload/          image field for a form, see "Image upload" below  [platform]
       api/                   shared types (PageResult, ProblemDetails,
                              CoordinatesDto),
                              mirror the server, no client-only fields          [platform]
-      map/                   LocationMap (Leaflet): pins, path, picking a location,
-                             position, route to a target, area circle;
+      map/                   LocationMap (Leaflet): pins in the theme's colours,
+                             groups, path, picking a location, position, route
+                             to a target, area circle, search "in this area";
                              see its README, example at /design-preview/map    [platform]
       analytics/             Analytics (Google Analytics 4): consent, page views,
                              the event catalog; see "Analytics" below          [platform]
+      bar/                   BarRefresh: a command that changes the cart, the
+                             balance or the tour in progress without leaving
+                             the page tells the bar to read them again         [platform]
       position/              PositionSimulation: the command that sets the tourist's
                              position; repeatEvery: a page's periodic check;
                              see its README, example at /design-preview/map    [platform]
@@ -134,7 +140,12 @@ construct means adding a lesson, so treat it as a platform decision.
   returning without sending; the forms lesson does not cover these two yet.
 - Routing: `router-outlet`, `routerLink`, `loadChildren`, route parameters bound as
   signal inputs via `withComponentInputBinding`; `inject(Router)` only for navigation
-  after a command.
+  after a command. Every route in a module's routes file names who may open it with
+  `canActivate: [requireRole('explorer')]`, `[requireRole('administrator')]`, or
+  `[requireRole()]` for any signed-in user (from `core/auth/require-role.ts`); a page
+  open to guests has none. The role is the one the page's endpoints require. The guard
+  sends a guest to the login page and back, and shows "Nemate pristup" to a wrong role,
+  so a page never checks the role in its template to refuse itself.
 - No RxJS in student code. `Observable` appears only as the return type of `HttpClient`
   writes, immediately awaited. No NgRx, no facades.
 - The one exception to this subset is `shared/map`, which may use `inject(ElementRef)`,
@@ -147,6 +158,20 @@ construct means adding a lesson, so treat it as a platform decision.
   method and never see the Observable.
 - The app shell's navigation bar (`app.html`) is the third: it may use `routerLinkActive`,
   with `routerLinkActiveOptions`, to highlight the current section. Modules do not use it.
+- The app shell (`app.ts`) is also the one place outside a module that reads module
+  endpoints: the cart count, the wallet balance and the tour in progress, three
+  `httpResource`s that repeat after every navigation (`Router.lastSuccessfulNavigation`).
+  It imports only those modules' `api/` types. A module never does this; a module's group
+  service calls `BarRefresh.refresh()` (`shared/bar`) right after a command that changes the
+  cart, the balance or the tour in progress while the user stays on the page.
+- The tourist's start page (`core/home/tourist-start`) is the second place outside a module
+  that reads module endpoints: the tour in progress, the wallet and gift cards, the
+  position and preference, published tours, and the three challenge maps, to answer "what
+  now?". Like the shell, it imports only those modules' `api/` types and only reads; every
+  action on it is a link to the module's own page.
+- `core/auth/auth-interceptor.ts` may use the RxJS `tap` operator: on a 401 to a request
+  that carried the token it signs the user out and opens the login page with the
+  current address to come back to.
 - `shared/position` is the fourth: its `repeatEvery` may use `setInterval` and
   `inject(DestroyRef)` to repeat a page's check on an interval and stop when the page is
   destroyed; modules call only `repeatEvery` and its `stop()` (see
@@ -203,11 +228,32 @@ preview disagree, fix the preview.
   (example: `/design-preview`, Link nazad).
 - Navigation: the top bar is the only navigation; a page never adds its own links to sections
   in the bar, only its `.back-link` and its one primary action in `.page-header`
-  (example: `/design-preview`, Navigacija).
-- Page width: two widths only. A page whose content is one form (login, create, preferences)
-  is `.page--narrow`; lists, tables and maps use the default full width. A narrow page sits
-  against the left edge, in line with the bar, and is never centred, login and registration
-  included (example: `/design-preview`, Širina stranice).
+  (example: `/design-preview`, Navigacija). A link to the next step inside a `.notice` or a
+  `.state` ("Otvori korpu", "Pretraži ture") is allowed; a block of section links is not. The
+  bar holds the sections of the role; the user's own pages that are not sections
+  (preferences, gift cards) are in the user menu. A new section is a platform change to
+  `app.html`.
+- Page width: a page's content either fills the width or sits centred; it never stops at a
+  fixed width against the left edge with empty space on the right. Lists, tables and maps use
+  the full width. A page whose content is one form (create, preferences) is `.page--narrow` and
+  sits against the left edge, in line with its header. An outcome or entry with nothing to line
+  up with (a finished purchase or quiz, login, a missing page) is `.page--center`. A block
+  inside a page follows the same rule: a `max-width` without `margin-inline: auto` is a bug
+  (example: `/design-preview`, Širina stranice).
+- List beside a map: a page whose items have a place (tours, challenges) is `.split`: the list
+  on the left, the map as a vertical column on the right with `[fill]="true"`, both as tall as
+  the window; only `.split__list` scrolls. Never a wide map above or below the list. The card
+  under the mouse and its pin highlight each other (`activeIndex`, `locationHover`), and a
+  card's "⌖ Na mapi" sets `focusIndex` (example: `/design-preview/map`, Spisak i mapa).
+- Links: going to another page is either a `.button` whose text is a verb ("Otvori novčanik",
+  "Pretraži ture"), or a whole card or row that is the link, `.link-card`, whose title is the
+  thing's name. Underlined text is a link only inside a sentence (in a `.notice` or a `.state`),
+  as the `.back-link`, and as an item's name in a table or a list. A standalone text with an
+  arrow ("Otvori →", "Sve ture →") is never used; the guest's landing page (`core/home` hero
+  and closing) is the one place with arrows, as part of its buttons (example: `/design-preview`,
+  Linkovi i prelazi).
+- Views of one page are `.tabs`, filters that apply at once are `.chips`
+  (example: `/design-preview`, Jezičci, Čipovi).
 - Control height: buttons, inputs and selects share `--control-height`, already set by
   `.button` and `.field`; never set it again (example: `/design-preview`, Visina kontrola).
 - Values in a component's `.scss`: no hex colours and no pixel or rem values for spacing,
@@ -216,6 +262,15 @@ preview disagree, fix the preview.
 - Buttons: one `.button--primary` per form or page area, `.button` for secondary actions,
   `.button--danger` only for what cannot be undone; a button's text is a verb
   (example: `/design-preview`, Dugmad).
+- Confirmation: an action that cannot be undone asks right next to its button in `.confirm`,
+  the question, then `.button--danger` and "Odustani"; never a dialog, never a form at the
+  bottom of the page (example: `/design-preview`, Potvrda na mestu).
+- Editing in place: a form that changes one item opens where its button is (the row or the
+  card expands) or on its own page with a `.back-link`; never under a table, far from the
+  button that opened it.
+- After a command: success shows a `.notice--success` under the page header ("✓ Tura je
+  objavljena."), failure shows `serverMessage` in `.error` with `role="alert"` next to the
+  button. A command that changes the list never finishes silently.
 - Form actions: the buttons of a form or a filter sit in `.form-actions` under the fields,
   never as another cell of the field grid (example: `/design-preview`, Dugmad forme).
 - Tables: a column holding a date, an amount, a count or a badge is `.col-fit` on its `th` and
@@ -236,6 +291,28 @@ preview disagree, fix the preview.
   Oznake stanja, Oznake težine, EC i XP).
 - A count in a flow ("2 od 5 tačaka") is `.progress`, bar and text
   (example: `/design-preview`, Napredak).
+- Dates and numbers: through `shared/util/format.ts`, never raw: a date `21.11.2026.`, with
+  the time `21.11.2026. 14:05`, a decimal with a comma and at most one decimal ("37,5 XP"), a
+  length `1,4 km`, a duration `1 h 30 min`. Coordinates are never shown to the user.
+- Enum values: never shown raw ("Easy", "Walking"). A state, difficulty or kind is a badge; any
+  other enum goes through a `Record<Enum, string>` of Serbian labels exported from the file of
+  the component that shows it.
+
+### A new page, checklist
+
+1. The route in the module's routes file, with `requireRole(...)`.
+2. `.back-link` if the page has a parent, then `.page-header` with the `h1` and at most one
+   primary action.
+3. The width: full, `.split` for a list with places, `.page--narrow` for one form,
+   `.page--center` for an outcome.
+4. Exactly one of the five states while the data is not there.
+5. States, difficulty, EC and XP as badges; dates and numbers through `format.ts`; no raw enum
+   value, no coordinates, no English.
+6. Every command: a disabled button while pending, a success notice or an error next to the
+   button; what cannot be undone asks in `.confirm`.
+7. No link to a section of the bar; the next step only inside a notice or a state. Every other
+   way to another page is a `.button` or a `.link-card`, never "text →".
+8. Compare with `/design-preview`.
 
 ## Image upload
 

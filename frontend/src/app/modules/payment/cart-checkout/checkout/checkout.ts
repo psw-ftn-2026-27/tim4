@@ -7,11 +7,12 @@ import { serverMessage } from '../../../../shared/util/server-message';
 import { CartCheckoutDto } from '../../api/payment-api-types';
 import { CartItems } from '../cart-items/cart-items';
 import { CheckoutGiftCard } from '../checkout-gift-card/checkout-gift-card';
+import { CheckoutSteps } from '../checkout-steps/checkout-steps';
 import { CartCheckout } from '../cart-checkout';
 
 @Component({
   selector: 'app-checkout',
-  imports: [CartItems, CheckoutGiftCard, FormField, RouterLink],
+  imports: [CartItems, CheckoutGiftCard, CheckoutSteps, FormField, RouterLink],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
 })
@@ -19,8 +20,8 @@ export class Checkout {
   private readonly cartCheckout = inject(CartCheckout);
   private readonly router = inject(Router);
   readonly checkoutId = input.required<string>();
-  protected readonly auth = inject(Auth);
-  protected readonly isExplorer = computed(
+  private readonly auth = inject(Auth);
+  private readonly isExplorer = computed(
     () => this.auth.user()?.roles.includes('explorer') ?? false,
   );
   protected readonly pending = signal(false);
@@ -54,10 +55,18 @@ export class Checkout {
     const productId = checkout?.appliedCoupon?.productId;
     return checkout?.items.find((item) => item.productId === productId)?.name ?? '';
   });
+  // How many EC are missing, or 0 when the wallet covers the price.
+  protected readonly missing = computed(() => {
+    const checkout = this.checkout.value();
+    return checkout === undefined
+      ? 0
+      : Math.max(0, checkout.totalToPay - checkout.availableBalance);
+  });
+
   protected readonly loadError = computed(() =>
     serverMessage(
       this.checkout.error(),
-      'Checkout nije moguce ucitati. Ako je korpa izmenjena, vrati se i pripremi novi checkout.',
+      'Plaćanje nije učitano. Ako je korpa izmenjena, vratite se u korpu i nastavite ponovo.',
     ),
   );
 
@@ -112,7 +121,7 @@ export class Checkout {
       }
     } catch (failure) {
       this.giftCardError.set(
-        serverMessage(failure, 'Izmena poklon kartice nije uspela. Pokušaj ponovo.'),
+        serverMessage(failure, 'Izmena poklon kartice nije uspela. Pokušajte ponovo.'),
       );
     } finally {
       this.pending.set(false);
@@ -134,7 +143,7 @@ export class Checkout {
       });
       await this.router.navigate(['/payment/purchases', purchaseId]);
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Kupovina nije uspela. Pokusaj ponovo.'));
+      this.error.set(serverMessage(failure, 'Kupovina nije uspela. Pokušajte ponovo.'));
       this.checkout.reload();
     } finally {
       this.pending.set(false);

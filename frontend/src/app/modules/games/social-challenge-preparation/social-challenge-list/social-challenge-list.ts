@@ -5,10 +5,14 @@ import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { SocialChallengeDto } from '../../api/games-api-types';
+import { AdminTabs } from '../../quiz-authoring/admin-tabs/admin-tabs';
+import { STATUS_LABELS } from '../../quiz-authoring/challenge-list/challenge-list';
 import { SocialChallengePreparation } from '../social-challenge-preparation';
 
+// The administrator's social challenges: the hours of the day each is active, how many players
+// it needs, its state and the one next step of its lifecycle.
 @Component({
-  imports: [RouterLink],
+  imports: [AdminTabs, RouterLink],
   selector: 'app-social-challenge-list',
   templateUrl: './social-challenge-list.html',
   styleUrl: './social-challenge-list.scss',
@@ -17,8 +21,8 @@ export class SocialChallengeList {
   private readonly auth = inject(Auth);
   private readonly preparation = inject(SocialChallengePreparation);
 
-  protected readonly isAdministrator = computed(() =>
-    this.auth.user()?.roles.includes('administrator') ?? false,
+  protected readonly isAdministrator = computed(
+    () => this.auth.user()?.roles.includes('administrator') ?? false,
   );
   protected readonly page = signal(1);
   protected readonly pageSize = 20;
@@ -26,6 +30,11 @@ export class SocialChallengeList {
     this.isAdministrator()
       ? `/api/games/social-challenges?page=${this.page()}&pageSize=${this.pageSize}`
       : undefined,
+  );
+  protected readonly statusLabels = STATUS_LABELS;
+  protected readonly notice = signal<string | null>(null);
+  protected readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil((this.challenges.value()?.totalCount ?? 0) / this.pageSize)),
   );
   protected readonly selectedId = signal<string | null>(null);
   protected readonly pending = signal(false);
@@ -35,17 +44,21 @@ export class SocialChallengeList {
   protected async changeState(challenge: SocialChallengeDto): Promise<void> {
     this.pending.set(true);
     this.error.set(null);
+    this.notice.set(null);
     this.stateErrorId.set(null);
     try {
       switch (challenge.status) {
         case 'Draft':
           await this.preparation.publish(challenge.id);
+          this.notice.set(`„${challenge.name}” je objavljen.`);
           break;
         case 'Published':
           await this.preparation.retire(challenge.id);
+          this.notice.set(`„${challenge.name}” je povučen.`);
           break;
         case 'Retired':
           await this.preparation.archive(challenge.id);
+          this.notice.set(`„${challenge.name}” je arhiviran.`);
           break;
       }
       this.challenges.reload();
@@ -55,6 +68,11 @@ export class SocialChallengeList {
     } finally {
       this.pending.set(false);
     }
+  }
+
+  // "18:00:00" from the server, shown as "18:00".
+  protected hours(start: string, end: string): string {
+    return `${start.slice(0, 5)}–${end.slice(0, 5)}`;
   }
 
   protected changePage(page: number): void {
@@ -80,6 +98,7 @@ export class SocialChallengeList {
     try {
       await this.preparation.remove(id);
       this.cancelDelete();
+      this.notice.set('Izazov je obrisan.');
       if (wasOnlyChallengeOnPage && this.page() > 1) {
         this.page.update((page) => page - 1);
       } else {

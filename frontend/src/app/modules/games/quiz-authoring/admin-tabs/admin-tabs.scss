@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.page-header {
+  margin: 0;
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.button {
+  text-decoration: none;
+}

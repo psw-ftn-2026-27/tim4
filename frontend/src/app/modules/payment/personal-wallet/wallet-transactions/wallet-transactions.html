@@ -1,46 +1,29 @@
-<div class="table-wrap">
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">Vreme</th>
-        <th scope="col">Opis</th>
-        <th scope="col">Iznos</th>
-        <th scope="col">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (transaction of transactions(); track transaction.id) {
-        <tr [class.row--muted]="transaction.status === 'Cancelled'">
-          <td>{{ formatTime(transaction.submittedAt) }}</td>
-          <td>
-            @switch (transaction.kind) {
-              @case ('Purchase') {
-                Kupovina proizvoda
-              }
-              @case ('GiftCard') {
-                Kupovina poklon kartice
-              }
-              @default {
-                Uplata administratora
-              }
-            }
-          </td>
-          <td>
-            @if (transaction.kind !== 'Credit') {
-              {{ transaction.amount > 0 ? '-' : '' }}{{ transaction.amount }} EC
-            } @else {
-              +{{ transaction.amount }} EC
-            }
-          </td>
-          <td>
-            @if (transaction.status === 'Cancelled') {
-              <span class="badge badge--muted">Stornirano</span>
-            } @else {
-              <span class="badge badge--success">Izvrseno</span>
-            }
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-</div>
+@for (day of days(); track day.date) {
+  <h3 class="day">{{ day.date }}</h3>
+  <ul class="lines">
+    @for (t of day.items; track t.id) {
+      <li class="line" [class.line--cancelled]="t.status === 'Cancelled'">
+        <span class="line__mark" [class.line__mark--in]="t.kind === 'Credit'" aria-hidden="true">{{
+          kinds[t.kind].mark
+        }}</span>
+        <span class="line__body">
+          <!-- A purchase's name is the link to its receipt; the rest are plain lines. -->
+          @if (t.kind === 'Purchase' && t.purchaseId) {
+            <a class="line__name" [routerLink]="['/payment/purchases', t.purchaseId]">{{
+              kinds[t.kind].label
+            }}</a>
+          } @else {
+            <strong>{{ kinds[t.kind].label }}</strong>
+          }
+          <span class="meta">{{ time(t.submittedAt) }}</span>
+        </span>
+        @if (t.status === 'Cancelled') {
+          <span class="badge badge--muted">Stornirano</span>
+        }
+        <span class="line__amount" [class.line__amount--in]="t.kind === 'Credit'">
+          {{ t.kind === 'Credit' ? '+' : '−' }}{{ t.amount }} EC
+        </span>
+      </li>
+    }
+  </ul>
+}

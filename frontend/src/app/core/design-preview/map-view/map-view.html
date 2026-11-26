@@ -8,6 +8,64 @@
 </p>
 
 <section class="stack">
+  <h2>Spisak i mapa</h2>
+  <p class="meta">
+    Pinovi sa oznakom (<code>label</code>, <code>tone</code>), grupe (<code>cluster</code>), kartica
+    pod mišem ističe pin (<code>activeIndex</code>) i obrnuto (<code>locationHover</code>), „Na
+    mapi” doleti do pina (<code>focusIndex</code>). Pomerite mapu: pojavi se „Pretraži ovu oblast”
+    (<code>viewChange</code>), a pogled ostaje gde jeste (<code>fitKey</code>).
+  </p>
+
+  <div class="split split--sample">
+    <div class="split__side">
+      @if (searchedArea() !== null) {
+        <p class="notice notice--muted">
+          Prikazane su samo ture u oblasti mape.
+          <button class="link-button" type="button" (click)="clearArea()">Prikaži sve</button>
+        </p>
+      }
+      <ul class="split__list sample-list">
+        @for (item of visibleTours(); track item.index) {
+          <li
+            class="sample-item"
+            [class.sample-item--on]="hovered() === item.index"
+            (mouseenter)="hovered.set(item.index)"
+            (mouseleave)="hovered.set(null)"
+          >
+            <span>
+              <strong>{{ item.tour.name }}</strong>
+              <span class="meta"> · {{ item.tour.label }}</span>
+            </span>
+            <button class="link-button" type="button" (click)="focused.set(item.index)">
+              ⌖ Na mapi
+            </button>
+          </li>
+        } @empty {
+          <li class="state">U ovoj oblasti nema tura.</li>
+        }
+      </ul>
+    </div>
+    <div class="split__map">
+      <app-location-map
+        [locations]="saleTours"
+        [cluster]="true"
+        [fill]="true"
+        [fitKey]="'ture'"
+        [activeIndex]="hovered()"
+        [focusIndex]="focused()"
+        (locationHover)="hovered.set($event)"
+        (viewChange)="view.set($event)"
+      />
+      @if (canSearchArea()) {
+        <button class="button area-button" type="button" (click)="searchArea()">
+          ⌖ Pretraži ovu oblast
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="stack">
   <h2>Prikaz lokacija</h2>
 
   <div class="actions">
@@ -173,8 +231,8 @@
     </div>
   } @else {
     <p>
-      Na svakih 10 sekundi stranica modula šalje poslednju sačuvanu poziciju svojim zahtevom.
-      Ovde se samo ispisuje šta bi bilo poslato; poziciju menjate klikom na mapu simulatora.
+      Na svakih 10 sekundi stranica modula šalje poslednju sačuvanu poziciju svojim zahtevom. Ovde
+      se samo ispisuje šta bi bilo poslato; poziciju menjate klikom na mapu simulatora.
     </p>
 
     <p role="status">{{ tickText() }}</p>
@@ -183,9 +241,7 @@
       <p>Provera je zaustavljena</p>
     }
 
-    <p>
-      Dugme „Zaustavi“ ovde zamenjuje odgovor servera posle kog provera u modulu prestaje.
-    </p>
+    <p>Dugme „Zaustavi“ ovde zamenjuje odgovor servera posle kog provera u modulu prestaje.</p>
 
     <div class="actions">
       <button class="button" type="button" [disabled]="checkStopped()" (click)="stopCheck()">
