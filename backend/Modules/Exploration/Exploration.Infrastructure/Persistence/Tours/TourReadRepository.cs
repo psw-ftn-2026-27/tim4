@@ -68,10 +68,40 @@ internal sealed class TourReadRepository : ITourReadRepository
                 .ToList());
     }
 
-    public Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId)
+    public Task<List<TourDto>> GetPurchasedAsync(List<Guid> tourIds)
+    {
+        var tours = _dbContext.Tours
+            .Where(tour => tourIds.Contains(tour.Id)
+                && (tour.Status == TourStatus.Published || tour.Status == TourStatus.Archived))
+            .OrderBy(tour => tour.Name)
+            .ThenBy(tour => tour.Id);
+        return ProjectToDtos(tours).ToListAsync();
+    }
+
+    public async Task<Dictionary<Guid, LocationDto>> GetFirstKeyPointLocationsAsync(List<Guid> tourIds)
+    {
+        var tours = await _dbContext.Tours
+            .Where(tour => tourIds.Contains(tour.Id))
+            .Select(tour => new
+            {
+                tour.Id,
+                Locations = tour.KeyPoints
+                    .Select(keyPoint => new LocationDto(keyPoint.Location.Latitude, keyPoint.Location.Longitude))
+                    .ToList()
+            })
+            .ToListAsync();
+
+        // The first key point is taken here, after loading, so it is the first in tour order. A published
+        // or archived tour always has key points, because a tour is published only with them and they
+        // cannot change afterwards.
+        return tours.ToDictionary(tour => tour.Id, tour => tour.Locations.First());
+    }
+
+    public Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId, bool includeArchived)
     {
         return _dbContext.Tours
-            .Where(tour => tour.Id == tourId && tour.Status == TourStatus.Published)
+            .Where(tour => tour.Id == tourId
+                && (tour.Status == TourStatus.Published || (includeArchived && tour.Status == TourStatus.Archived)))
             .Select(tour => new TourDetailsDto(
                 tour.Id,
                 tour.AuthorId,

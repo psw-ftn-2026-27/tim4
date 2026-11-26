@@ -118,11 +118,26 @@ public sealed class TourBrowsingQueries
         };
     }
 
+    // Payment returns every bought product, so IDs that are not tours of this module, and any repeats,
+    // are dropped here. The pin is the first key point, because the tourist has bought the whole tour.
+    public async Task<List<PurchasedTourDto>> GetPurchasedAsync(Guid touristId)
+    {
+        var purchasedIds = await _paymentApi.GetPurchasedEntityIdsAsync(touristId);
+        var tours = await _tourReadRepository.GetPurchasedAsync(purchasedIds.Distinct().ToList());
+        var locations = await _tourReadRepository.GetFirstKeyPointLocationsAsync(tours.Select(tour => tour.Id).ToList());
+        var inProgressTourId = await _executionReadRepository.GetInProgressTourIdAsync(touristId);
+        return tours
+            .Select(tour => new PurchasedTourDto(tour, locations[tour.Id], tour.Id == inProgressTourId))
+            .ToList();
+    }
+
+    // An archived tour is out of the offer, so only its buyers can still open it; for everyone else
+    // it does not exist.
     public async Task<TourDetailsDto> GetPublishedDetailsAsync(Guid tourId, Guid viewerId)
     {
-        var tour = await _tourReadRepository.GetPublishedDetailsAsync(tourId)
-            ?? throw new NotFoundException($"Tour {tourId} does not exist.");
         var isPurchased = await _paymentApi.HasPurchasedAsync(viewerId, tourId);
+        var tour = await _tourReadRepository.GetPublishedDetailsAsync(tourId, isPurchased)
+            ?? throw new NotFoundException($"Tour {tourId} does not exist.");
         var inProgressTourId = await _executionReadRepository.GetInProgressTourIdAsync(viewerId);
         tour = tour with { IsPurchased = isPurchased, IsInProgress = tour.Id == inProgressTourId };
 

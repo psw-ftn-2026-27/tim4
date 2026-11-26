@@ -16,8 +16,15 @@ public interface ITourReadRepository
     // For each of the given tours, the locations of its key points open without purchase, in tour order.
     Task<Dictionary<Guid, List<LocationDto>>> GetVisibleKeyPointLocationsAsync(List<Guid> tourIds);
 
-    // Null when the tour does not exist or is not published. Holds every key point with its secret.
-    Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId);
+    // The published and archived tours among the given IDs, each once, ordered by name; other IDs are skipped.
+    Task<List<TourDto>> GetPurchasedAsync(List<Guid> tourIds);
+
+    // For each of the given tours, the location of its first key point, whether or not it is open without purchase.
+    Task<Dictionary<Guid, LocationDto>> GetFirstKeyPointLocationsAsync(List<Guid> tourIds);
+
+    // Null when the tour does not exist or is neither published nor, when includeArchived is true, archived.
+    // Holds every key point with its secret.
+    Task<TourDetailsDto?> GetPublishedDetailsAsync(Guid tourId, bool includeArchived);
 
     // Null when the tour does not exist or belongs to another author.
     Task<List<KeyPointDto>?> GetKeyPointsOfAuthoredTourAsync(Guid tourId, Guid authorId);
