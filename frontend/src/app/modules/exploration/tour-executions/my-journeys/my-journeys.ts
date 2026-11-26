@@ -60,6 +60,15 @@ export class MyJourneys {
     this.purchased.hasValue() ? this.purchased.value() : [],
   );
 
+  // The tour in progress carries no status of its own, so it is read from the same tour in the
+  // list of bought tours.
+  protected readonly activeIsArchived = computed(() => {
+    const active = this.active();
+    return this.items().some(
+      (item) => item.tour.id === active?.tourId && item.tour.status === 'Archived',
+    );
+  });
+
   // Every bought tour has a pin, at the place where the tour starts, so pins and cards share
   // their order.
   protected readonly pins = computed<MapLocation[]>(() =>

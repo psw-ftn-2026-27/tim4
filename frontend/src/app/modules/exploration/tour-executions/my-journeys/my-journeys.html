@@ -14,7 +14,12 @@
     <!-- The tour in progress always comes first: the one thing the tourist may be in the middle of. -->
     <section class="current" aria-labelledby="current-title">
       <div class="current__body">
-        <span class="badge badge--published">▶ U toku</span>
+        <p class="current__badges">
+          <span class="badge badge--published">▶ U toku</span>
+          @if (activeIsArchived()) {
+            <span class="badge badge--archived">▣ Arhivirana</span>
+          }
+        </p>
         <h2 id="current-title">{{ tour.tourName }}</h2>
         <p class="progress">
           <span class="progress__bar" aria-hidden="true"
