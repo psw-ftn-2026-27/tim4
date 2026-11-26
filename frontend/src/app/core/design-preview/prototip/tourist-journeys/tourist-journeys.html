@@ -1,0 +1,119 @@
+<div class="page-header">
+  <h1>Moja putovanja</h1>
+</div>
+
+<!-- The tour in progress always comes first: it is the one thing the tourist may be in the middle of. -->
+<section class="current" aria-labelledby="current-title">
+  <img class="current__image" [src]="active.image" alt="" />
+  <div class="current__body">
+    <span class="badge badge--published">▶ U toku</span>
+    <h2 id="current-title">{{ active.name }}</h2>
+    <p class="progress">
+      <span class="progress__bar" aria-hidden="true"
+        ><span
+          class="progress__fill"
+          [style.width]="progress(activeReached, active.keyPoints.length)"
+        ></span
+      ></span>
+      {{ activeReached }} od {{ active.keyPoints.length }} tačaka
+    </p>
+    <p class="meta">
+      Sledeća tačka: <strong>{{ activeNext.name }}</strong>
+    </p>
+  </div>
+  <a class="button button--primary" routerLink="/design-preview/prototype/tourist/active-tour"
+    >Nastavi turu</a
+  >
+</section>
+
+<div class="tabs" role="tablist" aria-label="Moje ture">
+  @for (item of tabs(); track item.value) {
+    <button
+      class="tabs__tab"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === item.value"
+      (click)="tab.set(item.value)"
+    >
+      {{ item.label }} <span class="tabs__count">{{ item.count }}</span>
+    </button>
+  }
+</div>
+
+@switch (tab()) {
+  @case ('ready') {
+    <ul class="grid-cards">
+      @for (tour of ready; track tour.id) {
+        <li class="tour">
+          <img class="tour__image" [src]="tour.image" alt="" />
+          <div class="tour__body">
+            <h3>
+              <a [routerLink]="'/design-preview/prototype/tourist/tours/' + tour.id">{{
+                tour.name
+              }}</a>
+            </h3>
+            <p class="tour__facts">
+              <span [class]="difficultyClasses[tour.difficulty]">{{
+                difficultyLabels[tour.difficulty]
+              }}</span>
+              <span>{{ tour.lengthKm.toFixed(1).replace('.', ',') }} km</span>
+              <span>{{ tour.keyPoints.length }} tačke</span>
+            </p>
+            <p class="meta">Počinje kod: {{ tour.keyPoints[0].name }}</p>
+            <a class="button" [routerLink]="'/design-preview/prototype/tourist/tours/' + tour.id"
+              >Pokreni</a
+            >
+          </div>
+        </li>
+      }
+    </ul>
+    <p class="meta hint">
+      Turu pokrećete sa njene stranice, kada postavite poziciju. Istovremeno može biti u toku samo
+      jedna tura.
+    </p>
+  }
+  @case ('history') {
+    <ul class="history">
+      @for (item of past; track item.tour.id + item.date) {
+        <li class="card past">
+          <div class="past__head">
+            <div>
+              <h3>{{ item.tour.name }}</h3>
+              <p class="meta">{{ item.date }}</p>
+            </div>
+            @if (item.outcome === 'Completed') {
+              <span class="badge badge--success">✓ Završena</span>
+            } @else {
+              <span class="badge badge--muted">⊘ Napuštena</span>
+            }
+          </div>
+          <p class="progress">
+            <span class="progress__bar" aria-hidden="true"
+              ><span
+                class="progress__fill"
+                [style.width]="progress(item.reached, item.tour.keyPoints.length)"
+              ></span
+            ></span>
+            {{ item.reached }} od {{ item.tour.keyPoints.length }} tačaka
+          </p>
+          <details class="secrets">
+            <summary>Otkrivene tajne ({{ item.found.length }})</summary>
+            <ol>
+              @for (found of item.found; track found.point) {
+                <li>
+                  <strong>{{ found.point }}</strong>
+                  <span>{{ found.secret }}</span>
+                </li>
+              }
+            </ol>
+          </details>
+          <a
+            class="button past__again"
+            [routerLink]="'/design-preview/prototype/tourist/tours/' + item.tour.id"
+            >Pokreni ponovo</a
+          >
+        </li>
+      }
+    </ul>
+  }
+}

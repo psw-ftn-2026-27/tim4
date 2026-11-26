@@ -312,7 +312,8 @@ preview disagree, fix the preview.
    button; what cannot be undone asks in `.confirm`.
 7. No link to a section of the bar; the next step only inside a notice or a state. Every other
    way to another page is a `.button` or a `.link-card`, never "text →".
-8. Compare with `/design-preview`.
+8. Compare with `/design-preview` and with the screen's prototype on
+   `/design-preview/prototype`, when it has one.
 
 ## Image upload
 

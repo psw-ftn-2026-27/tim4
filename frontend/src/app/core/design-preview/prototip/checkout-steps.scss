@@ -1,0 +1,213 @@
+// Shared by the three screens of scenario S2: the step bar on top and the two-column layout with
+// the summary on the right.
+
+.steps-bar {
+  align-items: center;
+  counter-reset: step;
+  display: flex;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+}
+
+.steps-bar li {
+  align-items: center;
+  color: var(--color-text-muted);
+  counter-increment: step;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.steps-bar li::before {
+  align-items: center;
+  border: 1px solid var(--color-control-border);
+  border-radius: 50%;
+  content: counter(step);
+  display: inline-flex;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  height: var(--space-6);
+  justify-content: center;
+  width: var(--space-6);
+}
+
+// A short line after every step but the last.
+.steps-bar li:not(:last-child)::after {
+  background: var(--color-border);
+  content: '';
+  height: 1px;
+  margin-left: var(--space-2);
+  width: var(--space-6);
+}
+
+.steps-bar .steps-bar__current {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.steps-bar .steps-bar__current::before {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.steps-bar .steps-bar__done::before {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  content: '✓';
+}
+
+.checkout-layout {
+  align-items: start;
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+}
+
+.checkout-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+// The summary stays in view while the left column scrolls.
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: sticky;
+  top: 5rem;
+}
+
+.summary h2 {
+  margin: 0;
+}
+
+.summary p {
+  margin: 0;
+}
+
+.summary-lines {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: 1fr auto;
+  margin: 0;
+}
+
+.summary-lines dt {
+  color: var(--color-text-muted);
+}
+
+.summary-lines dd {
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.summary-lines .minus {
+  color: var(--color-success-text);
+}
+
+.summary-total {
+  align-items: baseline;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--space-3);
+}
+
+.summary-total strong {
+  color: var(--color-ec-text);
+  font-size: var(--font-size-xl);
+}
+
+.summary .button {
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+// A tour line in the cart and in the payment step.
+.line {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 6rem minmax(0, 1fr) auto;
+  padding: var(--space-3);
+}
+
+.line img {
+  aspect-ratio: 4 / 3;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius);
+  object-fit: contain;
+  width: 100%;
+}
+
+.line h3 {
+  font-family: var(--font-display);
+  margin: 0 0 var(--space-1);
+}
+
+.line h3 a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.line h3 a:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.line p {
+  margin: 0;
+}
+
+.line__facts {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1) var(--space-3);
+}
+
+.line__price {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.line__amount {
+  color: var(--color-ec-text);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.line__old {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-decoration: line-through;
+}
+
+.button--quiet {
+  background: none;
+  border-color: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  min-height: 0;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.button--quiet:hover {
+  color: var(--color-danger);
+}

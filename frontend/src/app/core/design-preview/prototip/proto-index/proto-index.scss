@@ -1,0 +1,9 @@
+.groups {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+}
+
+h2 {
+  margin: 0;
+}

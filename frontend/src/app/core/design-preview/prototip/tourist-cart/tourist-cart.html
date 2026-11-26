@@ -1,0 +1,82 @@
+<ol class="steps-bar" aria-label="Koraci kupovine">
+  <li class="steps-bar__current" aria-current="step">Korpa</li>
+  <li>Plaćanje</li>
+  <li>Potvrda</li>
+</ol>
+
+<div class="page-header">
+  <h1>Korpa</h1>
+  @if (items().length > 0) {
+    <span class="meta">{{ items().length }} {{ items().length === 1 ? 'tura' : 'ture' }}</span>
+  }
+</div>
+
+@if (removed(); as tour) {
+  <p class="notice notice--muted undo" role="status">
+    „{{ tour.name }}“ je uklonjena iz korpe.
+    <button class="button button--quiet" type="button" (click)="undo()">Vrati</button>
+  </p>
+}
+
+@if (items().length === 0) {
+  <div class="state empty">
+    <img src="/images/ilustracije/travel-destination.svg" alt="" />
+    <strong>Korpa je prazna</strong>
+    <span>Ture dodajete u korpu sa stranice ture.</span>
+    <a class="button button--primary" routerLink="/design-preview/prototype/tourist/tours"
+      >Pretraži ture</a
+    >
+  </div>
+} @else {
+  <div class="checkout-layout">
+    <ul class="checkout-main lines">
+      @for (tour of items(); track tour.id) {
+        <li class="line">
+          <img [src]="tour.image" alt="" />
+          <div>
+            <h3>
+              <a [routerLink]="'/design-preview/prototype/tourist/tours/' + tour.id">{{
+                tour.name
+              }}</a>
+            </h3>
+            <p class="line__facts">
+              <span [class]="difficultyClasses[tour.difficulty]">{{
+                difficultyLabels[tour.difficulty]
+              }}</span>
+              <span>{{ tour.lengthKm.toFixed(1).replace('.', ',') }} km</span>
+              <span>{{ tour.keyPoints.length }} ključne tačke</span>
+            </p>
+          </div>
+          <div class="line__price">
+            <span class="line__amount">{{ tour.price }} EC</span>
+            <button class="button button--quiet" type="button" (click)="remove(tour)">
+              Ukloni
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+
+    <aside class="card summary" aria-labelledby="cart-summary-title">
+      <h2 id="cart-summary-title">Pregled</h2>
+      <dl class="summary-lines">
+        <dt>Ture ({{ items().length }})</dt>
+        <dd>{{ total() }} EC</dd>
+      </dl>
+      <p class="summary-total">
+        <span>Ukupno</span>
+        <strong>{{ total() }} EC</strong>
+      </p>
+      <a class="button button--primary" routerLink="/design-preview/prototype/tourist/checkout"
+        >Nastavi na plaćanje</a
+      >
+      <p class="meta">
+        U novčaniku imate <span class="badge badge--ec">{{ balance }} EC</span>. Kupon i poklon
+        karticu dodajete u sledećem koraku.
+      </p>
+      <button class="button button--quiet" type="button" (click)="emptyCart()">
+        Prikaži praznu korpu (prototip)
+      </button>
+    </aside>
+  </div>
+}
