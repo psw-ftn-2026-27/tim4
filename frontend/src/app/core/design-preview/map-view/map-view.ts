@@ -2,7 +2,13 @@ import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CoordinatesDto } from '../../../shared/api/coordinates-dto';
-import { LocationMap, MapArea, MapCoordinates, MapLocation } from '../../../shared/map/location-map';
+import {
+  LocationMap,
+  MapArea,
+  MapBounds,
+  MapCoordinates,
+  MapLocation,
+} from '../../../shared/map/location-map';
 import { PositionSimulation } from '../../../shared/position/position-simulation';
 import { repeatEvery } from '../../../shared/position/repeat-every';
 import { serverMessage } from '../../../shared/util/server-message';
@@ -31,6 +37,22 @@ const SEARCH_AREA: MapArea = { latitude: 45.2551, longitude: 19.8452, radiusMete
 // A smaller area around the hidden location on the fortress, as in G21.
 const HIDDEN_LOCATION_AREA: MapArea = { latitude: 45.2517, longitude: 19.8618, radiusMeters: 100 };
 
+// Tours for sale and owned, close enough in the old town to join into groups when zoomed out.
+const SALE_TOURS: MapLocation[] = [
+  { latitude: 45.2551, longitude: 19.8452, name: 'Srce starog grada', label: '40 EC' },
+  { latitude: 45.2556, longitude: 19.8459, name: 'Katedrala i trg', label: '25 EC' },
+  { latitude: 45.2546, longitude: 19.8441, name: 'Zmaj Jovina noću', label: 'Besplatno' },
+  {
+    latitude: 45.2517,
+    longitude: 19.8618,
+    name: 'Tvrđava i podzemlje',
+    label: '✓ Kupljena',
+    tone: 'owned',
+  },
+  { latitude: 45.2465, longitude: 19.8512, name: 'Kej i Liman biciklom', label: '30 EC' },
+  { latitude: 45.2655, longitude: 19.8293, name: 'Od stanice do centra', label: '15 EC' },
+];
+
 // The living example of the shared map (shared/map): city challenges, a tour and an empty
 // list, then picking a location, adding a key point and moving an existing one. The position
 // simulator, the route to the next key point and the periodic check are the parts of the
@@ -42,6 +64,39 @@ const HIDDEN_LOCATION_AREA: MapArea = { latitude: 45.2517, longitude: 19.8618, r
   templateUrl: './map-view.html',
 })
 export class MapView {
+  // ---- Spisak i mapa ----
+  protected readonly saleTours = SALE_TOURS;
+  protected readonly hovered = signal<number | null>(null);
+  protected readonly focused = signal<number | null>(null);
+  // The view the user last moved to, and the one the list is filtered by.
+  protected readonly view = signal<MapBounds | null>(null);
+  protected readonly searchedArea = signal<MapBounds | null>(null);
+  protected readonly canSearchArea = computed(
+    () => this.view() !== null && this.view() !== this.searchedArea(),
+  );
+  protected readonly visibleTours = computed(() => {
+    const area = this.searchedArea();
+    return this.saleTours
+      .map((tour, index) => ({ tour, index }))
+      .filter(
+        ({ tour }) =>
+          area === null ||
+          (tour.latitude <= area.north &&
+            tour.latitude >= area.south &&
+            tour.longitude <= area.east &&
+            tour.longitude >= area.west),
+      );
+  });
+
+  protected searchArea(): void {
+    this.searchedArea.set(this.view());
+  }
+
+  protected clearArea(): void {
+    this.searchedArea.set(null);
+    this.view.set(null);
+  }
+
   protected readonly locations = signal<MapLocation[]>(CITY_CHALLENGES);
   protected readonly showPath = signal(false);
   // null while the map is fetching the routes, until it sends the length along the roads.

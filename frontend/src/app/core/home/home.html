@@ -1,5 +1,7 @@
-@if (auth.isLoggedIn()) {
-  <app-start [name]="name()" [isAdmin]="isAdmin()" />
+@if (isAdmin()) {
+  <app-start [name]="name()" />
+} @else if (auth.isLoggedIn()) {
+  <app-tourist-start [name]="name()" [justRegistered]="novi() !== undefined" />
 } @else {
   <app-hero />
   <app-ribbon />

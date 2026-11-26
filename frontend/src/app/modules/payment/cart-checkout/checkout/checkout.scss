@@ -1,6 +1,170 @@
-.actions {
+.checkout-layout {
+  align-items: start;
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+}
+
+.checkout-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+// The summary stays in view while the left column scrolls.
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: sticky;
+  top: 5rem;
+}
+
+.summary h2 {
+  margin: 0;
+}
+
+.summary p {
+  margin: 0;
+}
+
+.summary-lines {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: 1fr auto;
+  margin: 0;
+}
+
+.summary-lines dt {
+  color: var(--color-text-muted);
+}
+
+.summary-lines dd {
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.summary-lines .minus {
+  color: var(--color-success-text);
+}
+
+.summary-total {
+  align-items: baseline;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--space-3);
+}
+
+.summary-total strong {
+  color: var(--color-ec-text);
+  font-size: var(--font-size-xl);
+}
+
+.summary .button {
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.card h2 {
+  margin: 0;
+}
+
+.card p {
+  margin: 0;
+}
+
+.coupon {
   align-items: center;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.coupon .field {
+  flex: 1;
+}
+
+.coupon input {
+  text-transform: uppercase;
+}
+
+.applied {
+  align-items: center;
+  background: var(--color-success-bg);
+  border-radius: var(--radius);
+  color: var(--color-success-text);
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.applied__code {
+  border: 1px dashed currentColor;
+  border-radius: var(--radius);
+  font-family: monospace;
+  font-weight: 700;
+  padding: 0 var(--space-2);
+}
+
+.applied .quiet {
+  margin-left: auto;
+}
+
+.gift {
+  align-items: flex-start;
+}
+
+.wallet {
+  border-top: 1px dashed var(--color-border);
+  font-size: var(--font-size-sm);
+  padding-top: var(--space-3);
+}
+
+.short {
+  background: var(--color-surface);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius);
+  color: var(--color-danger);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1);
+  padding: var(--space-3);
+}
+
+.short span {
+  color: var(--color-text);
+}
+
+.checkout-main h2 {
+  margin: 0;
+}
+
+.quiet {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0;
+  text-decoration: underline;
+}
+
+.quiet:hover {
+  color: var(--color-danger);
+}
+
+.state .button {
+  text-decoration: none;
+}
+
+// The page's title and the first section's heading need room between them.
+.page-header {
+  margin-bottom: var(--space-4);
 }

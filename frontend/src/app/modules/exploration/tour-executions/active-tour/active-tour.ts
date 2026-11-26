@@ -6,12 +6,16 @@ import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
 import { PositionSimulation } from '../../../../shared/position/position-simulation';
 import { repeatEvery } from '../../../../shared/position/repeat-every';
+import { formatKm, formatProgress } from '../../../../shared/util/format';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { ActiveTourDto, TourExecutionDto } from '../../api/exploration-api-types';
 import { TourExecutions } from '../tour-executions';
 
 // The active tour screen. It asks the server for the tourist's tour in progress, so it shows
-// the same after a refresh or a return.
+// the same after a refresh or a return. On a walk the map is the screen, as in navigation apps:
+// it fills the page and the rest floats over it. On top, where to go next and how far along the
+// roads; when a key point is reached, its secret opens over the map; the secrets found so far
+// wait in a drawer; leaving the tour is in the menu.
 @Component({
   imports: [LocationMap, RouterLink],
   selector: 'app-active-tour',
@@ -56,8 +60,27 @@ export class ActiveTour {
   // True while the section that confirms abandoning the tour is open.
   protected readonly confirmingAbandon = signal(false);
 
-  // True once a check reached a key point; the notice stays until another one is reached.
+  // True once a check reached a key point, until the tourist closes its secret.
   private readonly justReached = signal(false);
+
+  // The "next point" card covers the map's left side (26rem and its margin), so the view is
+  // fitted to the right of it.
+  protected readonly nextCardWidth = 26 * 16 + 16;
+
+  protected readonly menuOpen = signal(false);
+  protected readonly secretsOpen = signal(false);
+
+  // Metres along the roads from the position to the next key point, as the map reports them.
+  protected readonly routeMeters = signal<number | null>(null);
+  protected readonly distanceText = computed(() => {
+    const meters = this.routeMeters();
+    return meters === null ? null : formatKm(meters / 1000);
+  });
+  // About 5 km/h on foot.
+  protected readonly minutes = computed(() => {
+    const meters = this.routeMeters();
+    return meters === null ? null : Math.max(1, Math.round(meters / 83));
+  });
 
   // True while a check is on its way; the timer does not wait for the previous request.
   private readonly checking = signal(false);
@@ -66,13 +89,35 @@ export class ActiveTour {
     this.position.hasValue() ? this.position.value() : null,
   );
 
+  // Reached points are green with a tick, the next one stands out, the rest wait in grey.
   protected readonly mapLocations = computed<MapLocation[]>(() => {
     const active = this.activeTour.hasValue() ? this.activeTour.value() : null;
-    return (active?.keyPoints ?? []).map((keyPoint) => ({
+    if (active === null) {
+      return [];
+    }
+    const reached = new Set(active.reachedKeyPoints.map((keyPoint) => keyPoint.id));
+    return active.keyPoints.map((keyPoint, index) => ({
       latitude: keyPoint.latitude,
       longitude: keyPoint.longitude,
       name: keyPoint.name,
+      label: reached.has(keyPoint.id)
+        ? `✓ ${index + 1}`
+        : keyPoint.id === active.nextKeyPointId
+          ? `${index + 1}. ${keyPoint.name}`
+          : String(index + 1),
+      tone: reached.has(keyPoint.id)
+        ? 'owned'
+        : keyPoint.id === active.nextKeyPointId
+          ? 'next'
+          : 'muted',
     }));
+  });
+
+  protected readonly progress = computed(() => {
+    const active = this.activeTour.hasValue() ? this.activeTour.value() : null;
+    return active === null
+      ? '0%'
+      : formatProgress(active.reachedKeyPointCount, active.keyPoints.length);
   });
 
   // The next key point is the map's target, so the map draws the route from the position to it.
@@ -94,6 +139,10 @@ export class ActiveTour {
   // without another click. It runs right away too, so it is declared after everything it reads.
   private readonly check = repeatEvery(10_000, () => this.checkSavedPosition());
 
+  protected closeReached(): void {
+    this.justReached.set(false);
+  }
+
   protected reload(): void {
     this.activeTour.reload();
     this.position.reload();
@@ -108,6 +157,7 @@ export class ActiveTour {
     this.pending.set(true);
     this.positionError.set(null);
     this.checkError.set(null);
+    this.routeMeters.set(null);
     try {
       await this.positionSimulation.setPosition(coordinates);
       this.position.reload();

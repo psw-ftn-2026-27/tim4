@@ -2,6 +2,7 @@ import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
+import { formatNumber } from '../../../../shared/util/format';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { QuizAttemptDto } from '../../api/games-api-types';
 import { QuizSolving } from '../quiz-solving';
@@ -35,15 +36,21 @@ export class QuizSolve {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  // The result rounded for display, like the path length in shared/map.
+  // "37,5": one decimal at most, with a comma.
   protected readonly earnedXpText = computed(() => {
     const result = this.attempt.value()?.result;
-    return result ? result.earnedXp.toFixed(2) : '';
+    return result ? formatNumber(result.earnedXp) : '';
   });
-  protected readonly percentageText = computed(() => {
+  protected readonly percent = computed(() =>
+    Math.round(this.attempt.value()?.result?.percentage ?? 0),
+  );
+  protected readonly fullScore = computed(() => {
     const result = this.attempt.value()?.result;
-    return result ? `${result.percentage.toFixed(0)} %` : '';
+    return result !== null && result !== undefined && result.earnedXp >= result.totalXp;
   });
+
+  // The number of the question whose answer was just saved, for the short notice.
+  protected readonly saved = signal<number | null>(null);
 
   protected toggle(index: number): void {
     this.selected.update((selected) =>
@@ -54,10 +61,14 @@ export class QuizSolve {
   }
 
   protected async answer(questionId: string): Promise<void> {
+    if (this.selected().length === 0) {
+      return;
+    }
     this.pending.set(true);
     this.error.set(null);
     try {
       await this.quizSolving.answer(this.id(), questionId, { selectedOptions: this.selected() });
+      this.saved.set((this.attempt.value()?.answeredCount ?? 0) + 1);
       this.selected.set([]);
       this.attempt.reload();
     } catch (failure) {

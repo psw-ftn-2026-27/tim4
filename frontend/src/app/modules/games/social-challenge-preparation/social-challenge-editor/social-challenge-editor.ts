@@ -19,8 +19,8 @@ export class SocialChallengeEditor {
   private readonly preparation = inject(SocialChallengePreparation);
   private readonly router = inject(Router);
 
-  protected readonly isAdministrator = computed(() =>
-    this.auth.user()?.roles.includes('administrator') ?? false,
+  protected readonly isAdministrator = computed(
+    () => this.auth.user()?.roles.includes('administrator') ?? false,
   );
   protected readonly challenge = httpResource<SocialChallengeDto>(() => {
     const id = this.id();
@@ -46,7 +46,7 @@ export class SocialChallengeEditor {
       } else {
         await this.preparation.create(details);
       }
-      await this.router.navigate(['/games/social-challenges']);
+      await this.router.navigate(['/games/admin/social']);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Čuvanje izazova nije uspelo.'));
     } finally {

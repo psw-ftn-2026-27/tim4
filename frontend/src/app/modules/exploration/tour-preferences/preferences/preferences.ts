@@ -1,8 +1,10 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormField, form } from '@angular/forms/signals';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDifficulty, TourPreferenceDto, TransportMode } from '../../api/exploration-api-types';
+import { difficultyLabels, transportLabels } from '../../tour-browsing/tour-card/tour-card';
 import { TourPreferences } from '../tour-preferences';
 
 const EMPTY_FORM = {
@@ -15,7 +17,7 @@ const EMPTY_FORM = {
 };
 
 @Component({
-  imports: [FormField],
+  imports: [FormField, RouterLink],
   selector: 'app-preferences',
   styleUrl: './preferences.scss',
   templateUrl: './preferences.html',
@@ -28,17 +30,45 @@ export class Preferences {
     () => '/api/exploration/preferences',
   );
 
-  protected readonly editing = signal(false);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
+  protected readonly confirmingDelete = signal(false);
 
   protected readonly form = form(signal({ ...EMPTY_FORM }));
 
-  // Without a saved preference the form is open right away; with one, only after "Edit".
-  protected readonly showForm = computed(() => !this.preference.value() || this.editing());
+  protected readonly editing = signal(false);
+  protected readonly saved = computed(() =>
+    this.preference.hasValue() ? this.preference.value() : null,
+  );
+  // Without a saved preference the form is open right away; with one, after "Izmeni".
+  protected readonly showForm = computed(() => this.saved() === null || this.editing());
 
-  protected startEdit(preference: TourPreferenceDto): void {
+  protected readonly summary = computed(() => {
+    const saved = this.saved();
+    if (saved === null) {
+      return null;
+    }
+    return {
+      difficulty:
+        saved.difficulties.length === 0
+          ? 'svejedno'
+          : saved.difficulties.map((difficulty) => difficultyLabels[difficulty]).join(', '),
+      transport: saved.transport === null ? 'svejedno' : transportLabels[saved.transport],
+      tags: saved.tags.length === 0 ? 'bez oznaka' : saved.tags.join(', '),
+      opens: saved.openSearchWithPreferences
+        ? 'pretraga se otvara sa vašim preferencama'
+        : 'pretraga se otvara sa svim turama',
+    };
+  });
+
+  protected startEdit(): void {
+    const preference = this.saved();
+    if (preference === null) {
+      return;
+    }
     this.error.set(null);
+    this.notice.set(null);
     this.editing.set(true);
     this.form().reset({
       easy: preference.difficulties.includes('Easy'),
@@ -54,12 +84,14 @@ export class Preferences {
     event.preventDefault();
     this.pending.set(true);
     this.error.set(null);
+    this.notice.set(null);
     try {
       await this.tourPreferences.save(this.toDto());
+      this.notice.set('Preference su sačuvane.');
       this.editing.set(false);
       this.preference.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not save the preferences.'));
+      this.error.set(serverMessage(failure, 'Preference nisu sačuvane. Pokušajte ponovo.'));
     } finally {
       this.pending.set(false);
     }
@@ -68,13 +100,15 @@ export class Preferences {
   protected async remove(): Promise<void> {
     this.pending.set(true);
     this.error.set(null);
+    this.notice.set(null);
     try {
       await this.tourPreferences.remove();
-      this.editing.set(false);
+      this.confirmingDelete.set(false);
+      this.notice.set('Preference su obrisane.');
       this.form().reset({ ...EMPTY_FORM });
       this.preference.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not delete the preferences.'));
+      this.error.set(serverMessage(failure, 'Preference nisu obrisane. Pokušajte ponovo.'));
     } finally {
       this.pending.set(false);
     }

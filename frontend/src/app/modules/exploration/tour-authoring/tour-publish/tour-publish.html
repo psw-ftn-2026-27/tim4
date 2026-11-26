@@ -1,0 +1,98 @@
+@if (tours.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Tura nije učitana.</strong>
+    <button class="button" type="button" (click)="tours.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!tours.hasValue()) {
+  <p class="state" role="status">Učitavanje ture…</p>
+} @else if (tour(); as tour) {
+  <app-editor-steps [tour]="tour" current="publish" [keyPointCount]="keyPointCount()" />
+
+  @if (published() || tour.status !== 'Draft') {
+    <div class="state">
+      <img src="/images/ilustracije/winner.svg" alt="" />
+      <strong>
+        @if (published()) {
+          ✓ Tura je objavljena!
+        } @else {
+          Tura je {{ tour.status === 'Published' ? 'objavljena' : 'arhivirana' }}.
+        }
+      </strong>
+      <span>Turisti je nalaze u pretrazi tura. Ključne tačke se više ne menjaju.</span>
+      <div class="form-actions">
+        <a class="button button--primary" [routerLink]="['/exploration/tours', tour.id]"
+          >Pogledaj kao turista</a
+        >
+        <a class="button" routerLink="/exploration/mine">Autorski studio</a>
+      </div>
+    </div>
+  } @else {
+    <div class="layout">
+      <section class="card stack" aria-labelledby="ready-title">
+        <h2 id="ready-title">Pre objave</h2>
+        <ul class="ready">
+          @for (item of checklist(); track item.label) {
+            <li [class.ready__done]="item.done">
+              <span aria-hidden="true">{{ item.done ? '✓' : '○' }}</span>
+              {{ item.label }}
+            </li>
+          }
+        </ul>
+        @if (!ready()) {
+          <p class="meta">Završite korake bez kvačice, pa se vratite ovde.</p>
+        }
+      </section>
+
+      <form class="card stack" (submit)="publish($event)">
+        <h2>Cena</h2>
+        <div class="field">
+          <span>Koliko košta</span>
+          <label class="choice">
+            <input type="radio" value="Free" [formField]="form.pricingType" /> Besplatna
+          </label>
+          <label class="choice">
+            <input type="radio" value="Paid" [formField]="form.pricingType" /> Plaća se u EC
+          </label>
+        </div>
+
+        @if (form.pricingType().value() === 'Paid') {
+          <div class="field">
+            <label for="price">Cena (EC)</label>
+            <input
+              id="price"
+              type="number"
+              step="1"
+              [formField]="form.amount"
+              [attr.aria-invalid]="
+                (form.amount().dirty() || form.amount().touched()) &&
+                form.amount().errors().length > 0
+              "
+            />
+            @if (form.amount().dirty() || form.amount().touched()) {
+              @for (message of form.amount().errors().slice(0, 1); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+        }
+
+        @if (error(); as message) {
+          <p class="error" role="alert">⚠ {{ message }}</p>
+        }
+        <div class="form-actions">
+          <button class="button button--primary" type="submit" [disabled]="pending() || !ready()">
+            Objavi turu
+          </button>
+        </div>
+        <p class="meta">
+          Posle objave tura je u pretrazi, a ključne tačke više ne mogu da se menjaju.
+        </p>
+      </form>
+    </div>
+  }
+} @else {
+  <div class="state">
+    <strong>Ova tura ne postoji među vašim turama.</strong>
+    <a class="button" routerLink="/exploration/mine">Autorski studio</a>
+  </div>
+}

@@ -1,0 +1,70 @@
+@if (tours.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Tura nije učitana.</strong>
+    <button class="button" type="button" (click)="tours.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!tours.hasValue()) {
+  <p class="state" role="status">Učitavanje ture…</p>
+} @else if (tour(); as tour) {
+  <app-editor-steps [tour]="tour" current="basics" />
+
+  <div class="layout">
+    <section class="card stack" aria-labelledby="basics-title">
+      <h2 id="basics-title">Osnovno</h2>
+      <p class="facts">
+        <span [class]="difficultyBadges[tour.difficulty]">{{
+          difficultyLabels[tour.difficulty]
+        }}</span>
+        @for (fact of facts(); track fact) {
+          <span>{{ fact }}</span>
+        }
+      </p>
+      @if (tour.tags.length > 0) {
+        <p class="tags">
+          @for (tag of tour.tags; track tag) {
+            <span class="tag">{{ tag }}</span>
+          }
+        </p>
+      }
+      <p class="description">{{ tour.description }}</p>
+      <p class="meta">
+        Opis ima {{ descriptionLength() }} znakova. Naziv, opis i oznake postavljate pri kreiranju
+        ture; izmena posle toga još ne postoji.
+      </p>
+    </section>
+
+    @if (tour.status === 'Draft') {
+      <aside class="card stack" aria-labelledby="ready-title">
+        <h2 id="ready-title">Pre objave</h2>
+        <ul class="ready">
+          @for (item of checklist(); track item.label) {
+            <li [class.ready__done]="item.done">
+              <span aria-hidden="true">{{ item.done ? '✓' : '○' }}</span>
+              {{ item.label }}
+            </li>
+          }
+        </ul>
+        <p class="meta">Cenu birate u poslednjem koraku, kada objavljujete turu.</p>
+        <a
+          class="button button--primary"
+          [routerLink]="['/exploration/mine', tour.id, 'key-points']"
+          >Dalje: ključne tačke</a
+        >
+      </aside>
+    } @else {
+      <aside class="card stack">
+        <h2>Tura je {{ tour.status === 'Published' ? 'objavljena' : 'arhivirana' }}</h2>
+        <p class="meta">
+          Ključne tačke mogu da se menjaju samo dok je tura u pripremi; vreme obilaska može da se
+          doda i kasnije.
+        </p>
+        <a class="button" [routerLink]="['/exploration/tours', tour.id]">Pogledaj kao turista</a>
+      </aside>
+    }
+  </div>
+} @else {
+  <div class="state">
+    <strong>Ova tura ne postoji među vašim turama.</strong>
+    <a class="button" routerLink="/exploration/mine">Autorski studio</a>
+  </div>
+}

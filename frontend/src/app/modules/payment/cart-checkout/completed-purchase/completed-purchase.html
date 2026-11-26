@@ -1,66 +1,80 @@
-<div class="stack">
-  @if (!isExplorer()) {
-    <h1>Detalji kupovine</h1>
-    <p class="error" role="alert">Detalji kupovine su dostupni prijavljenom kupcu.</p>
-    @if (!auth.isLoggedIn()) {
-      <p><a routerLink="/login">Prijavi se</a></p>
-    }
-  } @else if (purchase.isLoading()) {
-    <h1>Detalji kupovine</h1>
-    <p role="status">Ucitavanje detalja kupovine...</p>
-  } @else if (purchase.error()) {
-    <h1>Detalji kupovine</h1>
-    <p class="error" role="alert">{{ loadError() }}</p>
-    <button class="button" type="button" (click)="purchase.reload()">Pokusaj ponovo</button>
-  } @else if (purchase.value(); as receipt) {
-    <h1>Uspesna kupovina</h1>
-    <p class="notice notice--success" role="status">
-      Kupovina je zavrsena. Potvrda je sacuvana za svaku kupljenu stavku.
-    </p>
-    <p>Vreme kupovine: {{ formatTime(receipt.purchasedAt) }}</p>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Kupljeni proizvod</th>
-            <th scope="col">Placena cena</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of receipt.items; track item.id) {
-            <tr>
-              <td>{{ item.name }}</td>
-              <td>
-                <span class="badge badge--ec">{{ item.price }} EC</span>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+<div class="page--center purchase-done">
+  <app-checkout-steps [step]="3" [centered]="true" />
+
+  @if (purchase.error()) {
+    <div class="state state--error" role="alert">
+      <strong>{{ loadError() }}</strong>
+      <button class="button" type="button" (click)="purchase.reload()">Pokušaj ponovo</button>
     </div>
-    @if (receipt.appliedCoupon; as coupon) {
-      <p>
-        Primenjen kupon <code>{{ coupon.code }}</code
-        >: {{ coupon.discountPercent }}% popusta na „{{
-          productName(receipt.items, coupon.productId)
-        }}“, popust
-        <span class="badge badge--ec">{{ coupon.discount }} EC</span>
+  } @else if (!purchase.hasValue()) {
+    <p class="state" role="status">Učitavanje kupovine…</p>
+  } @else if (purchase.value(); as receipt) {
+    <section class="hero" role="status">
+      <span class="hero__check" aria-hidden="true">✓</span>
+      <h1>Kupovina je uspela!</h1>
+      <p class="hero__lead">
+        Otključali ste {{ toursText() }}. Krenite odmah ili je kasnije nađite u Mojim putovanjima.
       </p>
-    }
-    @if (receipt.appliedGiftCard; as giftCard) {
-      <p>
-        Iskorišćena poklon kartica od
-        <span class="badge badge--ec">{{ giftCard.amount }} EC</span>, umanjenje
-        <span class="badge badge--ec">{{ giftCard.discount }} EC</span>
+
+      <dl class="stats">
+        <div>
+          <dt>Plaćeno</dt>
+          <dd>{{ receipt.total }} EC</dd>
+        </div>
+        @if (saved() > 0) {
+          <div>
+            <dt>Uštedeli ste</dt>
+            <dd class="stats__saved">{{ saved() }} EC</dd>
+          </div>
+        }
+        @if (wallet.hasValue()) {
+          <div>
+            <dt>Stanje novčanika</dt>
+            <dd>{{ wallet.value().availableBalance }} EC</dd>
+          </div>
+        }
+      </dl>
+      <p class="meta">{{ time() }}</p>
+    </section>
+
+    <h2>Vaše nove ture</h2>
+    <ul class="bought">
+      @for (item of receipt.items; track item.id) {
+        <li class="tour">
+          <span class="badge badge--success">✓ Kupljena</span>
+          <h3>{{ item.name }}</h3>
+          <a class="button button--primary" [routerLink]="['/exploration/tours', item.entityId]"
+            >Pokreni turu</a
+          >
+        </li>
+      }
+    </ul>
+
+    <details class="card receipt">
+      <summary>Detalji plaćanja</summary>
+      <dl class="summary-lines">
+        @for (item of receipt.items; track item.id) {
+          <dt>{{ item.name }}</dt>
+          <dd>{{ item.price }} EC</dd>
+        }
+        @if (receipt.appliedCoupon; as coupon) {
+          <dt>Kupon {{ coupon.code }} ({{ coupon.discountPercent }}%)</dt>
+          <dd class="minus">−{{ coupon.discount }} EC</dd>
+        }
+        @if (receipt.appliedGiftCard; as giftCard) {
+          <dt>Poklon kartica od {{ giftCard.amount }} EC</dt>
+          <dd class="minus">−{{ giftCard.discount }} EC</dd>
+        }
+      </dl>
+      <p class="summary-total">
+        <span>Plaćeno</span>
+        <strong>{{ receipt.total }} EC</strong>
       </p>
-    }
-    <p class="total">
-      Ukupno placeno: <strong>{{ receipt.total }} EC</strong>
+    </details>
+
+    <p class="next">
+      <a class="button" routerLink="/exploration/journeys">Moja putovanja</a>
+      <a class="button" routerLink="/exploration">Pretraži još tura</a>
     </p>
   }
-
-  <div class="actions">
-    <a class="button button--primary" routerLink="/payment">Idi na novcanik</a>
-    <a routerLink="/exploration">Nastavi pregled tura</a>
-  </div>
 </div>

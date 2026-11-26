@@ -13,8 +13,11 @@ export function pathLengthKm(locations: MapLocation[]): number {
   return total;
 }
 
-// The haversine formula: the distance between two points on a sphere the size of the Earth.
-function distanceKm(from: MapLocation, to: MapLocation): number {
+type Point = Pick<MapLocation, 'latitude' | 'longitude'>;
+
+// The haversine formula: the distance between two points on a sphere the size of the Earth, in
+// kilometres. The one place the app measures distance; pages use it instead of their own copy.
+export function distanceKm(from: Point, to: Point): number {
   const latitudeDelta = toRadians(to.latitude - from.latitude);
   const longitudeDelta = toRadians(to.longitude - from.longitude);
   const a =

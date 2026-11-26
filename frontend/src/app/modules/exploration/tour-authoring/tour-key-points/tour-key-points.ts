@@ -3,7 +3,9 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { ImageUpload } from '../../../../shared/image-upload/image-upload';
+import { EditorSteps } from '../editor-steps/editor-steps';
 import { LocationMap, MapCoordinates, MapLocation } from '../../../../shared/map/location-map';
+import { formatKm } from '../../../../shared/util/format';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { KeyPointDto, TourDto } from '../../api/exploration-api-types';
 import { TourAuthoring } from '../tour-authoring';
@@ -17,7 +19,7 @@ const EMPTY_KEY_POINT = {
 };
 
 @Component({
-  imports: [FormField, ImageUpload, LocationMap, RouterLink],
+  imports: [EditorSteps, FormField, ImageUpload, LocationMap, RouterLink],
   selector: 'app-tour-key-points',
   styleUrl: './tour-key-points.scss',
   templateUrl: './tour-key-points.html',
@@ -33,9 +35,14 @@ export class TourKeyPoints {
     () => `/api/exploration/tours/mine/${this.id()}/key-points`,
   );
 
-  protected readonly tour = computed(() =>
-    (this.tours.value() ?? []).find((tour) => tour.id === this.id()),
+  protected readonly tour = computed(
+    () => (this.tours.value() ?? []).find((tour) => tour.id === this.id()) ?? null,
   );
+  protected readonly keyPointCount = computed(() =>
+    this.keyPoints.hasValue() ? this.keyPoints.value().length : null,
+  );
+  protected readonly notice = signal<string | null>(null);
+  protected readonly lengthText = computed(() => formatKm(this.pathLength()));
   protected readonly isDraft = computed(() => this.tour()?.status === 'Draft');
 
   // The form is open while adding (no edited key point) or editing (the edited key point).
@@ -72,7 +79,11 @@ export class TourKeyPoints {
     if (this.formOpen() && edited === null && location !== null) {
       locations.push({ ...location, name: name || 'Nova ključna tačka' });
     }
-    return locations.map((point, index) => ({ ...point, name: `${index + 1}. ${point.name}` }));
+    return locations.map((point, index) => ({
+      ...point,
+      name: `${index + 1}. ${point.name}`,
+      label: String(index + 1),
+    }));
   });
   protected readonly pathLength = signal(0);
 
@@ -139,6 +150,7 @@ export class TourKeyPoints {
       } else if (edited !== null) {
         await this.tourAuthoring.updateKeyPoint(this.id(), edited.id, dto, image);
       }
+      this.notice.set(edited === null ? 'Ključna tačka je dodata.' : 'Ključna tačka je sačuvana.');
       this.keyPoints.reload();
       this.tours.reload();
       this.closeForm();
@@ -158,6 +170,7 @@ export class TourKeyPoints {
     this.error.set(null);
     try {
       await this.tourAuthoring.removeKeyPoint(this.id(), removed.id, this.pathLength());
+      this.notice.set(`Tačka „${removed.name}“ je uklonjena.`);
       this.keyPoints.reload();
       this.tours.reload();
       this.removedKeyPoint.set(null);
@@ -170,6 +183,7 @@ export class TourKeyPoints {
 
   private openForm(keyPoint: KeyPointDto | null, values: typeof EMPTY_KEY_POINT): void {
     this.error.set(null);
+    this.notice.set(null);
     this.image.set(null);
     this.editedKeyPoint.set(keyPoint);
     this.form().reset(values);

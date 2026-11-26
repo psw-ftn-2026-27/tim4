@@ -1,4 +1,4 @@
-<section class="card stack" aria-labelledby="checkout-gift-card-heading">
+<section class="card stack gift-card" aria-labelledby="checkout-gift-card-heading">
   <h2 id="checkout-gift-card-heading">Poklon kartica</h2>
   <label class="choice" for="checkout-use-gift-card">
     <input
@@ -29,8 +29,8 @@
       }
     } @else {
       <p class="error" role="alert">
-        Poklon kartica ne važi: {{ giftCard.invalidReason }} Cena je prikazana bez kartice. Isključi
-        karticu da bi nastavio kupovinu.
+        Poklon kartica ne važi: {{ giftCard.invalidReason }} Cena je prikazana bez kartice.
+        Isključite karticu da biste nastavili kupovinu.
       </p>
     }
   } @else {

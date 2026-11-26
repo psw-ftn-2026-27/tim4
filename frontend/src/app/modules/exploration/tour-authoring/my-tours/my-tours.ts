@@ -1,13 +1,26 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
-import { FormField, form, min, required, validate } from '@angular/forms/signals';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { formatDate, formatKm } from '../../../../shared/util/format';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { TourDto, TourPricingType, TransportMode } from '../../api/exploration-api-types';
+import { TourDto, TourStatus } from '../../api/exploration-api-types';
+import { difficultyBadges, difficultyLabels } from '../../tour-browsing/tour-card/tour-card';
+import { readiness } from '../editor-steps/editor-steps';
 import { TourAuthoring } from '../tour-authoring';
 
+type Tab = TourStatus | 'all';
+
+const STATUS: Record<TourStatus, { label: string; badge: string }> = {
+  Draft: { label: '✎ U pripremi', badge: 'badge badge--draft' },
+  Published: { label: '● Objavljena', badge: 'badge badge--published' },
+  Archived: { label: '▣ Arhivirana', badge: 'badge badge--archived' },
+};
+
+// The author's home: their tours by state, what each draft still lacks before it can be
+// published, and the one next action for each. The coupons are the author's too, but they are
+// Payment's page, so the last tab is a link to it.
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [RouterLink],
   selector: 'app-my-tours',
   styleUrl: './my-tours.scss',
   templateUrl: './my-tours.html',
@@ -17,141 +30,77 @@ export class MyTours {
 
   protected readonly tours = httpResource<TourDto[]>(() => '/api/exploration/tours/mine');
 
-  protected readonly selectedTourId = signal<string | null>(null);
+  protected readonly status = STATUS;
+  protected readonly difficultyLabels = difficultyLabels;
+  protected readonly difficultyBadges = difficultyBadges;
+  protected readonly formatKm = formatKm;
+
+  protected readonly tab = signal<Tab>('all');
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
+  // The published tour whose archiving waits for the author's confirmation.
+  protected readonly archiving = signal<string | null>(null);
 
-  private readonly model = signal({ transport: 'Walking' as TransportMode, minutes: 30 });
-
-  protected readonly form = form(this.model, (path) => {
-    required(path.minutes, { message: 'Minutes are required.' });
-    min(path.minutes, 1, { message: 'Minutes must be at least 1.' });
+  protected readonly tabs = computed(() => {
+    const tours = this.tours.value() ?? [];
+    const count = (status: TourStatus) => tours.filter((tour) => tour.status === status).length;
+    return [
+      { value: 'all' as Tab, label: 'Sve', count: tours.length },
+      { value: 'Draft' as Tab, label: 'U pripremi', count: count('Draft') },
+      { value: 'Published' as Tab, label: 'Objavljene', count: count('Published') },
+      { value: 'Archived' as Tab, label: 'Arhivirane', count: count('Archived') },
+    ];
   });
 
-  // The tour whose publish form is open; at most one of the two forms is open at a time.
-  protected readonly publishingTour = signal<TourDto | null>(null);
-
-  private readonly publishModel = signal({
-    pricingType: '' as TourPricingType | '',
-    amount: null as number | null,
+  // Drafts first, as they are what the author is working on.
+  protected readonly visible = computed(() => {
+    const order: Record<TourStatus, number> = { Draft: 0, Published: 1, Archived: 2 };
+    return (this.tours.value() ?? [])
+      .filter((tour) => this.tab() === 'all' || tour.status === this.tab())
+      .sort((a, b) => order[a.status] - order[b.status]);
   });
 
-  protected readonly publishForm = form(this.publishModel, (path) => {
-    required(path.pricingType, { message: 'Choose whether the tour is free or paid.' });
-    // A paid tour costs a whole number of EC above zero; a free tour ignores the amount.
-    validate(path.amount, ({ value, valueOf }) => {
-      if (valueOf(path.pricingType) !== 'Paid') {
-        return undefined;
-      }
-      const amount = value();
-      return amount !== null && Number.isInteger(amount) && amount > 0
-        ? undefined
-        : { kind: 'wholePositive', message: 'Cena mora biti ceo broj EC veći od nule.' };
-    });
-  });
-
-  protected select(tourId: string): void {
-    this.error.set(null);
-    this.publishingTour.set(null);
-    this.selectedTourId.set(tourId);
-    this.form().reset({ transport: 'Walking', minutes: 30 });
+  protected readiness(tour: TourDto) {
+    return readiness(tour, null);
   }
 
-  protected startPublish(tour: TourDto): void {
-    this.error.set(null);
-    this.selectedTourId.set(null);
-    this.publishingTour.set(tour);
-    this.publishForm().reset({ pricingType: '', amount: null });
+  protected readyCount(tour: TourDto): number {
+    return readiness(tour, null).filter((item) => item.done).length;
   }
 
-  protected cancelPublish(): void {
-    this.publishingTour.set(null);
+  protected changed(tour: TourDto): string {
+    const date = tour.archivedAt ?? tour.publishedAt;
+    return date === null ? '' : formatDate(date);
   }
 
-  protected async publish(event: Event): Promise<void> {
-    event.preventDefault();
-    if (!this.publishForm().valid()) {
-      this.publishForm().markAsTouched();
-      return;
-    }
-    const tour = this.publishingTour();
-    const pricingType = this.publishForm.pricingType().value();
-    if (tour === null || pricingType === '') {
-      return;
-    }
+  protected async archive(tour: TourDto): Promise<void> {
+    await this.run(
+      () => this.tourAuthoring.archive(tour.id),
+      `„${tour.name}“ je arhivirana: turisti je više ne vide u pretrazi, a kupci je i dalje imaju.`,
+      'Tura nije arhivirana. Pokušajte ponovo.',
+    );
+    this.archiving.set(null);
+  }
+
+  protected async reactivate(tour: TourDto): Promise<void> {
+    await this.run(
+      () => this.tourAuthoring.reactivate(tour.id),
+      `„${tour.name}“ je ponovo objavljena.`,
+      'Tura nije ponovo objavljena. Pokušajte ponovo.',
+    );
+  }
+
+  private async run(command: () => Promise<void>, success: string, fallback: string) {
     this.pending.set(true);
     this.error.set(null);
+    this.notice.set(null);
     try {
-      await this.tourAuthoring.publish(tour.id, {
-        pricingType,
-        // A free tour sends no amount, even if one was typed while Paid was chosen.
-        pricingAmount: pricingType === 'Paid' ? this.publishForm.amount().value() : null,
-      });
-      this.tours.reload();
-      this.publishingTour.set(null);
-    } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not publish the tour.'));
-    } finally {
-      this.pending.set(false);
-    }
-  }
-
-  protected async archive(tourId: string): Promise<void> {
-    this.pending.set(true);
-    this.error.set(null);
-    try {
-      await this.tourAuthoring.archive(tourId);
+      await command();
+      this.notice.set(success);
       this.tours.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not archive the tour.'));
-    } finally {
-      this.pending.set(false);
-    }
-  }
-
-  protected async reactivate(tourId: string): Promise<void> {
-    this.pending.set(true);
-    this.error.set(null);
-    try {
-      await this.tourAuthoring.reactivate(tourId);
-      this.tours.reload();
-    } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not reactivate the tour.'));
-    } finally {
-      this.pending.set(false);
-    }
-  }
-
-  protected formatTime(value: string): string {
-    const date = new Date(value);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${day}.${month}.${date.getFullYear()}. ${hours}:${minutes}`;
-  }
-
-  protected async addTransportTime(event: Event): Promise<void> {
-    event.preventDefault();
-    if (!this.form().valid()) {
-      this.form().markAsTouched();
-      return;
-    }
-    const tourId = this.selectedTourId();
-    if (tourId === null) {
-      return;
-    }
-    this.pending.set(true);
-    this.error.set(null);
-    try {
-      await this.tourAuthoring.addTransportTime(tourId, {
-        transport: this.form.transport().value(),
-        minutes: this.form.minutes().value(),
-      });
-      this.tours.reload();
-      this.selectedTourId.set(null);
-    } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not add the transport time.'));
+      this.error.set(serverMessage(failure, fallback));
     } finally {
       this.pending.set(false);
     }

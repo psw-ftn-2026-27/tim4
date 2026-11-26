@@ -133,7 +133,7 @@ p {
   margin-top: auto;
 }
 
-.goal__links a {
+.goal__links a:not(.button) {
   align-items: center;
   background: var(--color-surface);
   border-radius: var(--space-4);
@@ -150,11 +150,11 @@ p {
     box-shadow 0.2s;
 }
 
-.goal--community .goal__links a:not(.goal__main) {
+.goal--community .goal__links a:not(.button):not(.goal__main) {
   background: var(--color-bg);
 }
 
-.goal__links a:hover {
+.goal__links a:not(.button):hover {
   box-shadow: 0 10px 18px -14px var(--color-text);
   transform: translateY(-2px);
 }
@@ -221,6 +221,10 @@ a:hover .arrow {
   .goals--three {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .goals--two {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 // On a wide window all goals sit in one row, so the cards keep the prototype's size
@@ -232,6 +236,10 @@ a:hover .arrow {
 
   .goals--three {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .goals--two {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

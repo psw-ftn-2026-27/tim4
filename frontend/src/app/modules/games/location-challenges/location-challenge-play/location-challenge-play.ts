@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -6,12 +5,13 @@ import { Auth } from '../../../../core/auth/auth';
 import { CoordinatesDto } from '../../../../shared/api/coordinates-dto';
 import { LocationMap, MapArea } from '../../../../shared/map/location-map';
 import { PositionSimulation } from '../../../../shared/position/position-simulation';
+import { formatDateTime } from '../../../../shared/util/format';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { LocationChallengePlayDto } from '../../api/games-api-types';
 import { LocationChallengePlaying } from '../location-challenge-playing';
 
 @Component({
-  imports: [DatePipe, LocationMap, RouterLink],
+  imports: [LocationMap, RouterLink],
   selector: 'app-location-challenge-play',
   templateUrl: './location-challenge-play.html',
   styleUrl: './location-challenge-play.scss',
@@ -46,7 +46,15 @@ export class LocationChallengePlay {
   protected readonly locations = computed(() => {
     if (!this.details.hasValue()) return [];
     const { name, startLatitude, startLongitude } = this.details.value().challenge;
-    return [{ name, latitude: startLatitude, longitude: startLongitude }];
+    return [
+      {
+        name,
+        latitude: startLatitude,
+        longitude: startLongitude,
+        label: '⌖ Start',
+        tone: 'location' as const,
+      },
+    ];
   });
   protected readonly area = computed<MapArea | null>(() => {
     if (!this.details.hasValue()) return null;
@@ -59,6 +67,12 @@ export class LocationChallengePlay {
         }
       : null;
   });
+  protected readonly formatDateTime = formatDateTime;
+
+  protected readonly savedPosition = computed(() =>
+    this.position.hasValue() ? this.position.value() : null,
+  );
+
   protected readonly discoveredCount = computed(() =>
     this.details.hasValue()
       ? (this.details.value().attempt?.points.filter((point) => point.discovered).length ?? 0)

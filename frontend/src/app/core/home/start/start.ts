@@ -1,8 +1,8 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-// What a signed-in user sees at `/`: a greeting and links grouped by goal. It only
-// links to existing module routes; an administrator gets the reading links only.
+// What an administrator sees at `/`: a greeting and their two sections. A tourist gets
+// TouristStart instead.
 @Component({
   imports: [RouterLink],
   selector: 'app-start',
@@ -11,5 +11,4 @@ import { RouterLink } from '@angular/router';
 })
 export class Start {
   readonly name = input.required<string>();
-  readonly isAdmin = input(false);
 }

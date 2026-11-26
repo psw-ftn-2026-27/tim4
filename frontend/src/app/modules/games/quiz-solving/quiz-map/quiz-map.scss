@@ -1,0 +1,313 @@
+// The same list beside a map as "Ture", but the map is wider: a challenge is a place.
+.split {
+  grid-template-columns: minmax(22rem, 2fr) minmax(0, 3fr);
+}
+
+.split__side h1,
+.split__side h2,
+.split__side p {
+  margin: 0;
+}
+
+.split__list {
+  padding-right: var(--space-2);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.page-header {
+  align-items: center;
+}
+
+.solved-toggle {
+  font-size: var(--font-size-sm);
+  margin-left: auto;
+}
+
+.list {
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3) 0 0;
+}
+
+.item {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: var(--space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: var(--space-3);
+  text-align: left;
+  width: 100%;
+}
+
+.item:hover,
+.item--active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.item--solved {
+  background: var(--color-bg);
+}
+
+.item__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.item__name {
+  font-weight: 600;
+}
+
+.item__meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+// A round mark with the kind's symbol, in the kind's colours.
+.mark {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  font-weight: 700;
+  height: var(--space-6);
+  justify-content: center;
+  width: var(--space-6);
+}
+
+.mark--quiz,
+.kind--quiz {
+  background: var(--color-xp-bg);
+  color: var(--color-xp-text);
+}
+
+.mark--social,
+.kind--social {
+  background: var(--color-ec-bg);
+  color: var(--color-ec-text);
+}
+
+.mark--location,
+.kind--location {
+  background: var(--color-state-draft-bg);
+  color: var(--color-state-draft-text);
+}
+
+.kind--solved {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.kind {
+  align-self: flex-start;
+  border-radius: var(--radius);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0 var(--space-2);
+  white-space: nowrap;
+}
+
+// ---- Chosen challenge ----
+
+.back,
+.link {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0;
+  text-decoration: underline;
+}
+
+.detail-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.detail-head h1 {
+  font-family: var(--font-display);
+}
+
+.detail-head__reward {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.range {
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-left-width: var(--space-1);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+}
+
+.range--in {
+  background: var(--color-success-bg);
+  border-color: var(--color-success-text);
+  color: var(--color-success-text);
+}
+
+.block {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.block h2 {
+  font-size: var(--font-size-md);
+}
+
+.main {
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+// A link styled as a disabled button while the tourist is out of range.
+.main--off {
+  background: var(--color-muted-bg);
+  border-color: var(--color-border);
+  color: var(--color-muted-text);
+  pointer-events: none;
+}
+
+.players {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.players__dots {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.players__dots span {
+  animation: wait 1.4s infinite;
+  border: 2px dashed var(--color-control-border);
+  border-radius: 50%;
+  height: var(--space-6);
+  width: var(--space-6);
+}
+
+.players__dots span.on {
+  animation: none;
+  background: var(--color-accent);
+  border: 2px solid var(--color-accent);
+}
+
+@keyframes wait {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.photos {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.photo {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.photo img {
+  aspect-ratio: 1;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius);
+  object-fit: contain;
+  width: 100%;
+}
+
+.photo--found img {
+  opacity: 0.55;
+}
+
+.won {
+  align-items: center;
+  background: var(--color-xp-bg);
+  border-radius: var(--radius);
+  color: var(--color-xp-text);
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+.won__xp {
+  animation: pop 0.45s ease-out;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    transform: scale(1.15);
+  }
+}
+
+// ---- Map legend ----
+
+.legend {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  bottom: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  left: var(--space-3);
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  position: absolute;
+  z-index: 1000;
+}
+
+.rules {
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1);
+  margin: 0;
+  padding-left: var(--space-5);
+}
