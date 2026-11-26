@@ -20,6 +20,6 @@ export const designPreviewRoutes: Routes = [
   { path: 'map', component: MapView },
   {
     path: 'prototype',
-    loadChildren: () => import('./prototip/prototype.routes').then((m) => m.prototypeRoutes),
+    loadChildren: () => import('./prototype/prototype.routes').then((m) => m.prototypeRoutes),
   },
 ];

@@ -63,7 +63,9 @@ interface RoutingResponse {
   routes?: { distance: number; geometry: { coordinates: [number, number][] } }[];
 }
 
-// PROTOTYPE ONLY, second round. A sketch of what shared/map should become:
+// PROTOTYPE ONLY: the sketch shared/map was built from (#55). The prototypes keep their own
+// copy as part of the snapshot of the redesign; it is not kept up to date, and the app's map
+// is shared/map/location-map.ts. What the sketch shows:
 // - pins in the theme's colours with their label inside, a highlighted pin that follows the list;
 // - pins that overlap on screen join into one group with a count; a click on it zooms in;
 // - the map flies to the chosen pin when it is out of view, and reports its view after the user
@@ -71,7 +73,7 @@ interface RoutingResponse {
 // - the key points' path and the way from the position to the next point follow the roads;
 // - two buttons on the map: "to my position" and "show everything".
 // Like shared/map, it drives Leaflet with ElementRef, afterNextRender, effect() and DestroyRef,
-// and asks the routing service with HttpClient. Once approved, this moves into LocationMap.
+// and asks the public routing service with HttpClient for the way along the streets.
 @Component({
   selector: 'app-proto-map',
   styleUrl: './proto-map.scss',
