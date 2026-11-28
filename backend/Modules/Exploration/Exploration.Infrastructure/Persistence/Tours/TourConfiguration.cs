@@ -17,10 +17,24 @@ internal static class TourConfiguration
         builder.Property(tour => tour.Difficulty).HasConversion<string>().HasMaxLength(20);
         builder.Property(tour => tour.Status).HasConversion<string>().HasMaxLength(20);
 
+        builder.OwnsOne(tour => tour.RecommendedGroupSize, groupSize =>
+        {
+            groupSize.Property(size => size.Min).HasDefaultValue(1);
+            groupSize.Property(size => size.Max).HasDefaultValue(10);
+        });
+        builder.Navigation(tour => tour.RecommendedGroupSize).IsRequired();
+
         builder.OwnsMany(tour => tour.TransportTimes, transportTimes =>
         {
             transportTimes.ToJson();
             transportTimes.Property(time => time.Transport).HasConversion<string>();
+        });
+
+        builder.OwnsMany(tour => tour.KeyPoints, keyPoints =>
+        {
+            keyPoints.ToJson();
+            keyPoints.OwnsOne(keyPoint => keyPoint.Location);
+            keyPoints.Navigation(keyPoint => keyPoint.Location).IsRequired();
         });
     }
 }

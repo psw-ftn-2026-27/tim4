@@ -1,0 +1,12 @@
+@if (isAdmin()) {
+  <app-start [name]="name()" />
+} @else if (auth.isLoggedIn()) {
+  <app-tourist-start [name]="name()" [justRegistered]="novi() !== undefined" />
+} @else {
+  <app-hero />
+  <app-ribbon />
+  <app-steps />
+  <app-example-tours />
+  <app-example-challenges />
+  <app-closing />
+}

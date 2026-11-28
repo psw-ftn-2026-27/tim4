@@ -1,0 +1,263 @@
+<a class="back-link" routerLink="/design-preview">← Nazad na pregled</a>
+<div class="page-header">
+  <h1>Mapa</h1>
+</div>
+<p class="meta">
+  Prava komponenta <code>LocationMap</code> iz <code>shared/map</code>; uputstvo je u njenom
+  README-u.
+</p>
+
+<section class="stack">
+  <h2>Spisak i mapa</h2>
+  <p class="meta">
+    Pinovi sa oznakom (<code>label</code>, <code>tone</code>), grupe (<code>cluster</code>), kartica
+    pod mišem ističe pin (<code>activeIndex</code>) i obrnuto (<code>locationHover</code>), „Na
+    mapi” doleti do pina (<code>focusIndex</code>). Pomerite mapu: pojavi se „Pretraži ovu oblast”
+    (<code>viewChange</code>), a pogled ostaje gde jeste (<code>fitKey</code>).
+  </p>
+
+  <div class="split split--sample">
+    <div class="split__side">
+      @if (searchedArea() !== null) {
+        <p class="notice notice--muted">
+          Prikazane su samo ture u oblasti mape.
+          <button class="link-button" type="button" (click)="clearArea()">Prikaži sve</button>
+        </p>
+      }
+      <ul class="split__list sample-list">
+        @for (item of visibleTours(); track item.index) {
+          <li
+            class="sample-item"
+            [class.sample-item--on]="hovered() === item.index"
+            (mouseenter)="hovered.set(item.index)"
+            (mouseleave)="hovered.set(null)"
+          >
+            <span>
+              <strong>{{ item.tour.name }}</strong>
+              <span class="meta"> · {{ item.tour.label }}</span>
+            </span>
+            <button class="link-button" type="button" (click)="focused.set(item.index)">
+              ⌖ Na mapi
+            </button>
+          </li>
+        } @empty {
+          <li class="state">U ovoj oblasti nema tura.</li>
+        }
+      </ul>
+    </div>
+    <div class="split__map">
+      <app-location-map
+        [locations]="saleTours"
+        [cluster]="true"
+        [fill]="true"
+        [fitKey]="'ture'"
+        [activeIndex]="hovered()"
+        [focusIndex]="focused()"
+        (locationHover)="hovered.set($event)"
+        (viewChange)="view.set($event)"
+      />
+      @if (canSearchArea()) {
+        <button class="button area-button" type="button" (click)="searchArea()">
+          ⌖ Pretraži ovu oblast
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="stack">
+  <h2>Prikaz lokacija</h2>
+
+  <div class="actions">
+    <button class="button" type="button" (click)="showChallenges()">Izazovi u gradu</button>
+    <button class="button" type="button" (click)="showTour()">Tura</button>
+    <button class="button" type="button" (click)="showEmpty()">Prazno</button>
+    <button class="button button--primary" type="button" (click)="togglePath()">
+      Uključi/isključi putanju
+    </button>
+  </div>
+
+  <app-location-map
+    [locations]="locations()"
+    [showPath]="showPath()"
+    (pathLengthChange)="pathLength.set($event)"
+  />
+
+  @if (showPath()) {
+    <p>Dužina putanje: {{ pathLengthText() }}</p>
+  }
+</section>
+
+<section class="stack">
+  <h2>Izbor lokacije</h2>
+
+  <div class="actions">
+    <button
+      class="button"
+      type="button"
+      [disabled]="selected() === null || editing() !== null"
+      (click)="addPoint()"
+    >
+      Dodaj tačku
+    </button>
+    <button
+      class="button"
+      type="button"
+      [disabled]="lastClicked() === null || editing() !== null"
+      (click)="startEdit()"
+    >
+      Izmena postojeće
+    </button>
+  </div>
+
+  <app-location-map
+    [locations]="keyPoints()"
+    [showPath]="true"
+    [selectable]="true"
+    [selected]="selected()"
+    (selectedChange)="pick($event)"
+    (locationClick)="lastClicked.set($event)"
+  />
+
+  @if (editingName(); as name) {
+    <p>Izmena tačke "{{ name }}": klikni na mapu na novo mesto.</p>
+  } @else if (selected(); as location) {
+    <p>
+      Izabrana lokacija: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}
+    </p>
+  } @else {
+    <p>Lokacija nije izabrana</p>
+  }
+</section>
+
+<section class="stack">
+  <h2>Simulator pozicije</h2>
+
+  @if (!auth.isLoggedIn()) {
+    <div class="state">
+      Prijavite se da postavite svoju poziciju.
+      <a routerLink="/login">Prijava</a>
+    </div>
+  } @else if (!isExplorer()) {
+    <div class="state">Simulator pozicije je dostupan turistima.</div>
+  } @else if (position.status() === 'loading') {
+    <!-- Only the first load replaces the map; a reload after a click keeps it on the screen. -->
+    <div class="state" role="status">Učitavanje pozicije…</div>
+  } @else if (position.error()) {
+    <div class="state state--error" role="alert">
+      ⚠ Pozicija nije učitana.
+      <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else {
+    <app-location-map
+      [locations]="[]"
+      [selectable]="true"
+      [position]="position.value() ?? null"
+      (selectedChange)="setPosition($event)"
+    />
+
+    @if (position.value(); as saved) {
+      <p>Vaša pozicija: {{ saved.latitude.toFixed(5) }}, {{ saved.longitude.toFixed(5) }}</p>
+    } @else {
+      <p>Pozicija nije postavljena — kliknite na mapu da označite gde se nalazite</p>
+    }
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+  }
+</section>
+
+<section class="stack">
+  <h2>Ruta do sledeće tačke</h2>
+
+  @if (!auth.isLoggedIn()) {
+    <div class="state">
+      Prijavite se da vidite rutu od svoje pozicije.
+      <a routerLink="/login">Prijava</a>
+    </div>
+  } @else if (!isExplorer()) {
+    <div class="state">Ruta do sledeće tačke je dostupna turistima.</div>
+  } @else if (position.status() === 'loading') {
+    <div class="state" role="status">Učitavanje pozicije…</div>
+  } @else if (position.error()) {
+    <div class="state state--error" role="alert">
+      ⚠ Pozicija nije učitana.
+      <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else {
+    <!-- A click on the empty map sets the position; a click on a pin picks the next point. -->
+    <app-location-map
+      [locations]="tourKeyPoints"
+      [selectable]="true"
+      [position]="position.value() ?? null"
+      [target]="nextPoint()"
+      (selectedChange)="setRoutePosition($event)"
+      (locationClick)="nextIndex.set($event)"
+    />
+
+    @if (!position.value()) {
+      <p>Pozicija nije postavljena — kliknite na mapu da označite gde se nalazite</p>
+    }
+
+    @if (nextPoint(); as point) {
+      <p>Sledeća tačka: {{ point.name }}</p>
+    } @else {
+      <p>Kliknite na ključnu tačku da je izaberete kao sledeću</p>
+    }
+
+    @if (routeError()) {
+      <p class="error" role="alert">{{ routeError() }}</p>
+    }
+  }
+</section>
+
+<section class="stack">
+  <h2>Periodična provera</h2>
+
+  @if (!auth.isLoggedIn()) {
+    <div class="state">
+      Prijavite se da vidite periodičnu proveru svoje pozicije.
+      <a routerLink="/login">Prijava</a>
+    </div>
+  } @else if (!isExplorer()) {
+    <div class="state">Periodična provera je dostupna turistima.</div>
+  } @else if (position.status() === 'loading') {
+    <div class="state" role="status">Učitavanje pozicije…</div>
+  } @else if (position.error()) {
+    <div class="state state--error" role="alert">
+      ⚠ Pozicija nije učitana.
+      <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else {
+    <p>
+      Na svakih 10 sekundi stranica modula šalje poslednju sačuvanu poziciju svojim zahtevom. Ovde
+      se samo ispisuje šta bi bilo poslato; poziciju menjate klikom na mapu simulatora.
+    </p>
+
+    <p role="status">{{ tickText() }}</p>
+
+    @if (checkStopped()) {
+      <p>Provera je zaustavljena</p>
+    }
+
+    <p>Dugme „Zaustavi“ ovde zamenjuje odgovor servera posle kog provera u modulu prestaje.</p>
+
+    <div class="actions">
+      <button class="button" type="button" [disabled]="checkStopped()" (click)="stopCheck()">
+        Zaustavi
+      </button>
+    </div>
+  }
+</section>
+
+<section class="stack">
+  <h2>Oblast na mapi</h2>
+
+  <div class="actions">
+    <button class="button" type="button" (click)="showSearchArea()">Oblast pretrage</button>
+    <button class="button" type="button" (click)="showHiddenLocationArea()">Oblast traženja</button>
+  </div>
+
+  <app-location-map [locations]="[]" [area]="area()" />
+</section>

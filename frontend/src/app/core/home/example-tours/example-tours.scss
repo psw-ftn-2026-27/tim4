@@ -1,0 +1,166 @@
+// One card per row on a phone, three in a row on wider screens. The colours of the
+// difficulty badges come from the global .badge--* classes.
+
+:host {
+  display: block;
+  padding-bottom: clamp(2.75rem, 7vw, 4.5rem);
+}
+
+h3,
+p {
+  margin: 0;
+}
+
+.section-head {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.section-head > p {
+  color: var(--color-text-muted);
+  max-width: 24rem;
+}
+
+.kicker {
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4.5vw, 2.3rem);
+  font-weight: 600;
+  margin: 0;
+  max-width: 28rem;
+}
+
+.tours {
+  display: grid;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tour {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--space-5);
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  text-decoration: none;
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s;
+}
+
+.tour:hover {
+  box-shadow: 0 18px 30px -18px var(--color-text);
+  transform: translateY(-6px);
+}
+
+.tour__media {
+  align-items: flex-end;
+  display: flex;
+  height: 9.5rem;
+  justify-content: center;
+  padding-top: var(--space-4);
+}
+
+.tour__media--easy {
+  background: var(--color-difficulty-easy-bg);
+}
+
+.tour__media--moderate {
+  background: var(--color-difficulty-moderate-bg);
+}
+
+.tour__media--hard {
+  background: var(--color-difficulty-hard-bg);
+}
+
+.tour__media img {
+  display: block;
+  height: 8rem;
+  max-width: 100%;
+  transition: transform 0.4s;
+}
+
+.tour:hover .tour__media img {
+  transform: scale(1.05);
+}
+
+.tour__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
+.tour__body h3 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+}
+
+.tour__body p {
+  color: var(--color-text-muted);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+// Rounder and roomier than the global tag and badge, to match the cards.
+.tag,
+.badge {
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-3);
+}
+
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: rise linear both;
+    animation-range: entry 0% cover 25%;
+    animation-timeline: view();
+  }
+}
+
+@media (min-width: 48rem) {
+  .tours {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(36px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

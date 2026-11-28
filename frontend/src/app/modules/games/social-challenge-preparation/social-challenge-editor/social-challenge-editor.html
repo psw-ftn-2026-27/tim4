@@ -1,0 +1,32 @@
+<section class="page--narrow stack">
+  <a class="back-link" routerLink="/games/admin/social">← Društveni izazovi</a>
+  <div class="page-header">
+    <h1>{{ id() ? 'Izmena društvenog izazova' : 'Nov društveni izazov' }}</h1>
+  </div>
+  <p class="meta">
+    Izazov je aktivan svaki dan u zadatim satima; rešava se kada se dovoljno igrača nađe u krugu u
+    isto vreme.
+  </p>
+  @if (!isAdministrator()) {
+    <p>Priprema društvenih izazova dostupna je administratoru.</p>
+  } @else if (!id()) {
+    <div class="card">
+      <app-social-challenge-form [pending]="pending()" [error]="error()" (save)="save($event)" />
+    </div>
+  } @else if (challenge.isLoading()) {
+    <p>Učitavanje izazova…</p>
+  } @else if (challenge.error()) {
+    <p class="error" role="alert">{{ loadError() }}</p>
+  } @else if (challenge.value(); as existing) {
+    @if (existing.status === 'Draft') {
+      <app-social-challenge-form
+        [initial]="existing"
+        [pending]="pending()"
+        [error]="error()"
+        (save)="save($event)"
+      />
+    } @else {
+      <p class="error" role="alert">Moguće je izmeniti samo nacrt izazova.</p>
+    }
+  }
+</section>

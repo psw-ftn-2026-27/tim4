@@ -1,0 +1,179 @@
+<form class="stack" (submit)="submit($event)">
+  <div class="field">
+    <label for="name">Naziv</label>
+    <input
+      id="name"
+      type="text"
+      [formField]="fields.name"
+      [attr.aria-invalid]="
+        (fields.name().dirty() || fields.name().touched()) && fields.name().errors().length > 0
+      "
+    />
+    @if (fields.name().dirty() || fields.name().touched()) {
+      @for (issue of fields.name().errors(); track $index) {
+        <p class="error">{{ issue.message ?? 'Polje je obavezno.' }}</p>
+      }
+    }
+  </div>
+  <div class="field">
+    <label for="start">Početak aktivnosti</label>
+    <input
+      id="start"
+      type="time"
+      step="1"
+      [formField]="fields.start"
+      [attr.aria-invalid]="
+        (fields.start().touched() || fields.start().errors()[0]?.kind === 'parse') &&
+        fields.start().errors().length > 0
+      "
+    />
+    @if (fields.start().touched() || fields.start().errors()[0]?.kind === 'parse') {
+      @for (issue of fields.start().errors().slice(0, 1); track $index) {
+        <p class="error">
+          {{
+            issue.kind === 'parse'
+              ? 'Unesi potpuno vreme.'
+              : (issue.message ?? 'Polje je obavezno.')
+          }}
+        </p>
+      }
+    }
+  </div>
+  <div class="field">
+    <label for="end">Završetak aktivnosti</label>
+    <input
+      id="end"
+      type="time"
+      step="1"
+      [formField]="fields.end"
+      [attr.aria-invalid]="
+        (fields.end().touched() || fields.end().errors()[0]?.kind === 'parse') &&
+        fields.end().errors().length > 0
+      "
+    />
+    @if (fields.end().touched() || fields.end().errors()[0]?.kind === 'parse') {
+      @for (issue of fields.end().errors().slice(0, 1); track $index) {
+        <p class="error">
+          {{
+            issue.kind === 'parse'
+              ? 'Unesi potpuno vreme.'
+              : (issue.message ?? 'Polje je obavezno.')
+          }}
+        </p>
+      }
+    }
+  </div>
+  <div class="field">
+    <label for="required-participants">Potreban broj učesnika</label>
+    <input
+      id="required-participants"
+      type="number"
+      step="1"
+      [formField]="fields.requiredParticipants"
+      [attr.aria-invalid]="
+        (fields.requiredParticipants().dirty() ||
+          fields.requiredParticipants().touched() ||
+          fields.requiredParticipants().errors()[0]?.kind === 'parse') &&
+        fields.requiredParticipants().errors().length > 0
+      "
+    />
+    @if (
+      fields.requiredParticipants().dirty() ||
+      fields.requiredParticipants().touched() ||
+      fields.requiredParticipants().errors()[0]?.kind === 'parse'
+    ) {
+      @for (issue of fields.requiredParticipants().errors().slice(0, 1); track $index) {
+        <p class="error">
+          {{ issue.kind === 'parse' ? 'Unesi broj.' : (issue.message ?? 'Polje je obavezno.') }}
+        </p>
+      }
+    }
+  </div>
+  <div class="field">
+    <label for="range">Opseg (m)</label>
+    <input
+      id="range"
+      type="number"
+      step="any"
+      [formField]="fields.rangeInMeters"
+      [attr.aria-invalid]="
+        (fields.rangeInMeters().dirty() ||
+          fields.rangeInMeters().touched() ||
+          fields.rangeInMeters().errors()[0]?.kind === 'parse') &&
+        fields.rangeInMeters().errors().length > 0
+      "
+    />
+    @if (
+      fields.rangeInMeters().dirty() ||
+      fields.rangeInMeters().touched() ||
+      fields.rangeInMeters().errors()[0]?.kind === 'parse'
+    ) {
+      @for (issue of fields.rangeInMeters().errors().slice(0, 1); track $index) {
+        <p class="error">
+          {{ issue.kind === 'parse' ? 'Unesi broj.' : (issue.message ?? 'Polje je obavezno.') }}
+        </p>
+      }
+    }
+  </div>
+  <div class="field">
+    <label for="xp">XP nagrada</label>
+    <input
+      id="xp"
+      type="number"
+      step="1"
+      [formField]="fields.xpReward"
+      [attr.aria-invalid]="
+        (fields.xpReward().dirty() ||
+          fields.xpReward().touched() ||
+          fields.xpReward().errors()[0]?.kind === 'parse') &&
+        fields.xpReward().errors().length > 0
+      "
+    />
+    @if (
+      fields.xpReward().dirty() ||
+      fields.xpReward().touched() ||
+      fields.xpReward().errors()[0]?.kind === 'parse'
+    ) {
+      @for (issue of fields.xpReward().errors().slice(0, 1); track $index) {
+        <p class="error">
+          {{ issue.kind === 'parse' ? 'Unesi broj.' : (issue.message ?? 'Polje je obavezno.') }}
+        </p>
+      }
+    }
+  </div>
+  <div class="field">
+    <label for="message">Završna poruka</label>
+    <textarea
+      id="message"
+      rows="3"
+      [formField]="fields.completionMessage"
+      [attr.aria-invalid]="
+        (fields.completionMessage().dirty() || fields.completionMessage().touched()) &&
+        fields.completionMessage().errors().length > 0
+      "
+    ></textarea>
+    @if (fields.completionMessage().dirty() || fields.completionMessage().touched()) {
+      @for (issue of fields.completionMessage().errors(); track $index) {
+        <p class="error">{{ issue.message ?? 'Polje je obavezno.' }}</p>
+      }
+    }
+  </div>
+  <div class="field">
+    <h2>Lokacija izazova</h2>
+    <app-location-map
+      [locations]="[]"
+      [selectable]="!pending()"
+      [selected]="fields.location().value()"
+      (selectedChange)="fields.location().value.set($event)"
+    />
+    @if (fields.location().dirty() || fields.location().touched()) {
+      @for (issue of fields.location().errors(); track issue.kind) {
+        <p class="error">{{ issue.message }}</p>
+      }
+    }
+  </div>
+  @if (error(); as message) {
+    <p class="error" role="alert">{{ message }}</p>
+  }
+  <button class="button button--primary" type="submit" [disabled]="pending()">Sačuvaj</button>
+</form>

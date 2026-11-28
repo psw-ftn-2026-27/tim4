@@ -1,13 +1,131 @@
-.actions {
+:host {
   display: flex;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.time {
-  margin-right: var(--space-2);
+h2,
+p {
+  margin: 0;
+}
+
+.page-header,
+.state {
+  margin: 0;
+}
+
+.button {
+  text-decoration: none;
+}
+
+// The coupons link sits at the far end of the tab row.
+.tabs__tab--apart {
+  margin-left: auto;
+}
+
+.state img {
+  max-width: 12rem;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  align-items: start;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: var(--space-4) var(--space-5);
+}
+
+.row__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.row__body h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+}
+
+.row__body h2 a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.row__body h2 a:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.row__facts {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1) var(--space-3);
+}
+
+.ready {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.ready .progress {
+  max-width: 24rem;
+}
+
+.ready__list {
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1) var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ready__done {
+  color: var(--color-success-text);
+}
+
+.row__actions {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 22rem;
+}
+
+.row__actions .button {
   white-space: nowrap;
 }
 
-form.card {
-  max-width: 24rem;
+.quiet {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0;
+  text-decoration: underline;
+}
+
+.quiet:hover {
+  color: var(--color-danger);
 }

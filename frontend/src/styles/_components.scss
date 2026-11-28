@@ -1,10 +1,12 @@
+// Buttons: .button is the secondary action, add a modifier for primary or danger.
 .button {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-control-border);
   border-radius: var(--radius);
   color: var(--color-text);
   cursor: pointer;
   font: inherit;
+  min-height: var(--control-height);
   padding: var(--space-2) var(--space-4);
 }
 
@@ -12,6 +14,40 @@
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: var(--color-accent-text);
+}
+
+// Only for actions that cannot be undone, such as deleting.
+.button--danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--color-danger-text);
+}
+
+// A disabled button, such as "Prethodna" on the first page, looks inactive.
+.button:disabled {
+  background: var(--color-muted-bg);
+  border-color: var(--color-border);
+  color: var(--color-muted-text);
+  cursor: not-allowed;
+}
+
+// Page header: the h1 and, right after it, the page's one primary action, in one row.
+// Pages use the whole window width, so the action stays next to the title, not at the far edge.
+.page-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+// Back link: a plain link to the parent page, placed above the page header.
+.back-link {
+  display: inline-block;
+  font-size: var(--font-size-sm);
 }
 
 .card {
@@ -25,6 +61,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  min-width: 0;
 }
 
 .field label {
@@ -32,14 +69,85 @@
   font-size: var(--font-size-sm);
 }
 
-.field input,
+.field input:not([type='checkbox'], [type='radio']),
 .field select,
 .field textarea {
   background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  font: inherit;
+  min-width: 0;
+  padding: var(--space-2);
+}
+
+// An input takes the shared control height, the same as a button and a select.
+.field input:not([type='checkbox'], [type='radio'], [type='file']) {
+  height: var(--control-height);
+}
+
+// The browser's own select is one pixel shorter than an input and puts its arrow against
+// the border, so the select draws its arrow itself and takes the shared control height.
+.field select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - var(--space-4)) 50%,
+    calc(100% - var(--space-3)) 50%;
+  background-repeat: no-repeat;
+  background-size: var(--space-1) var(--space-1);
+  height: var(--control-height);
+  padding-right: var(--space-6);
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--color-accent);
+}
+
+// A bordered group of related fields; use on <fieldset>.
+.field-group {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  font: inherit;
-  padding: var(--space-2);
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+}
+
+// Two fields side by side, such as a from-to range.
+.field-pair {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+// A checkbox or radio together with its label text.
+.choice {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+}
+
+// Form actions: the buttons of a form or a filter, in their own row under the fields,
+// starting under the first field. Never a cell of the field grid.
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'],
+.field textarea[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+// Wrap a wide .table so it scrolls instead of overflowing on narrow screens.
+.table-wrap {
+  overflow-x: auto;
 }
 
 .table {
@@ -54,6 +162,103 @@
   text-align: left;
 }
 
+// A column holding a date, an amount, a count or a badge: never wraps and is as narrow as
+// its content (width 0 shrinks it to that). Put it on the th and on every td of the column.
+// Text columns take the rest of the width and wrap.
+.table .col-fit {
+  white-space: nowrap;
+  width: 0;
+}
+
+// A button inside a table cell never wraps its label.
+.table .button {
+  white-space: nowrap;
+}
+
+// A table row that no longer counts, such as a reversed payment.
+.table .row--muted {
+  background: var(--color-muted-bg);
+  color: var(--color-muted-text);
+}
+
+// Actions column "Radnje": the last column, one cell per action, so each action keeps its
+// place in every row (the header cell spans them with colspan). A cell whose action the
+// state does not allow stays empty. Width 0 shrinks the cell to its button; the height
+// fits a button, the padding and the row line, so a row without actions keeps its height.
+.table .col-actions {
+  height: calc(var(--control-height) + 2 * var(--space-2) + 1px);
+  white-space: nowrap;
+  width: 0;
+}
+
+// A table with actions, on a narrow screen: each row becomes a card, the header row is
+// hidden, each cell shows its column name from its data-label attribute, and the actions
+// sit side by side at the bottom of the card, so nothing scrolls sideways. A sticky actions
+// column cannot work, because the actions are several cells under one th with colspan.
+// 48rem (768px) is the narrow-screen breakpoint; a media query cannot read a custom
+// property, so the value is written here.
+@media (max-width: 48rem) {
+  .table--cards,
+  .table--cards tbody,
+  .table--cards tr,
+  .table--cards td {
+    display: block;
+  }
+
+  .table--cards thead {
+    display: none;
+  }
+
+  .table--cards tr {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+  }
+
+  .table--cards tr + tr {
+    margin-top: var(--space-3);
+  }
+
+  // .col-fit is named as well, so its width 0 from above does not apply to a card.
+  .table--cards td,
+  .table--cards .col-fit {
+    border-bottom: none;
+    padding: var(--space-1) 0;
+    white-space: normal;
+    width: auto;
+  }
+
+  .table--cards td[data-label]::before {
+    color: var(--color-text-muted);
+    content: attr(data-label);
+    display: block;
+    font-size: var(--font-size-sm);
+  }
+
+  .table--cards .col-actions {
+    display: inline-block;
+    height: auto;
+    width: auto;
+    margin-right: var(--space-2);
+    margin-top: var(--space-2);
+  }
+
+  // An action the state does not allow leaves no gap in the card.
+  .table--cards .col-actions:empty {
+    display: none;
+  }
+}
+
+// Pagination: "Prethodna", "Strana X od Y", "Sledeća". Shown only when there is more
+// than one page.
+.pagination {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
 .error {
   color: var(--color-danger);
   font-size: var(--font-size-sm);
@@ -64,4 +269,354 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   margin: 0;
+}
+
+// Notices: a short message in a box. Always start the text with an icon or a word.
+.notice {
+  border-radius: var(--radius);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+}
+
+.notice--success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.notice--muted {
+  background: var(--color-muted-bg);
+  color: var(--color-muted-text);
+}
+
+// Page state: the one message a page shows in place of its data while loading, when empty,
+// when not logged in or not allowed, with an optional link or button under the text.
+.state {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  margin: 0;
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+}
+
+// The page's data did not load; use with role="alert" and a "Pokušaj ponovo" button.
+.state--error {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+// Badges: a small label with an icon and text, never colour alone.
+.badge {
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  display: inline-block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0 var(--space-2);
+  white-space: nowrap;
+}
+
+// States, shared by tours (u pripremi, objavljena, arhivirana), challenges (all four),
+// gift cards and tour runs; /design-preview lists which modifier each state uses.
+.badge--draft {
+  background: var(--color-state-draft-bg);
+  color: var(--color-state-draft-text);
+}
+
+.badge--published {
+  background: var(--color-state-published-bg);
+  color: var(--color-state-published-text);
+}
+
+.badge--archived,
+.badge--muted {
+  background: var(--color-muted-bg);
+  color: var(--color-muted-text);
+}
+
+// Retired differs from archived by its dashed border and its icon.
+.badge--retired {
+  background: var(--color-muted-bg);
+  border: 1px dashed var(--color-muted-text);
+  color: var(--color-muted-text);
+}
+
+// Difficulty: three dots before the text, filled up to the level. The dots are drawn here,
+// not typed as characters, so they are the same size on every system; the template writes
+// only the level as text (Lako, Srednje, Teško).
+.badge--easy::before,
+.badge--moderate::before,
+.badge--hard::before {
+  background-position:
+    0 50%,
+    50% 50%,
+    100% 50%;
+  background-repeat: no-repeat;
+  background-size: 0.8em 0.8em;
+  content: '';
+  display: inline-block;
+  height: 0.8em;
+  margin-right: var(--space-1);
+  width: 2.8em;
+}
+
+.badge--easy {
+  background: var(--color-difficulty-easy-bg);
+  color: var(--color-difficulty-easy-text);
+}
+
+.badge--easy::before {
+  background-image:
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, transparent 68%, currentColor 72% 92%, transparent),
+    radial-gradient(circle closest-side, transparent 68%, currentColor 72% 92%, transparent);
+}
+
+.badge--moderate {
+  background: var(--color-difficulty-moderate-bg);
+  color: var(--color-difficulty-moderate-text);
+}
+
+.badge--moderate::before {
+  background-image:
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, transparent 68%, currentColor 72% 92%, transparent);
+}
+
+.badge--hard {
+  background: var(--color-difficulty-hard-bg);
+  color: var(--color-difficulty-hard-text);
+}
+
+.badge--hard::before {
+  background-image:
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, currentColor 92%, transparent),
+    radial-gradient(circle closest-side, currentColor 92%, transparent);
+}
+
+.badge--ec {
+  background: var(--color-ec-bg);
+  color: var(--color-ec-text);
+}
+
+.badge--xp {
+  background: var(--color-xp-bg);
+  color: var(--color-xp-text);
+}
+
+.badge--success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+// Progress "X od Y": a bar followed by the count as text, never the bar alone.
+// .progress__bar is the empty bar; .progress__fill inside it has the filled share as its width.
+.progress {
+  align-items: center;
+  display: flex;
+  font-size: var(--font-size-sm);
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.progress__bar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius);
+  display: block;
+  flex: 1;
+  height: var(--space-2);
+  overflow: hidden;
+}
+
+.progress__fill {
+  background: var(--color-accent);
+  display: block;
+  height: 100%;
+}
+
+// Tag: a plain keyword on a tour.
+.tag {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  display: inline-block;
+  font-size: var(--font-size-sm);
+  padding: 0 var(--space-2);
+}
+
+// Image upload: a label that wraps a hidden file input.
+// States: .upload--dragover, .upload--preview, .upload--error.
+.upload {
+  align-items: center;
+  background: var(--color-surface);
+  border: 2px dashed var(--color-control-border);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  justify-content: center;
+  padding: var(--space-4);
+  position: relative;
+  text-align: center;
+}
+
+.upload input[type='file'] {
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.upload--dragover {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  border-style: solid;
+  color: var(--color-text);
+}
+
+.upload--preview {
+  border-style: solid;
+}
+
+.upload--preview svg {
+  border-radius: var(--radius);
+  max-width: 100%;
+}
+
+.upload--error {
+  border-color: var(--color-danger);
+  border-style: solid;
+}
+
+// Tabs: views of one page, such as a list split by state. Buttons with role="tab" and
+// aria-selected inside role="tablist"; links between two pages that read as one (the author's
+// tours and coupons) use a.tabs__tab with .tabs__tab--on on the current one. A count is optional.
+.tabs {
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.tabs__tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  margin-bottom: -1px;
+  padding: var(--space-2) var(--space-1);
+  text-decoration: none;
+}
+
+.tabs__tab[aria-selected='true'],
+.tabs__tab--on {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.tabs__count {
+  background: var(--color-muted-bg);
+  border-radius: 999px;
+  color: var(--color-muted-text);
+  font-size: var(--font-size-sm);
+  margin-left: var(--space-1);
+  padding: 0 var(--space-2);
+}
+
+// Chips: filters that apply at once, in one row, instead of a filter form with a submit button.
+// A chip is a button with aria-pressed; .chip--on marks one that filters.
+.chips {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1);
+  height: var(--control-height);
+  padding: 0 var(--space-4);
+  white-space: nowrap;
+}
+
+.chip:hover {
+  border-color: var(--color-text);
+}
+
+.chip--on {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+// Inline confirmation: what cannot be undone asks right next to its button, never in a dialog
+// and never far down the page. The question, then the danger button and "Odustani".
+.confirm {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.confirm p {
+  flex: 1 1 14rem;
+  margin: 0;
+}
+
+// Link card: a whole card or row that opens another page, such as a challenge near the tourist
+// or a gift card tile. The card is the link; its title is the thing's name, not underlined, and
+// the border turns to the accent on hover. Never a text with an arrow ("Otvori →").
+.link-card {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.link-card:hover,
+.link-card:focus-visible {
+  border-color: var(--color-accent);
+}
+
+.link-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.link-card__body strong {
+  font-weight: 600;
 }

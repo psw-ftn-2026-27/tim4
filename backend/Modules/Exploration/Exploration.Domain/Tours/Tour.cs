@@ -6,8 +6,10 @@ namespace Exploration.Domain.Tours;
 public sealed class Tour : AggregateRoot
 {
     private const int MinimumDescriptionLengthForPublishing = 100;
+    private const int MinimumKeyPointsForPublishing = 2;
 
     private readonly List<TransportTime> _transportTimes = [];
+    private readonly List<KeyPoint> _keyPoints = [];
 
     public Guid AuthorId { get; private set; }
     public string Name { get; private set; }
@@ -16,16 +18,22 @@ public sealed class Tour : AggregateRoot
     public List<string> Tags { get; private set; }
     public TourStatus Status { get; private set; }
     public DateTime? PublishedAt { get; private set; }
+    public DateTime? ArchivedAt { get; private set; }
+    public RecommendedGroupSize RecommendedGroupSize { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
+    public IReadOnlyList<KeyPoint> KeyPoints => _keyPoints;
+    public double LengthInKm { get; private set; }
 
     private Tour()
     {
         Name = null!;
         Description = null!;
         Tags = null!;
+        RecommendedGroupSize = null!;
     }
 
-    public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags)
+    public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags,
+        RecommendedGroupSize recommendedGroupSize)
         : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -40,12 +48,17 @@ public sealed class Tour : AggregateRoot
         {
             throw new DomainException("A tour requires at least one tag.");
         }
+        if (recommendedGroupSize is null)
+        {
+            throw new DomainException("A tour requires a recommended group size.");
+        }
 
         AuthorId = authorId;
         Name = name;
         Description = description;
         Difficulty = difficulty;
         Tags = tags;
+        RecommendedGroupSize = recommendedGroupSize;
         Status = TourStatus.Draft;
     }
 
@@ -59,11 +72,47 @@ public sealed class Tour : AggregateRoot
         _transportTimes.Add(new TransportTime(transport, minutes));
     }
 
-    public void Publish()
+    public void AddKeyPoint(KeyPoint keyPoint, double lengthInKm)
     {
-        if (Status == TourStatus.Published)
+        EnsureKeyPointsCanChange(lengthInKm);
+        if (keyPoint is null)
         {
-            throw new DomainException("The tour is already published.");
+            throw new DomainException("A key point is required.");
+        }
+
+        _keyPoints.Add(keyPoint);
+        LengthInKm = lengthInKm;
+    }
+
+    public void UpdateKeyPoint(Guid keyPointId, KeyPoint changes, double lengthInKm)
+    {
+        EnsureKeyPointsCanChange(lengthInKm);
+        if (changes is null)
+        {
+            throw new DomainException("A key point is required.");
+        }
+
+        GetKeyPoint(keyPointId).ChangeTo(changes);
+        LengthInKm = lengthInKm;
+    }
+
+    public void RemoveKeyPoint(Guid keyPointId, double lengthInKm)
+    {
+        EnsureKeyPointsCanChange(lengthInKm);
+
+        _keyPoints.Remove(GetKeyPoint(keyPointId));
+        LengthInKm = lengthInKm;
+    }
+
+    public void Publish(TourPricing pricing)
+    {
+        if (pricing is null)
+        {
+            throw new DomainException("A tour can be published only with a pricing.");
+        }
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Only a draft tour can be published.");
         }
         if (Description.Length < MinimumDescriptionLengthForPublishing)
         {
@@ -73,8 +122,50 @@ public sealed class Tour : AggregateRoot
         {
             throw new DomainException("A tour can be published only with at least one transport time.");
         }
+        if (_keyPoints.Count < MinimumKeyPointsForPublishing)
+        {
+            throw new DomainException($"A tour can be published only with at least {MinimumKeyPointsForPublishing} key points.");
+        }
 
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
     }
+
+    public void Archive()
+    {
+        if (Status != TourStatus.Published)
+        {
+            throw new DomainException("Only a published tour can be archived.");
+        }
+
+        Status = TourStatus.Archived;
+        ArchivedAt = DateTime.UtcNow;
+    }
+
+    public void Reactivate()
+    {
+        if (Status != TourStatus.Archived)
+        {
+            throw new DomainException("Only an archived tour can be reactivated.");
+        }
+
+        Status = TourStatus.Published;
+        ArchivedAt = null;
+    }
+
+    private void EnsureKeyPointsCanChange(double lengthInKm)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be changed only while the tour is a draft.");
+        }
+        if (!double.IsFinite(lengthInKm) || lengthInKm < 0)
+        {
+            throw new DomainException("A tour length must be a finite number that is not negative.");
+        }
+    }
+
+    public KeyPoint GetKeyPoint(Guid keyPointId) =>
+        _keyPoints.SingleOrDefault(keyPoint => keyPoint.Id == keyPointId)
+        ?? throw new NotFoundException("The key point does not exist.");
 }

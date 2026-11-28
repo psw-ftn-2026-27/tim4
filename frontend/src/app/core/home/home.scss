@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+// The visitor's sections sit in the middle like the approved prototype, whose 68rem
+// container leaves 66rem for content. The ribbon is left out: it spans the window.
+app-hero,
+app-steps,
+app-example-tours,
+app-example-challenges,
+app-closing {
+  margin-inline: auto;
+  max-width: 66rem;
+}

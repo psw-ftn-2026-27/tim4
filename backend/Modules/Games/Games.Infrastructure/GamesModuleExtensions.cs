@@ -1,5 +1,29 @@
+using System.Globalization;
 using Games.Application;
+using Games.Application.Experience;
+using Games.Application.LocationChallengeAuthoring;
+using Games.Application.LocationChallengeBrowsing;
+using Games.Application.LocationChallengePlaying;
+using Games.Application.PlayerExperience;
+using Games.Application.LocationChallenges;
+using Games.Application.QuizAttempts;
+using Games.Application.QuizAuthoring;
+using Games.Application.QuizLifecycle;
+using Games.Application.QuizSolving;
+using Games.Application.Quizzes;
+using Games.Domain.QuizAttempts;
+using Games.Application.SocialChallengePlaying;
+using Games.Application.SocialChallengePreparation;
+using Games.Application.SocialChallengeRuns;
+using Games.Application.SocialChallenges;
+using Games.Domain.SocialChallengeRuns;
 using Games.Infrastructure.Persistence;
+using Games.Infrastructure.Persistence.Experience;
+using Games.Infrastructure.Persistence.LocationChallenges;
+using Games.Infrastructure.Persistence.QuizAttempts;
+using Games.Infrastructure.Persistence.SocialChallengeRuns;
+using Games.Infrastructure.Persistence.Quizzes;
+using Games.Infrastructure.Persistence.SocialChallenges;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Infrastructure;
@@ -15,6 +39,48 @@ public static class GamesModuleExtensions
         services.AddAutoMapper(mapper => mapper.AddProfile<GamesMapperProfile>());
 
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<GamesDbContext>());
+        services.AddScoped<IEarnedXpRepository, EarnedXpRepository>();
+        services.AddScoped<IEarnedXpReadRepository, EarnedXpReadRepository>();
+        services.AddScoped<PlayerExperienceQueries>();
+        services.AddScoped<IQuizRepository, QuizRepository>();
+        services.AddScoped<IQuizReadRepository, QuizReadRepository>();
+
+        services.AddScoped<QuizAuthoringService>();
+        services.AddScoped<QuizAuthoringQueries>();
+        services.AddScoped<QuizLifecycleService>();
+
+        services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
+        services.AddScoped<QuizAnswering>();
+        services.AddScoped<QuizSolvingService>();
+        services.AddScoped<QuizSolvingQueries>();
+
+        services.AddScoped<ILocationChallengeRepository, LocationChallengeRepository>();
+        services.AddScoped<ILocationChallengeAttemptRepository, LocationChallengeAttemptRepository>();
+        services.AddScoped<ILocationChallengePlayReadRepository, LocationChallengePlayReadRepository>();
+        services.AddScoped<ILocationChallengeReadRepository, LocationChallengeReadRepository>();
+        services.AddScoped<LocationChallengeAuthoringService>();
+        services.AddScoped<LocationChallengeAuthoringQueries>();
+        services.AddScoped<LocationChallengeBrowsingQueries>();
+        services.AddScoped<LocationChallengePlayingService>();
+        services.AddScoped<LocationChallengePlayingQueries>();
+        services.AddSingleton(provider =>
+        {
+            var activationDistance = provider.GetRequiredService<IConfiguration>()
+                ["Games:LocationChallenges:ActivationDistanceInMeters"];
+            return new LocationChallengeActivation(string.IsNullOrWhiteSpace(activationDistance)
+                ? null
+                : double.Parse(activationDistance, NumberStyles.Float, CultureInfo.InvariantCulture));
+        });
+
+        services.AddScoped<ISocialChallengeRepository, SocialChallengeRepository>();
+        services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();
+        services.AddScoped<SocialChallengePreparationService>();
+        services.AddScoped<SocialChallengePreparationQueries>();
+
+        services.AddScoped<ISocialChallengeRunRepository, SocialChallengeRunRepository>();
+        services.AddScoped<SocialChallengeJoining>();
+        services.AddScoped<SocialChallengePlayingService>();
+        services.AddScoped<SocialChallengePlayingQueries>();
 
         return services;
     }

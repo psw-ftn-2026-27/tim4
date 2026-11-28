@@ -1,0 +1,56 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+// The sample of .split is shorter than a real page, which takes the window's height.
+.split--sample {
+  height: 28rem;
+  min-height: 0;
+}
+
+.sample-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sample-item {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding: var(--space-3);
+}
+
+.sample-item--on {
+  border-color: var(--color-text);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+// Over the top of the map, in the middle, like booking sites.
+.area-button {
+  box-shadow: 0 var(--space-1) var(--space-3) rgb(0 0 0 / 0.18);
+  left: 50%;
+  position: absolute;
+  top: var(--space-3);
+  transform: translateX(-50%);
+  z-index: 1000;
+}

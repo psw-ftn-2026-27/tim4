@@ -1,0 +1,112 @@
+<div class="page-header">
+  <h1>Moja putovanja</h1>
+</div>
+
+@if (activeTour.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Putovanja nisu učitana.</strong>
+    <button class="button" type="button" (click)="activeTour.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!activeTour.hasValue()) {
+  <p class="state" role="status">Učitavanje…</p>
+} @else {
+  @if (active(); as tour) {
+    <!-- The tour in progress always comes first: the one thing the tourist may be in the middle of. -->
+    <section class="current" aria-labelledby="current-title">
+      <div class="current__body">
+        <p class="current__badges">
+          <span class="badge badge--published">▶ U toku</span>
+          @if (activeIsArchived()) {
+            <span class="badge badge--archived">▣ Arhivirana</span>
+          }
+        </p>
+        <h2 id="current-title">{{ tour.tourName }}</h2>
+        <p class="progress">
+          <span class="progress__bar" aria-hidden="true"
+            ><span class="progress__fill" [style.width]="progress()"></span
+          ></span>
+          {{ tour.reachedKeyPointCount }} od {{ pointsText() }}
+        </p>
+        @if (next(); as point) {
+          <p class="meta">
+            Sledeća tačka: <strong>{{ point.name }}</strong>
+          </p>
+        }
+      </div>
+      <div class="current__actions">
+        <a class="button button--primary" routerLink="/exploration/active">Nastavi turu</a>
+        <a class="button" [routerLink]="['/exploration/tours', tour.tourId]">Opis ture</a>
+      </div>
+    </section>
+  } @else {
+    <div class="state">
+      <img src="/images/ilustracije/hiking.svg" alt="" />
+      <strong>Nemate turu u toku.</strong>
+      <span
+        >Kupljenu turu pokrećete sa njene stranice: postavite poziciju na mapi i kliknite „Pokreni
+        turu”.</span
+      >
+      <a class="button" routerLink="/exploration">Pretraži ture</a>
+    </div>
+  }
+
+  <section class="purchased" aria-labelledby="purchased-title">
+    <h2 id="purchased-title">Kupljene ture</h2>
+
+    @if (purchased.error()) {
+      <div class="state state--error" role="alert">
+        <strong>Kupljene ture nisu učitane.</strong>
+        <button class="button" type="button" (click)="purchased.reload()">Pokušaj ponovo</button>
+      </div>
+    } @else if (!purchased.hasValue()) {
+      <p class="state" role="status">Učitavanje kupljenih tura…</p>
+    } @else if (items().length === 0) {
+      <div class="state">
+        <strong>Još niste kupili nijednu turu.</strong>
+        <span>Kupljene ture, i besplatne, pojaviće se ovde.</span>
+      </div>
+    } @else {
+      <div class="split">
+        <div class="split__side">
+          <ul class="split__list cards">
+            @for (item of items(); track item.tour.id) {
+              <li (mouseenter)="hovered.set(item.tour.id)" (mouseleave)="hovered.set(null)">
+                <article class="journey" [class.journey--active]="activeId() === item.tour.id">
+                  <h3>
+                    <a [routerLink]="['/exploration/tours', item.tour.id]">{{ item.tour.name }}</a>
+                  </h3>
+                  <p class="journey__facts">
+                    @if (item.isInProgress) {
+                      <span class="badge badge--published">▶ U toku</span>
+                    }
+                    @if (item.tour.status === 'Archived') {
+                      <span class="badge badge--archived">▣ Arhivirana</span>
+                    }
+                    <span [class]="difficultyBadges[item.tour.difficulty]">{{
+                      difficultyLabels[item.tour.difficulty]
+                    }}</span>
+                    <span>{{ formatKm(item.tour.lengthInKm) }}</span>
+                  </p>
+                  <button class="journey__map-link" type="button" (click)="chosen.set(item.tour.id)">
+                    ⌖ Na mapi
+                  </button>
+                </article>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <aside class="split__map" aria-label="Mapa kupljenih tura">
+          <app-location-map
+            [locations]="pins()"
+            [fill]="true"
+            [activeIndex]="activeIndex()"
+            [focusIndex]="focusIndex()"
+            (locationHover)="hoverPin($event)"
+            (locationClick)="choosePin($event)"
+          />
+        </aside>
+      </div>
+    }
+  </section>
+}

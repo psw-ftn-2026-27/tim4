@@ -1,0 +1,163 @@
+<a class="back-link" routerLink="/exploration">← Ture</a>
+
+@if (tour.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Tura nije učitana.</strong>
+    <button class="button" type="button" (click)="tour.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!tour.hasValue()) {
+  <p class="state" role="status">Učitavanje ture…</p>
+} @else if (tour.value(); as tour) {
+  <div class="layout">
+    <article class="content">
+      <header class="head">
+        <h1>{{ tour.name }}</h1>
+        <p class="facts">
+          <span [class]="difficultyBadges[tour.difficulty]">{{
+            difficultyLabels[tour.difficulty]
+          }}</span>
+          @for (fact of facts(); track fact) {
+            <span>{{ fact }}</span>
+          }
+        </p>
+        @if (tour.tags.length > 0) {
+          <p class="tags">
+            @for (tag of tour.tags; track tag) {
+              <span class="tag">{{ tag }}</span>
+            }
+          </p>
+        }
+      </header>
+
+      @if (tour.keyPoints[0]; as first) {
+        <img class="hero" [src]="first.imageAddress" alt="" />
+      }
+
+      <p class="description">{{ tour.description }}</p>
+
+      <section class="points" aria-labelledby="points-title">
+        <h2 id="points-title">Ključne tačke</h2>
+        <ol class="timeline">
+          @for (keyPoint of tour.keyPoints; track keyPoint.id; let index = $index) {
+            <li
+              class="point"
+              [class.point--active]="hovered() === index"
+              (mouseenter)="hovered.set(index)"
+              (mouseleave)="hovered.set(null)"
+            >
+              <span class="point__number">{{ index + 1 }}</span>
+              <img class="point__image" [src]="keyPoint.imageAddress" alt="" />
+              <div>
+                <h3>{{ keyPoint.name }}</h3>
+                <p>{{ keyPoint.description }}</p>
+                @if (keyPoint.secret) {
+                  <p class="meta">🔑 Tajna: {{ keyPoint.secret }}</p>
+                } @else if (tour.isPurchased) {
+                  <p class="meta">🔒 Tajna se otkriva kada stignete do tačke.</p>
+                }
+              </div>
+            </li>
+          }
+        </ol>
+        @if (!seesWholeTour()) {
+          <p class="locked">
+            🔒 Ostale ključne tačke i njihove tajne otključavaju se kupovinom ture.
+          </p>
+        }
+      </section>
+    </article>
+
+    <aside class="side">
+      <!-- One primary action for what the tour is to this visitor, and why it is (not) possible. -->
+      <section class="card panel" aria-label="Kupovina i pokretanje">
+        @if (tour.isInProgress) {
+          <p><span class="badge badge--published">▶ U toku</span></p>
+          <a class="button button--primary panel__main" routerLink="/exploration/active"
+            >Nastavi turu</a
+          >
+        } @else if (isAuthor()) {
+          <p><span class="badge badge--draft">✎ Vaša tura</span></p>
+          <p class="meta">Ovako vašu turu vide turisti; kupci vide i sve ključne tačke.</p>
+          <a class="button button--primary panel__main" routerLink="/exploration/mine">Moje ture</a>
+        } @else if (tour.isPurchased && isExplorer()) {
+          <p><span class="badge badge--success">✓ Kupljena</span></p>
+          <ol class="steps">
+            <li [class.steps__done]="savedPosition() !== null">
+              <strong>Postavite svoju poziciju</strong>
+              @if (savedPosition() === null) {
+                <span class="meta">Kliknite na mapu ispod, tamo gde se nalazite.</span>
+              } @else {
+                <span class="meta">✓ Postavljena. Novim klikom je pomerate.</span>
+              }
+            </li>
+            <li>
+              <strong>Pokrenite turu</strong>
+              <span class="meta">Tura vas vodi od tačke do tačke.</span>
+            </li>
+          </ol>
+          <button
+            class="button button--primary panel__main"
+            type="button"
+            [disabled]="pending() || savedPosition() === null"
+            (click)="startTour(tour.id)"
+          >
+            Pokreni turu
+          </button>
+          @if (startError(); as message) {
+            <p class="error" role="alert">⚠ {{ message }}</p>
+          }
+          @if (positionError(); as message) {
+            <p class="error" role="alert">⚠ {{ message }}</p>
+          }
+          @if (position.error()) {
+            <div class="state state--error" role="alert">
+              ⚠ Pozicija nije učitana.
+              <button class="button" type="button" (click)="position.reload()">
+                Pokušaj ponovo
+              </button>
+            </div>
+          }
+        } @else if (canAddToCart()) {
+          @if (added()) {
+            <p class="notice notice--success">✓ Tura je dodata u korpu.</p>
+            <a class="button button--primary panel__main" routerLink="/payment/cart">Idi u korpu</a>
+          } @else {
+            <button
+              class="button button--primary panel__main"
+              type="button"
+              [disabled]="pending()"
+              (click)="addToCart()"
+            >
+              Dodaj u korpu
+            </button>
+            <p class="meta">
+              Posle kupovine otključavate sve ključne tačke i njihove tajne, a turu pokrećete sa ove
+              stranice.
+            </p>
+          }
+          @if (error(); as message) {
+            <p class="error" role="alert">⚠ {{ message }}</p>
+          }
+        } @else {
+          <p class="meta">Pregled ture. Ture kupuju i prolaze turisti.</p>
+        }
+      </section>
+
+      <div class="side__map" [class.side__map--pick]="tour.isPurchased && isExplorer()">
+        <app-location-map
+          [locations]="mapLocations()"
+          [showPath]="seesWholeTour()"
+          [fill]="true"
+          [activeIndex]="hovered()"
+          [selectable]="tour.isPurchased && isExplorer() && !tour.isInProgress"
+          [position]="savedPosition()"
+          (locationHover)="hovered.set($event)"
+          (selectedChange)="setPosition($event)"
+        />
+        @if (!seesWholeTour()) {
+          <p class="side__map-note">Mapa prikazuje samo otvorene tačke.</p>
+        }
+      </div>
+    </aside>
+  </div>
+}

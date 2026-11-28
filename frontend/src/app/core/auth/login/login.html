@@ -1,35 +1,80 @@
-<div class="card stack">
-  <h1>Log in</h1>
-
-  <form class="stack" (submit)="submit($event)">
-    <div class="field">
-      <label for="email">Email</label>
-      <input id="email" type="email" [formField]="form.email" />
-      @if (form.email().touched()) {
-        @for (message of form.email().errors(); track $index) {
-          <p class="error">{{ message.message }}</p>
-        }
-      }
-    </div>
-
-    <div class="field">
-      <label for="password">Password</label>
-      <input id="password" type="password" [formField]="form.password" />
-      @if (form.password().touched()) {
-        @for (message of form.password().errors(); track $index) {
-          <p class="error">{{ message.message }}</p>
-        }
-      }
-    </div>
-
-    @if (error()) {
-      <p class="error">{{ error() }}</p>
+<div class="auth">
+  <form class="auth__form" novalidate (submit)="submit($event)">
+    <h1>Prijava</h1>
+    @if (expired()) {
+      <p class="notice notice--muted" role="status">Sesija je istekla. Prijavite se ponovo.</p>
+    } @else {
+      <p class="meta">Dobro došli nazad. Nastavite gde ste stali.</p>
     }
 
-    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
-      Log in
+    @if (error(); as message) {
+      <p class="form-error" role="alert">⚠ {{ message }}</p>
+    }
+
+    <div class="field">
+      <label for="login-email">Mejl</label>
+      <input
+        id="login-email"
+        type="email"
+        autocomplete="email"
+        [formField]="form.email"
+        [attr.aria-invalid]="
+          (form.email().dirty() || form.email().touched()) && form.email().errors().length > 0
+        "
+      />
+      @if (form.email().dirty() || form.email().touched()) {
+        @for (message of form.email().errors().slice(0, 1); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="login-password">Lozinka</label>
+      <div class="password">
+        <input
+          id="login-password"
+          autocomplete="current-password"
+          [type]="showPassword() ? 'text' : 'password'"
+          [formField]="form.password"
+          [attr.aria-invalid]="
+            (form.password().dirty() || form.password().touched()) &&
+            form.password().errors().length > 0
+          "
+        />
+        <button
+          class="password__toggle"
+          type="button"
+          [attr.aria-pressed]="showPassword()"
+          (click)="showPassword.set(!showPassword())"
+        >
+          {{ showPassword() ? 'Sakrij' : 'Prikaži' }}
+        </button>
+      </div>
+      @if (form.password().dirty() || form.password().touched()) {
+        @for (message of form.password().errors().slice(0, 1); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <button class="button button--primary auth__submit" type="submit" [disabled]="pending()">
+      {{ pending() ? 'Prijavljivanje…' : 'Prijavi se' }}
     </button>
+
+    <p class="auth__switch">
+      Nemate nalog?
+      <a routerLink="/register" [queryParams]="{ returnUrl: returnUrl() }">Registrujte se</a>
+    </p>
   </form>
 
-  <p>No account yet? <a routerLink="/register">Register</a></p>
+  <aside class="auth__side">
+    <img src="/images/ilustracije/finding-the-way.svg" alt="" />
+    <h2>Vaše ture vas čekaju</h2>
+    <ul>
+      <li>Nastavite turu tamo gde ste stali</li>
+      <li>Izazovi u blizini i vaš XP</li>
+      <li>Novčanik i poklon kartice</li>
+    </ul>
+  </aside>
 </div>

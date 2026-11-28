@@ -1,0 +1,53 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__text">
+    <p class="eyebrow">
+      <span class="eyebrow__dot" aria-hidden="true"></span> Ture sa pričom · izazovi na mapi
+    </p>
+    <h1 id="hero-title">
+      Svako mesto ima
+      <span class="squiggle"
+        >priču<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M2 14 Q 50 2 100 12 T 198 8" /></svg></span
+      >. Otključaj je na licu mesta.
+    </h1>
+    <p class="hero__subtitle">
+      Više od mape i vodiča: prati turu od tačke do tačke, otvaraj delove priče kad stigneš i
+      osvajaj XP u izazovima usput.
+    </p>
+    <div class="actions">
+      <a class="button button--primary cta" routerLink="/register">
+        Registruj se <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="link" routerLink="/login">Prijavi se</a>
+    </div>
+  </div>
+
+  <div class="hero__visual" aria-hidden="true">
+    <div class="blob"></div>
+    <div class="arch">
+      <img
+        src="/images/ilustracije/exploring.svg"
+        alt=""
+        width="860"
+        height="560"
+        fetchpriority="high"
+      />
+    </div>
+    <div class="float float--xp">
+      <span class="float__icon float__icon--xp">★</span>
+      <span><b>+120 XP</b><small>Skrivena lokacija</small></span>
+    </div>
+    <div class="float float--point">
+      <span class="float__icon float__icon--point">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z" />
+          <circle cx="12" cy="10" r="2.5" />
+        </svg>
+      </span>
+      <span>
+        <b>Tačka 5 od 7</b><small>Priča otključana</small>
+        <span class="progress"><span></span></span>
+      </span>
+    </div>
+  </div>
+</section>

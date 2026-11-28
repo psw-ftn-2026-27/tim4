@@ -1,0 +1,63 @@
+<section class="challenges" aria-labelledby="challenges-title">
+  <div class="section-head reveal">
+    <div>
+      <p class="kicker">Primeri izazova</p>
+      <h2 id="challenges-title">Usput igraj. Svaki izazov nosi XP.</h2>
+    </div>
+    <p>Izazovi stoje na mapi, pored ključnih tačaka tura.</p>
+  </div>
+  <div class="board">
+    <div class="board__map reveal" aria-hidden="true">
+      <svg viewBox="0 0 400 260" preserveAspectRatio="none">
+        <path class="map__river" d="M-10 200 C 80 150, 140 230, 230 180 S 360 120, 420 150" />
+        <path class="map__road" d="M120 -10 C 140 60, 90 120, 150 270" />
+        <path class="map__road map__road--thin" d="M-10 70 L 420 110" />
+        <ellipse class="map__park" cx="300" cy="60" rx="34" ry="34" />
+        <ellipse class="map__park" cx="60" cy="230" rx="44" ry="44" />
+        <path class="map__trail" d="M88 110 C 140 60, 200 140, 248 80 S 300 180, 312 205" />
+      </svg>
+      @for (challenge of challenges; track challenge.title) {
+        <span class="marker" [class]="'marker--' + ($index + 1)"
+          ><span>{{ $index + 1 }}</span></span
+        >
+      }
+    </div>
+    <ul class="board__list">
+      @for (challenge of challenges; track challenge.title) {
+        <li class="reveal">
+          <a class="challenge" [class]="'challenge--' + ($index + 1)" routerLink="/register">
+            <span class="challenge__icon" aria-hidden="true">
+              @switch ($index) {
+                @case (0) {
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9.5" />
+                    <path d="M9.2 9.2a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.8-2.8 2.8" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                }
+                @case (1) {
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20.5 20.5-4.6-4.6" />
+                  </svg>
+                }
+                @default {
+                  <svg viewBox="0 0 24 24">
+                    <path d="M5 21V4" />
+                    <path d="M5 4h11l-2.2 4L16 12H5" />
+                  </svg>
+                }
+              }
+            </span>
+            <span>
+              <span class="challenge__kind">{{ $index + 1 }} · {{ challenge.kind }}</span>
+              <h3>{{ challenge.title }}</h3>
+              <p>{{ challenge.description }}</p>
+            </span>
+            <span class="badge badge--xp">+{{ challenge.xp }} XP</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</section>

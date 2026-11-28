@@ -1,0 +1,116 @@
+<div class="page--narrow stack">
+  <div class="page-header">
+    <h1>Preference tura</h1>
+  </div>
+  <p class="meta">
+    Šta volite da obilazite. Pretraga tura ih nudi kao filter „★ Prema mojim preferencama”.
+  </p>
+
+  @if (notice(); as message) {
+    <p class="notice notice--success" role="status">
+      ✓ {{ message }} <a routerLink="/exploration">Pretraži ture</a>
+    </p>
+  }
+
+  @if (preference.error()) {
+    <div class="state state--error" role="alert">
+      <strong>Preference nisu učitane.</strong>
+      <button class="button" type="button" (click)="preference.reload()">Pokušaj ponovo</button>
+    </div>
+  } @else if (!preference.hasValue()) {
+    <p class="state" role="status">Učitavanje preferenci…</p>
+  } @else if (!showForm()) {
+    @if (summary(); as item) {
+      <section class="card stack" aria-label="Sačuvane preference">
+        <dl class="summary">
+          <dt>Težina</dt>
+          <dd>{{ item.difficulty }}</dd>
+          <dt>Prevoz</dt>
+          <dd>{{ item.transport }}</dd>
+          <dt>Oznake</dt>
+          <dd>{{ item.tags }}</dd>
+        </dl>
+        <p class="meta">{{ item.opens }}</p>
+        <div class="form-actions">
+          <button class="button button--primary" type="button" (click)="startEdit()">Izmeni</button>
+          @if (!confirmingDelete()) {
+            <button
+              class="button"
+              type="button"
+              [disabled]="pending()"
+              (click)="confirmingDelete.set(true)"
+            >
+              Obriši…
+            </button>
+          }
+        </div>
+        @if (confirmingDelete()) {
+          <div class="confirm">
+            <p>Obrisati preference? Pretraga će prikazivati sve ture.</p>
+            <button
+              class="button button--danger"
+              type="button"
+              [disabled]="pending()"
+              (click)="remove()"
+            >
+              Obriši
+            </button>
+            <button class="button" type="button" (click)="confirmingDelete.set(false)">
+              Odustani
+            </button>
+          </div>
+        }
+        @if (error(); as message) {
+          <p class="error" role="alert">⚠ {{ message }}</p>
+        }
+      </section>
+    }
+  } @else {
+    <form class="card stack" (submit)="save($event)">
+      <fieldset class="group">
+        <legend>Težina</legend>
+        <label class="choice"><input type="checkbox" [formField]="form.easy" /> Lako</label>
+        <label class="choice"><input type="checkbox" [formField]="form.moderate" /> Srednje</label>
+        <label class="choice"><input type="checkbox" [formField]="form.hard" /> Teško</label>
+      </fieldset>
+
+      <div class="field">
+        <label for="transport">Kako idete</label>
+        <select id="transport" [formField]="form.transport">
+          <option value="">Svejedno</option>
+          <option value="Walking">Peške</option>
+          <option value="Bicycle">Biciklom</option>
+          <option value="Car">Automobilom</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="tags">Oznake, odvojene zarezima</label>
+        <input id="tags" type="text" placeholder="istorija, priroda" [formField]="form.tags" />
+      </div>
+
+      <fieldset class="group">
+        <legend>Kada otvorim pretragu tura</legend>
+        <label class="choice">
+          <input type="radio" value="preferences" [formField]="form.searchOpens" />
+          odmah primeni moje preference
+        </label>
+        <label class="choice">
+          <input type="radio" value="all" [formField]="form.searchOpens" />
+          prikaži sve ture
+        </label>
+      </fieldset>
+
+      @if (error(); as message) {
+        <p class="error" role="alert">⚠ {{ message }}</p>
+      }
+
+      <div class="form-actions">
+        <button class="button button--primary" type="submit" [disabled]="pending()">Sačuvaj</button>
+        @if (saved() !== null) {
+          <button class="button" type="button" (click)="editing.set(false)">Odustani</button>
+        }
+      </div>
+    </form>
+  }
+</div>

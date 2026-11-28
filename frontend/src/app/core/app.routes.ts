@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Home } from './home/home';
 import { Login } from './auth/login/login';
 import { Register } from './auth/register/register';
+import { NotFound } from './not-found/not-found';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -24,4 +25,12 @@ export const routes: Routes = [
     path: 'payment',
     loadChildren: () => import('../modules/payment/payment.routes').then((m) => m.paymentRoutes),
   },
+  {
+    path: 'design-preview',
+    loadChildren: () =>
+      import('./design-preview/design-preview.routes').then((m) => m.designPreviewRoutes),
+  },
+  { path: 'nema-pristupa', component: NotFound, data: { kind: 'forbidden' } },
+  // Last: any address no route above matched.
+  { path: '**', component: NotFound },
 ];

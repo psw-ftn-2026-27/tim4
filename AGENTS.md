@@ -38,7 +38,7 @@ backend/          .NET solution (Explorer.slnx), see backend/AGENTS.md
 frontend/         Angular workspace, see frontend/AGENTS.md
 docs/             knowledge base (course material, in Serbian), see below
 .github/          CI workflow: backend restore, build, test (Postgres service container);
-                  frontend install, lint, build
+                  frontend install, lint, build, test
 .config/          dotnet tool manifest (dotnet-ef)
 .claude/          shared agent settings and the psw-* skills, see below
 .agents/          the same psw-* skills for Codex

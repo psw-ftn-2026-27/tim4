@@ -1,0 +1,169 @@
+<div class="page-header">
+  <h1>Autorski studio</h1>
+  <a class="button button--primary" [routerLink]="base + '/new'">Nova tura</a>
+  <span class="meta header-stat"
+    >Prodato ukupno: <strong>{{ sold() }}</strong></span
+  >
+</div>
+
+<div class="tabs" role="tablist" aria-label="Moje ture po stanju">
+  @for (item of tabs(); track item.value) {
+    <button
+      class="tabs__tab"
+      [class.tabs__tab--apart]="item.value === 'coupons'"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === item.value"
+      (click)="tab.set(item.value); notice.set(null)"
+    >
+      {{ item.label }} <span class="tabs__count">{{ item.count }}</span>
+    </button>
+  }
+</div>
+
+@if (notice(); as message) {
+  <p class="notice notice--success" role="status">✓ {{ message }}</p>
+}
+
+@if (tab() !== 'coupons') {
+  @if (visible().length === 0) {
+    <div class="state">Nema tura u ovom stanju.</div>
+  } @else {
+    <ul class="rows">
+      @for (tour of visible(); track tour.id) {
+        <li class="row">
+          <img class="row__image" [src]="tour.image" alt="" />
+
+          <div class="row__body">
+            <h2>
+              <a [routerLink]="base + '/' + tour.id">{{ tour.name }}</a>
+            </h2>
+            <p class="row__facts">
+              <span [class]="status[tour.status].badge">{{ status[tour.status].label }}</span>
+              <span [class]="difficultyClasses[tour.difficulty]">{{
+                difficultyLabels[tour.difficulty]
+              }}</span>
+              <span>{{ pointsText(tour.keyPoints.length) }}</span>
+              @if (tour.price !== null) {
+                <span>{{ tour.price === 0 ? 'Besplatna' : tour.price + ' EC' }}</span>
+              }
+              <span class="meta">izmenjena {{ tour.changedAt }}</span>
+            </p>
+
+            @if (tour.status === 'Draft') {
+              <!-- A draft says what it still lacks, so the author is never surprised by "Objavi". -->
+              <div class="ready">
+                <p class="progress">
+                  <span class="progress__bar" aria-hidden="true"
+                    ><span class="progress__fill" [style.width]="readyCount(tour) * 25 + '%'"></span
+                  ></span>
+                  Spremno za objavu: {{ readyCount(tour) }} od 4
+                </p>
+                <ul class="ready__list">
+                  @for (item of readiness(tour); track item.label) {
+                    <li [class.ready__done]="item.done">
+                      {{ item.done ? '✓' : '○' }} {{ item.label }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            } @else {
+              <p class="meta">Prodato: {{ tour.sold }}</p>
+            }
+          </div>
+
+          <div class="row__actions">
+            @switch (tour.status) {
+              @case ('Draft') {
+                <a class="button button--primary" [routerLink]="base + '/' + tour.id"
+                  >Nastavi uređivanje</a
+                >
+              }
+              @case ('Published') {
+                <a
+                  class="button"
+                  [routerLink]="'/design-preview/prototype/tourist/tours/' + tour.id"
+                  >Pogledaj kao turista</a
+                >
+                <button class="link" type="button" (click)="archive(tour)">Arhiviraj</button>
+              }
+              @case ('Archived') {
+                <button class="button" type="button" (click)="reactivate(tour)">
+                  Objavi ponovo
+                </button>
+              }
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+} @else {
+  <section class="coupons">
+    <div class="coupons__head">
+      <p class="meta">
+        Kupon daje popust na vaše ture. Kod šaljete turistima sami; oni ga unose pri plaćanju.
+      </p>
+      @if (!couponFormOpen()) {
+        <button class="button" type="button" (click)="couponFormOpen.set(true)">Nov kupon</button>
+      }
+    </div>
+
+    @if (couponFormOpen()) {
+      <form class="card coupon-form" (submit)="createCoupon($event)">
+        <div class="field">
+          <label for="coupon-percent">Popust (%)</label>
+          <input id="coupon-percent" type="number" [formField]="couponForm.percent" />
+        </div>
+        <div class="field">
+          <label for="coupon-until">Važi do</label>
+          <input id="coupon-until" type="date" [formField]="couponForm.until" />
+        </div>
+        <div class="field">
+          <label for="coupon-tour">Za turu</label>
+          <select id="coupon-tour" [formField]="couponForm.tour">
+            <option value="">Sve moje ture</option>
+            @for (tour of publishedTours(); track tour.id) {
+              <option [value]="tour.name">{{ tour.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="button button--primary" type="submit">Napravi kupon</button>
+          <button class="button" type="button" (click)="couponFormOpen.set(false)">Odustani</button>
+        </div>
+      </form>
+    }
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Kod</th>
+          <th scope="col" class="col-fit">Popust</th>
+          <th scope="col">Za turu</th>
+          <th scope="col" class="col-fit">Važi do</th>
+          <th scope="col" class="col-fit">Stanje</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (coupon of coupons(); track coupon.code) {
+          <tr [class.row--muted]="!coupon.valid">
+            <td>
+              <span class="code">{{ coupon.code }}</span>
+            </td>
+            <td class="col-fit">{{ coupon.percent }}%</td>
+            <td>{{ coupon.tour }}</td>
+            <td class="col-fit">{{ coupon.until }}</td>
+            <td class="col-fit">
+              @if (coupon.valid) {
+                <span class="badge badge--published">● Važi</span>
+              } @else {
+                <span class="badge badge--retired">⊘ Istekao</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+}

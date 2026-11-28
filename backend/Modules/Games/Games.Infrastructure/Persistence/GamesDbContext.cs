@@ -1,4 +1,16 @@
 using Games.Application;
+using Games.Domain.Experience;
+using Games.Domain.LocationChallenges;
+using Games.Domain.QuizAttempts;
+using Games.Domain.Quizzes;
+using Games.Domain.SocialChallengeRuns;
+using Games.Domain.SocialChallenges;
+using Games.Infrastructure.Persistence.Experience;
+using Games.Infrastructure.Persistence.QuizAttempts;
+using Games.Infrastructure.Persistence.SocialChallengeRuns;
+using Games.Infrastructure.Persistence.Quizzes;
+using Games.Infrastructure.Persistence.LocationChallenges;
+using Games.Infrastructure.Persistence.SocialChallenges;
 using Microsoft.EntityFrameworkCore;
 
 namespace Games.Infrastructure.Persistence;
@@ -7,8 +19,23 @@ internal sealed class GamesDbContext : DbContext, IUnitOfWork
 {
     public GamesDbContext(DbContextOptions<GamesDbContext> options) : base(options) { }
 
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
+    public DbSet<LocationChallenge> LocationChallenges => Set<LocationChallenge>();
+    public DbSet<LocationChallengeAttempt> LocationChallengeAttempts => Set<LocationChallengeAttempt>();
+    public DbSet<SocialChallenge> SocialChallenges => Set<SocialChallenge>();
+    public DbSet<SocialChallengeRun> SocialChallengeRuns => Set<SocialChallengeRun>();
+    public DbSet<EarnedXp> XpAwards => Set<EarnedXp>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("games");
+        builder.ConfigureQuizzes();
+        builder.ConfigureQuizAttempts();
+        builder.ConfigureLocationChallenges();
+        builder.ConfigureLocationChallengeAttempts();
+        builder.ConfigureSocialChallenges();
+        builder.ConfigureSocialChallengeRuns();
+        builder.ConfigureEarnedXps();
     }
 }

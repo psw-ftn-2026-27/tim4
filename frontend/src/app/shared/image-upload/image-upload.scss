@@ -1,0 +1,16 @@
+// The global .upload--preview styles an svg sketch; a real preview is an img.
+.upload--preview img {
+  border-radius: var(--radius);
+  max-height: 12rem;
+  max-width: 100%;
+}
+
+// The file input is invisible, so the field shows the keyboard focus itself.
+.upload:focus-within {
+  outline: 2px solid var(--color-accent);
+}
+
+// Children would fire dragleave on the label while a file is dragged over them.
+.upload--dragover > * {
+  pointer-events: none;
+}

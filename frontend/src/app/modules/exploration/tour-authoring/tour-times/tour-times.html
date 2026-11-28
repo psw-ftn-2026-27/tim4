@@ -1,0 +1,82 @@
+@if (tours.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Tura nije učitana.</strong>
+    <button class="button" type="button" (click)="tours.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!tours.hasValue()) {
+  <p class="state" role="status">Učitavanje ture…</p>
+} @else if (tour(); as tour) {
+  <app-editor-steps [tour]="tour" current="times" />
+
+  <div class="layout">
+    <section class="card stack" aria-labelledby="times-title">
+      <h2 id="times-title">Vreme obilaska</h2>
+      @if (tour.transportTimes.length === 0) {
+        <p class="meta">
+          Još nema vremena. Za objavu je potrebno vreme za bar jedan način prevoza.
+        </p>
+      } @else {
+        <ul class="times">
+          @for (time of tour.transportTimes; track time.transport) {
+            <li>
+              <span>{{ transportLabels[time.transport] }}</span>
+              <strong>{{ formatMinutes(time.minutes) }}</strong>
+            </li>
+          }
+        </ul>
+      }
+      @if (notice(); as message) {
+        <p class="notice notice--success" role="status">✓ {{ message }}</p>
+      }
+    </section>
+
+    <form class="card stack" (submit)="add($event)">
+      <h2>Dodaj vreme</h2>
+      <div class="field">
+        <label for="time-transport">Kako se ide</label>
+        <select id="time-transport" [formField]="form.transport">
+          <option value="Walking">Peške</option>
+          <option value="Bicycle">Biciklom</option>
+          <option value="Car">Automobilom</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="time-minutes">Trajanje (minuta)</label>
+        <input
+          id="time-minutes"
+          type="number"
+          [formField]="form.minutes"
+          [attr.aria-invalid]="
+            (form.minutes().dirty() || form.minutes().touched()) &&
+            form.minutes().errors().length > 0
+          "
+        />
+        @if (form.minutes().dirty() || form.minutes().touched()) {
+          @for (message of form.minutes().errors().slice(0, 1); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+      @if (error(); as message) {
+        <p class="error" role="alert">⚠ {{ message }}</p>
+      }
+      <div class="form-actions">
+        <button class="button button--primary" type="submit" [disabled]="pending()">Dodaj</button>
+      </div>
+      <p class="meta">Dodato vreme za sada ne može da se ukloni, pa ga proverite pre dodavanja.</p>
+    </form>
+  </div>
+
+  @if (tour.status === 'Draft' && tour.transportTimes.length > 0) {
+    <p class="next">
+      <a class="button button--primary" [routerLink]="['/exploration/mine', tour.id, 'publish']"
+        >Dalje: cena i objava</a
+      >
+    </p>
+  }
+} @else {
+  <div class="state">
+    <strong>Ova tura ne postoji među vašim turama.</strong>
+    <a class="button" routerLink="/exploration/mine">Autorski studio</a>
+  </div>
+}

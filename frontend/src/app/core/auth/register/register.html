@@ -1,35 +1,79 @@
-<div class="card stack">
-  <h1>Register</h1>
+<div class="auth">
+  <form class="auth__form" novalidate (submit)="submit($event)">
+    <h1>Registracija</h1>
+    <p class="meta">Besplatno. Potrebni su samo mejl i lozinka.</p>
 
-  <form class="stack" (submit)="submit($event)">
-    <div class="field">
-      <label for="email">Email</label>
-      <input id="email" type="email" [formField]="form.email" />
-      @if (form.email().touched()) {
-        @for (message of form.email().errors(); track $index) {
-          <p class="error">{{ message.message }}</p>
-        }
-      }
-    </div>
-
-    <div class="field">
-      <label for="password">Password</label>
-      <input id="password" type="password" [formField]="form.password" />
-      @if (form.password().touched()) {
-        @for (message of form.password().errors(); track $index) {
-          <p class="error">{{ message.message }}</p>
-        }
-      }
-    </div>
-
-    @if (error()) {
-      <p class="error">{{ error() }}</p>
+    @if (error(); as message) {
+      <p class="form-error" role="alert">⚠ {{ message }}</p>
     }
 
-    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
-      Register
+    <div class="field">
+      <label for="register-email">Mejl</label>
+      <input
+        id="register-email"
+        type="email"
+        autocomplete="email"
+        [formField]="form.email"
+        [attr.aria-invalid]="
+          (form.email().dirty() || form.email().touched()) && form.email().errors().length > 0
+        "
+      />
+      @if (form.email().dirty() || form.email().touched()) {
+        @for (message of form.email().errors().slice(0, 1); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="register-password">Lozinka</label>
+      <div class="password">
+        <input
+          id="register-password"
+          autocomplete="new-password"
+          aria-describedby="password-rules"
+          [type]="showPassword() ? 'text' : 'password'"
+          [formField]="form.password"
+          [attr.aria-invalid]="form.password().touched() && !passwordOk()"
+        />
+        <button
+          class="password__toggle"
+          type="button"
+          [attr.aria-pressed]="showPassword()"
+          (click)="showPassword.set(!showPassword())"
+        >
+          {{ showPassword() ? 'Sakrij' : 'Prikaži' }}
+        </button>
+      </div>
+      <ul id="password-rules" class="rules">
+        @for (rule of rules(); track rule.label) {
+          <li [class.rules__ok]="rule.ok">
+            <span aria-hidden="true">{{ rule.ok ? '✓' : '○' }}</span> {{ rule.label }}
+          </li>
+        }
+      </ul>
+    </div>
+
+    <button class="button button--primary auth__submit" type="submit" [disabled]="pending()">
+      {{ pending() ? 'Pravimo nalog…' : 'Napravi nalog' }}
     </button>
+
+    <p class="auth__switch">
+      Već imate nalog?
+      <a routerLink="/login" [queryParams]="{ returnUrl: returnUrl() }">Prijavite se</a>
+    </p>
   </form>
 
-  <p>Already have an account? <a routerLink="/login">Log in</a></p>
+  <aside class="auth__side">
+    <img src="/images/ilustracije/exploring.svg" alt="" />
+    <h2>Šta dobijate</h2>
+    <ul>
+      <li>Ture sa pričom koje se otključavaju na licu mesta</li>
+      <li>Izazove na mapi i XP za svaki</li>
+      <li>Mogućnost da sami napravite i prodajete ture</li>
+    </ul>
+    <p class="meta">
+      Svaki nalog je turistički. Ture se plaćaju u EC; prve EC uplaćuje administrator.
+    </p>
+  </aside>
 </div>

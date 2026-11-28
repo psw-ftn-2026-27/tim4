@@ -1,0 +1,23 @@
+<ol class="steps-bar" [class.steps-bar--center]="centered()" aria-label="Koraci kupovine">
+  <li
+    [class.steps-bar__current]="step() === 1"
+    [class.steps-bar__done]="step() > 1"
+    [attr.aria-current]="step() === 1 ? 'step' : null"
+  >
+    @if (step() === 2) {
+      <a routerLink="/payment/cart">Korpa</a>
+    } @else {
+      Korpa
+    }
+  </li>
+  <li
+    [class.steps-bar__current]="step() === 2"
+    [class.steps-bar__done]="step() > 2"
+    [attr.aria-current]="step() === 2 ? 'step' : null"
+  >
+    Plaćanje
+  </li>
+  <li [class.steps-bar__current]="step() === 3" [attr.aria-current]="step() === 3 ? 'step' : null">
+    Potvrda
+  </li>
+</ol>

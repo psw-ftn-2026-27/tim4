@@ -1,38 +1,52 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormField, email, form, minLength, required } from '@angular/forms/signals';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { FormField, email, form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
-import { serverMessage } from '../../../shared/util/server-message';
+import { Analytics } from '../../../shared/analytics/analytics';
 import { Auth } from '../auth';
+import { safeReturnUrl } from '../safe-return-url';
 
 @Component({
   imports: [FormField, RouterLink],
   selector: 'app-login',
-  styleUrl: './login.scss',
+  styleUrl: '../auth-layout.scss',
   templateUrl: './login.html',
 })
 export class Login {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
+  private readonly analytics = inject(Analytics);
+
+  // Query parameters: ?returnUrl=/payment/cart and ?isteklo=1 after an expired session.
+  readonly returnUrl = input<string>();
+  readonly isteklo = input<string>();
+
+  protected readonly expired = computed(() => this.isteklo() !== undefined);
 
   protected readonly form = form(signal({ email: '', password: '' }), (path) => {
-    required(path.email, { message: 'Email is required.' });
-    email(path.email, { message: 'Enter a valid email address.' });
-    required(path.password, { message: 'Password is required.' });
-    minLength(path.password, 6, { message: 'Password must be at least 6 characters.' });
+    required(path.email, { message: 'Unesite mejl.' });
+    email(path.email, { message: 'Mejl nije ispravan.' });
+    required(path.password, { message: 'Unesite lozinku.' });
   });
 
+  protected readonly showPassword = signal(false);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
+    if (!this.form().valid()) {
+      this.form().markAsTouched();
+      return;
+    }
     this.pending.set(true);
     this.error.set(null);
     try {
       await this.auth.login(this.form.email().value(), this.form.password().value());
-      await this.router.navigate(['/']);
-    } catch (failure) {
-      this.error.set(serverMessage(failure, 'Login failed. Please try again.'));
+      this.analytics.track('login', {});
+      await this.router.navigateByUrl(safeReturnUrl(this.returnUrl()));
+    } catch {
+      // Never which of the two was wrong.
+      this.error.set('Mejl ili lozinka nisu tačni. Pokušajte ponovo.');
     } finally {
       this.pending.set(false);
     }

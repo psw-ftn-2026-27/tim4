@@ -1,0 +1,101 @@
+.gift {
+  aspect-ratio: 1.6;
+  background:
+    radial-gradient(circle at 85% 15%, var(--color-ec-bg) 0 18%, transparent 19%),
+    linear-gradient(135deg, var(--color-accent), var(--color-state-draft-text));
+  border-radius: calc(var(--radius) * 2);
+  box-shadow: 0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.15);
+  color: var(--color-accent-text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+}
+
+.gift__brand {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.gift__amount {
+  font-family: var(--font-display);
+  font-size: calc(var(--font-size-xl) * 1.4);
+  font-weight: 700;
+}
+
+.gift__message {
+  flex: 1;
+  font-style: italic;
+  overflow: hidden;
+}
+
+.gift__from {
+  font-size: var(--font-size-sm);
+  opacity: 0.85;
+}
+
+.cards {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.received {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.received--used .gift {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.received__foot {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+// ---- Sent ----
+
+.sent {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sent__row {
+  align-items: center;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  padding: var(--space-3) var(--space-4);
+}
+
+.sent__row + .sent__row {
+  border-top: 1px solid var(--color-border);
+}
+
+.sent__icon {
+  font-size: var(--font-size-lg);
+}
+
+.sent__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sent__amount {
+  font-weight: 700;
+  white-space: nowrap;
+}

@@ -1,0 +1,224 @@
+@if (tours.error() || keyPoints.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Ključne tačke nisu učitane.</strong>
+    <button class="button" type="button" (click)="tours.reload(); keyPoints.reload()">
+      Pokušaj ponovo
+    </button>
+  </div>
+} @else if (!tours.hasValue() || !keyPoints.hasValue()) {
+  <p class="state" role="status">Učitavanje ključnih tačaka…</p>
+} @else if (tour(); as tour) {
+  <app-editor-steps [tour]="tour" current="points" [keyPointCount]="keyPointCount()" />
+
+  <div class="split">
+    <section class="split__side" aria-label="Ključne tačke">
+      <div class="head">
+        <p class="meta">
+          {{ keyPoints.value().length }} tačaka · dužina {{ lengthText() }}
+          @if (formOpen() || removedKeyPoint()) {
+            · posle izmene
+          }
+        </p>
+        @if (isDraft() && !formOpen()) {
+          <button
+            class="button button--primary"
+            type="button"
+            [disabled]="removedKeyPoint() !== null"
+            (click)="startAdd()"
+          >
+            Dodaj ključnu tačku
+          </button>
+        }
+      </div>
+
+      @if (!isDraft()) {
+        <p class="notice notice--muted">
+          Ključne tačke mogu da se menjaju samo dok je tura u pripremi.
+        </p>
+      }
+      @if (notice(); as message) {
+        <p class="notice notice--success" role="status">✓ {{ message }}</p>
+      }
+      @if (error(); as message) {
+        <p class="error" role="alert">⚠ {{ message }}</p>
+      }
+
+      <div class="split__list">
+        @if (formOpen()) {
+          <!-- The form opens at the top of the list, next to the button that opened it. -->
+          <form class="card stack point-form" (submit)="save($event)">
+            <h2>{{ editedKeyPoint() ? 'Izmena ključne tačke' : 'Nova ključna tačka' }}</h2>
+            <p class="pick" [class.pick--done]="form.location().value() !== null">
+              @if (form.location().value() === null) {
+                📍 Kliknite na mapu desno, tamo gde je tačka.
+              } @else {
+                ✓ Mesto je izabrano. Novim klikom na mapu ga pomerate.
+              }
+            </p>
+            @if (form.location().touched()) {
+              @for (message of form.location().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+
+            <div class="field">
+              <label for="key-point-name">Naziv</label>
+              <input
+                id="key-point-name"
+                type="text"
+                [formField]="form.name"
+                [attr.aria-invalid]="
+                  (form.name().dirty() || form.name().touched()) && form.name().errors().length > 0
+                "
+              />
+              @if (form.name().dirty() || form.name().touched()) {
+                @for (message of form.name().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+
+            <div class="field">
+              <label for="key-point-description">Opis, vidi se pre polaska</label>
+              <textarea
+                id="key-point-description"
+                rows="3"
+                [formField]="form.description"
+                [attr.aria-invalid]="
+                  (form.description().dirty() || form.description().touched()) &&
+                  form.description().errors().length > 0
+                "
+              ></textarea>
+              @if (form.description().dirty() || form.description().touched()) {
+                @for (message of form.description().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+
+            <div class="field">
+              <label for="key-point-secret">Tajna, otkriva se kada turista stigne do tačke</label>
+              <textarea id="key-point-secret" rows="2" [formField]="form.secret"></textarea>
+            </div>
+
+            <label class="choice">
+              <input type="checkbox" [formField]="form.isVisibleWithoutPurchase" />
+              Vidljiva i pre kupovine (kao primer ture)
+            </label>
+
+            <div class="field">
+              <span>Slika</span>
+              @if (editedKeyPoint(); as keyPoint) {
+                <img class="stored-image" [src]="keyPoint.imageAddress" [alt]="keyPoint.name" />
+                <p class="meta">Izaberite novu sliku samo ako želite da zamenite ovu.</p>
+              }
+              <app-image-upload (imageChange)="image.set($event)" />
+            </div>
+
+            <div class="form-actions">
+              <button class="button button--primary" type="submit" [disabled]="pending()">
+                Sačuvaj
+              </button>
+              <button class="button" type="button" [disabled]="pending()" (click)="closeForm()">
+                Odustani
+              </button>
+            </div>
+          </form>
+        }
+
+        <ol class="key-points">
+          @for (keyPoint of keyPoints.value(); track keyPoint.id; let index = $index) {
+            <li class="key-point" [class.key-point--edited]="editedKeyPoint()?.id === keyPoint.id">
+              <span class="key-point__number">{{ index + 1 }}</span>
+              <img [src]="keyPoint.imageAddress" alt="" />
+              <div class="key-point__body">
+                <h3>{{ keyPoint.name }}</h3>
+                <p>{{ keyPoint.description }}</p>
+                @if (keyPoint.secret) {
+                  <p class="meta">🔑 {{ keyPoint.secret }}</p>
+                }
+                <p class="meta">
+                  {{
+                    keyPoint.isVisibleWithoutPurchase ? 'Vidljiva i pre kupovine' : 'Posle kupovine'
+                  }}
+                </p>
+                @if (editedKeyPoint()?.id === keyPoint.id) {
+                  <p class="meta"><strong>✎ Menjate ovu tačku.</strong></p>
+                }
+                @if (removedKeyPoint()?.id === keyPoint.id) {
+                  <div class="confirm">
+                    <p>Ukloniti tačku „{{ keyPoint.name }}“? Mapa prikazuje turu bez nje.</p>
+                    <button
+                      class="button button--danger"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="confirmRemove()"
+                    >
+                      Ukloni
+                    </button>
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="cancelRemove()"
+                    >
+                      Odustani
+                    </button>
+                  </div>
+                } @else if (isDraft()) {
+                  <p class="key-point__actions">
+                    <button
+                      class="quiet"
+                      type="button"
+                      [disabled]="pending() || formOpen() || removedKeyPoint() !== null"
+                      (click)="startEdit(keyPoint)"
+                    >
+                      Izmeni
+                    </button>
+                    <button
+                      class="quiet quiet--danger"
+                      type="button"
+                      [disabled]="pending() || formOpen() || removedKeyPoint() !== null"
+                      (click)="startRemove(keyPoint)"
+                    >
+                      Ukloni…
+                    </button>
+                  </p>
+                }
+              </div>
+            </li>
+          } @empty {
+            <li class="state">
+              Tura još nema ključnih tačaka. Dodajte prvu: izaberite mesto na mapi i opišite ga.
+            </li>
+          }
+        </ol>
+      </div>
+
+      @if (tour.status === 'Draft' && keyPoints.value().length >= 2 && !formOpen()) {
+        <p class="next">
+          <a class="button" [routerLink]="['/exploration/mine', tour.id, 'times']"
+            >Dalje: vreme obilaska</a
+          >
+        </p>
+      }
+    </section>
+
+    <aside class="split__map" aria-label="Mapa ključnih tačaka">
+      <app-location-map
+        [locations]="mapLocations()"
+        [showPath]="true"
+        [fill]="true"
+        [selectable]="formOpen()"
+        [selected]="form.location().value()"
+        (selectedChange)="form.location().value.set($event)"
+        (pathLengthChange)="pathLength.set($event)"
+      />
+    </aside>
+  </div>
+} @else {
+  <div class="state">
+    <strong>Ova tura ne postoji među vašim turama.</strong>
+    <a class="button" routerLink="/exploration/mine">Autorski studio</a>
+  </div>
+}

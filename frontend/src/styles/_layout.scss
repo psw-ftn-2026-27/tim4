@@ -1,7 +1,50 @@
+// A page's content either fills the width or sits centred; it never stops at a fixed width
+// against the left edge with empty space on the right. By default a page uses the whole window
+// width, for lists, tables and maps; only the side margin grows with the screen. A page whose
+// content is one form (create, preferences) adds .page--narrow: it stays against the left edge,
+// in line with the bar and the page header above it. An outcome or an entry page with nothing to
+// line up with (a finished purchase or quiz, login, a missing page) adds .page--center instead.
 .container {
-  max-width: var(--container-width);
+  padding-inline: max(var(--space-4), 3vw);
+}
+
+.page--narrow {
+  max-width: var(--page-narrow-width);
+}
+
+.page--center {
   margin-inline: auto;
-  padding-inline: var(--space-4);
+  max-width: calc(var(--page-narrow-width) * 1.5);
+}
+
+// A list beside a map, like booking sites: the list on the left, the map as a vertical column on
+// the right, both as tall as the window under the bar. The page's heading and filters stay in
+// place and only .split__list scrolls; the map never moves. The map inside .split__map takes the
+// column's height with the fill input of app-location-map.
+.split {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  height: calc(100vh - 10rem);
+  min-height: 30rem;
+}
+
+.split__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.split__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.split__map {
+  min-height: 0;
+  position: relative;
 }
 
 .stack > * + * {

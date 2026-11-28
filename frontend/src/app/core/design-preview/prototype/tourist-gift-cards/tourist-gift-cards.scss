@@ -1,0 +1,235 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+.page-header .button {
+  text-decoration: none;
+}
+
+// ---- Giving a card ----
+
+.give {
+  align-items: start;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  padding: var(--space-5);
+}
+
+.give__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.amount {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.amount__chip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  height: var(--control-height);
+  padding: 0 var(--space-4);
+}
+
+.amount__chip--on {
+  background: var(--color-ec-bg);
+  border-color: var(--color-ec-text);
+  color: var(--color-ec-text);
+}
+
+.amount input {
+  max-width: 8rem;
+}
+
+.counter {
+  text-align: right;
+}
+
+.pay {
+  border-top: 1px dashed var(--color-border);
+  display: grid;
+  gap: var(--space-1) var(--space-4);
+  grid-template-columns: 1fr auto;
+  margin: 0;
+  padding-top: var(--space-3);
+}
+
+.pay dt {
+  color: var(--color-text-muted);
+}
+
+.pay dd {
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  text-align: right;
+}
+
+.short {
+  color: var(--color-danger);
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: sticky;
+  top: 5rem;
+}
+
+// ---- The card itself: used in the preview and in the received list ----
+
+.gift {
+  aspect-ratio: 1.6;
+  background:
+    radial-gradient(circle at 85% 15%, var(--color-ec-bg) 0 18%, transparent 19%),
+    linear-gradient(135deg, var(--color-accent), var(--color-state-draft-text));
+  border-radius: calc(var(--radius) * 2);
+  box-shadow: 0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.15);
+  color: var(--color-accent-text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+}
+
+.gift__brand {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.gift__amount {
+  font-family: var(--font-display);
+  font-size: calc(var(--font-size-xl) * 1.4);
+  font-weight: 700;
+}
+
+.gift__message {
+  flex: 1;
+  font-style: italic;
+  overflow: hidden;
+}
+
+.gift__from {
+  font-size: var(--font-size-sm);
+  opacity: 0.85;
+}
+
+// ---- Tabs ----
+
+.tabs {
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  gap: var(--space-4);
+}
+
+.tabs__tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  margin-bottom: -1px;
+  padding: var(--space-2) var(--space-1);
+}
+
+.tabs__tab[aria-selected='true'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.tabs__count {
+  background: var(--color-muted-bg);
+  border-radius: 999px;
+  color: var(--color-muted-text);
+  font-size: var(--font-size-sm);
+  margin-left: var(--space-1);
+  padding: 0 var(--space-2);
+}
+
+// ---- Received ----
+
+.cards {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.received {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.received--used .gift {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.received__foot {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+// ---- Sent ----
+
+.sent {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sent__row {
+  align-items: center;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  padding: var(--space-3) var(--space-4);
+}
+
+.sent__row + .sent__row {
+  border-top: 1px solid var(--color-border);
+}
+
+.sent__icon {
+  font-size: var(--font-size-lg);
+}
+
+.sent__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sent__amount {
+  font-weight: 700;
+  white-space: nowrap;
+}

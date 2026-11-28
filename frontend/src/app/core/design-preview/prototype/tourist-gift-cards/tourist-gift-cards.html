@@ -1,0 +1,170 @@
+<a class="back-link" routerLink="/design-preview/prototype/tourist/wallet">← Novčanik</a>
+
+<div class="page-header">
+  <h1>Poklon kartice</h1>
+  @if (!giving()) {
+    <button
+      class="button button--primary"
+      type="button"
+      (click)="giving.set(true); notice.set(null)"
+    >
+      Pokloni karticu
+    </button>
+  }
+</div>
+
+@if (notice(); as message) {
+  <p class="notice notice--success" role="status">✓ {{ message }}</p>
+}
+
+@if (giving()) {
+  <!-- The form beside what the friend will receive, so the tourist sees the result while typing. -->
+  <section class="give" aria-labelledby="give-title">
+    <form class="give__form" (submit)="give($event)">
+      <h2 id="give-title">Nova poklon kartica</h2>
+
+      <div class="field">
+        <label for="gift-recipient">Mejl prijatelja</label>
+        <input
+          id="gift-recipient"
+          type="email"
+          placeholder="ime@explorer.dev"
+          [formField]="giftForm.recipient"
+          [attr.aria-invalid]="
+            (giftForm.recipient().touched() || giftForm.recipient().dirty()) &&
+            giftForm.recipient().invalid()
+          "
+        />
+        @if (giftForm.recipient().touched() || giftForm.recipient().dirty()) {
+          @for (error of giftForm.recipient().errors().slice(0, 1); track $index) {
+            <p class="error">{{ error.message }}</p>
+          }
+        }
+        <p class="meta">
+          Prijatelj mora imati nalog u Exploreru. Sebi ne možete pokloniti karticu.
+        </p>
+      </div>
+
+      <div class="field">
+        <label for="gift-amount">Iznos (EC)</label>
+        <div class="amount">
+          @for (value of quickAmounts; track value) {
+            <button
+              type="button"
+              class="amount__chip"
+              [class.amount__chip--on]="amount() === value"
+              (click)="setAmount(value)"
+            >
+              {{ value }}
+            </button>
+          }
+          <input
+            id="gift-amount"
+            type="number"
+            [formField]="giftForm.amount"
+            [attr.aria-invalid]="giftForm.amount().invalid()"
+          />
+        </div>
+        @for (error of giftForm.amount().errors().slice(0, 1); track $index) {
+          <p class="error">{{ error.message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="gift-message">Poruka</label>
+        <textarea
+          id="gift-message"
+          rows="3"
+          placeholder="Srećan rođendan!"
+          [formField]="giftForm.message"
+        ></textarea>
+        <p class="meta counter">{{ giftForm.message().value().length }} / {{ rules.maxMessage }}</p>
+      </div>
+
+      <dl class="pay">
+        <dt>Stanje novčanika</dt>
+        <dd>{{ balance() }} EC</dd>
+        <dt>Kartica</dt>
+        <dd>−{{ amount() }} EC</dd>
+        <dt><strong>Posle poklona</strong></dt>
+        <dd>
+          <strong [class.short]="after() < 0">{{ after() }} EC</strong>
+        </dd>
+      </dl>
+      @if (after() < 0) {
+        <p class="error" role="alert">Nemate dovoljno EC za ovu karticu.</p>
+      }
+
+      <div class="form-actions">
+        <button class="button button--primary" type="submit" [disabled]="after() < 0">
+          Pokloni {{ amount() }} EC
+        </button>
+        <button class="button" type="button" (click)="giving.set(false)">Odustani</button>
+      </div>
+      <p class="meta">EC se odmah skidaju sa vašeg novčanika. Kartica važi 3 godine.</p>
+    </form>
+
+    <div class="preview" aria-label="Kako prijatelj vidi karticu">
+      <p class="meta">Ovako je vidi prijatelj</p>
+      <article class="gift">
+        <span class="gift__brand">◈ Explorer · poklon kartica</span>
+        <span class="gift__amount">{{ amount() }} EC</span>
+        <p class="gift__message">„{{ giftForm.message().value() || 'Vaša poruka' }}“</p>
+        <span class="gift__from">od marko@explorer.dev · važi do 21.11.2029.</span>
+      </article>
+    </div>
+  </section>
+}
+
+<div class="tabs" role="tablist" aria-label="Poklon kartice">
+  @for (item of tabs(); track item.value) {
+    <button
+      class="tabs__tab"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === item.value"
+      (click)="tab.set(item.value)"
+    >
+      {{ item.label }} <span class="tabs__count">{{ item.count }}</span>
+    </button>
+  }
+</div>
+
+@switch (tab()) {
+  @case ('received') {
+    <ul class="cards">
+      @for (card of received; track card.id) {
+        <li class="received" [class.received--used]="card.status !== 'Valid'">
+          <article class="gift">
+            <span class="gift__brand">◈ Explorer · poklon kartica</span>
+            <span class="gift__amount">{{ card.amount }} EC</span>
+            <p class="gift__message">„{{ card.message }}“</p>
+            <span class="gift__from">od {{ card.person }} · važi do {{ card.validUntil }}</span>
+          </article>
+          <div class="received__foot">
+            <span [class]="status[card.status].badge">{{ status[card.status].label }}</span>
+            @if (card.status === 'Valid') {
+              <span class="meta">Koristi se cela pri plaćanju korpe.</span>
+              <a routerLink="/design-preview/prototype/tourist/tours">Izaberi turu →</a>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+  @case ('sent') {
+    <ul class="sent">
+      @for (card of sent(); track card.id) {
+        <li class="sent__row">
+          <span class="sent__icon" aria-hidden="true">🎁</span>
+          <span class="sent__body">
+            <strong>{{ card.person }}</strong>
+            <span class="meta">„{{ card.message }}“ · {{ card.createdAt }}</span>
+          </span>
+          <span [class]="status[card.status].badge">{{ status[card.status].label }}</span>
+          <span class="sent__amount">{{ card.amount }} EC</span>
+        </li>
+      }
+    </ul>
+  }
+}

@@ -1,0 +1,148 @@
+<!-- The author's coupons read as a tab of the author studio (Exploration), reached by its address. -->
+<nav class="tabs studio-tabs" aria-label="Autorski studio">
+  <a class="tabs__tab" routerLink="/exploration/mine">Moje ture</a>
+  <a class="tabs__tab tabs__tab--on" routerLink="/payment/coupons" aria-current="page">Kuponi</a>
+</nav>
+
+<div class="page-header">
+  <h1>Kuponi</h1>
+  @if (!creating()) {
+    <button class="button button--primary" type="button" (click)="open()">Nov kupon</button>
+  }
+</div>
+<p class="meta">
+  Kupon daje popust na vaše ture. Kod šaljete turistima sami; oni ga unose pri plaćanju korpe.
+</p>
+
+@if (notice(); as message) {
+  <p class="notice notice--success" role="status">✓ {{ message }}</p>
+}
+
+@if (coupons.error() || products.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Kuponi nisu učitani.</strong>
+    <button class="button" type="button" (click)="reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!coupons.hasValue() || !products.hasValue()) {
+  <p class="state" role="status">Učitavanje kupona…</p>
+} @else {
+  @if (creating()) {
+    <!-- The form opens right under the button that opened it. -->
+    <form class="card coupon-form" (submit)="submit($event)">
+      <div class="field">
+        <label for="coupon-discount">Popust (%)</label>
+        <input
+          id="coupon-discount"
+          type="number"
+          step="1"
+          [formField]="couponForm.discountPercent"
+          [attr.aria-invalid]="
+            (couponForm.discountPercent().dirty() || couponForm.discountPercent().touched()) &&
+            couponForm.discountPercent().errors().length > 0
+          "
+        />
+        @if (couponForm.discountPercent().dirty() || couponForm.discountPercent().touched()) {
+          @for (message of couponForm.discountPercent().errors().slice(0, 1); track $index) {
+            <p class="error">{{ message.kind === 'parse' ? 'Unesite broj.' : message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="coupon-valid-until">Važi do</label>
+        <input
+          id="coupon-valid-until"
+          type="date"
+          [formField]="couponForm.validUntil"
+          [attr.aria-invalid]="
+            (couponForm.validUntil().dirty() || couponForm.validUntil().touched()) &&
+            couponForm.validUntil().errors().length > 0
+          "
+        />
+        @if (couponForm.validUntil().dirty() || couponForm.validUntil().touched()) {
+          @for (message of couponForm.validUntil().errors().slice(0, 1); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="coupon-product">Za turu</label>
+        <select id="coupon-product" [formField]="couponForm.productId">
+          <option value="">Sve moje ture</option>
+          @for (product of products.value(); track product.id) {
+            <option [value]="product.id">{{ product.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="coupon-form__actions">
+        @if (error(); as message) {
+          <p class="error" role="alert">⚠ {{ message }}</p>
+        }
+        <div class="form-actions">
+          <button class="button button--primary" type="submit" [disabled]="pending()">
+            Napravi kupon
+          </button>
+          <button class="button" type="button" (click)="creating.set(false)">Odustani</button>
+        </div>
+      </div>
+    </form>
+  }
+
+  @if (coupons.value().totalCount === 0) {
+    <div class="state">
+      <strong>Još nemate kupona.</strong>
+      <span>Kupon je dobar način da prvi turisti probaju vašu turu.</span>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Kod</th>
+            <th scope="col" class="col-fit">Popust</th>
+            <th scope="col">Za turu</th>
+            <th scope="col" class="col-fit">Važi do</th>
+            <th scope="col" class="col-fit">Stanje</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (coupon of coupons.value().items; track coupon.code) {
+            <tr [class.row--muted]="!coupon.isValid">
+              <td>
+                <code class="code">{{ coupon.code }}</code>
+              </td>
+              <td class="col-fit">{{ coupon.discountPercent }}%</td>
+              <td>{{ coupon.productName ?? 'Sve moje ture' }}</td>
+              <td class="col-fit">{{ formatDate(coupon.validUntil) }}</td>
+              <td class="col-fit">
+                @if (coupon.isValid) {
+                  <span class="badge badge--published">● Važeći</span>
+                } @else {
+                  <span class="badge badge--retired">⊘ Istekao</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (pageCount() > 1) {
+      <nav class="pagination" aria-label="Strane kupona">
+        <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
+          Prethodna
+        </button>
+        <span>Strana {{ page() }} od {{ pageCount() }}</span>
+        <button
+          class="button"
+          type="button"
+          [disabled]="page() >= pageCount()"
+          (click)="nextPage()"
+        >
+          Sledeća
+        </button>
+      </nav>
+    }
+  }
+}

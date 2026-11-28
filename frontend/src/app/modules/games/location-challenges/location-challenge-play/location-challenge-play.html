@@ -1,0 +1,132 @@
+<a class="back-link" routerLink="/games">← Izazovi</a>
+
+@if (detailsMissing()) {
+  <div class="state">
+    <strong>Lokacijski izazov nije pronađen.</strong>
+    <a class="button" routerLink="/games">Izazovi</a>
+  </div>
+} @else if (details.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Izazov nije učitan.</strong>
+    <button class="button" type="button" (click)="details.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!details.hasValue()) {
+  <p class="state" role="status">Učitavanje izazova…</p>
+} @else {
+  @let data = details.value();
+  <div class="split">
+    <section class="split__side" aria-labelledby="challenge-title">
+      <header class="head">
+        <span class="kind">⌖ Lokacijski izazov</span>
+        <h1 id="challenge-title">{{ data.challenge.name }}</h1>
+        <p>
+          @if (data.attempt?.completedAt) {
+            <span class="badge badge--success">✓ Rešen</span>
+            <span class="badge badge--xp">★ {{ data.attempt?.awardedXp }} XP</span>
+          } @else {
+            <span class="badge badge--xp">★ {{ data.challenge.xpReward }} XP</span>
+          }
+        </p>
+      </header>
+
+      @if (error(); as message) {
+        <p class="error" role="alert">⚠ {{ message }}</p>
+      }
+      @if (feedback(); as message) {
+        <p class="notice notice--success" role="status">✓ {{ message }}</p>
+      }
+      @if (position.error()) {
+        <div class="state state--error" role="alert">
+          <strong>Pozicija nije učitana.</strong>
+          <button class="button" type="button" (click)="position.reload()">Pokušaj ponovo</button>
+        </div>
+      }
+
+      <div class="split__list steps">
+        @if (data.attempt; as attempt) {
+          @if (attempt.completedAt; as completedAt) {
+            <div class="won" role="status">
+              <span class="won__xp">+{{ attempt.awardedXp }} XP</span>
+              <p>
+                Pronašli ste sva skrivena mesta. Izazov je završen
+                {{ formatDateTime(completedAt) }}.
+              </p>
+            </div>
+          } @else {
+            <div class="progress">
+              <span class="progress__bar" aria-hidden="true">
+                <span
+                  class="progress__fill"
+                  [style.width.%]="(discoveredCount() / attempt.points.length) * 100"
+                ></span>
+              </span>
+              <span>{{ discoveredCount() }} od {{ attempt.points.length }} mesta pronađeno</span>
+            </div>
+            <p class="meta">
+              Skrivena mesta su unutar kruga na mapi. Stanite tačno na mesto sa fotografije: mesto
+              se priznaje na 5 m, pa zumirajte mapu do kraja pre klika. Zatim kliknite „Ovde sam”.
+            </p>
+            <ul class="photos">
+              @for (point of attempt.points; track point.id; let number = $index) {
+                <li class="photo" [class.photo--found]="point.discovered">
+                  <img
+                    [src]="point.imageAddress"
+                    [alt]="'Fotografija skrivenog mesta ' + (number + 1)"
+                    loading="lazy"
+                  />
+                  <span class="photo__foot">
+                    <strong>Mesto {{ number + 1 }}</strong>
+                    @if (point.discovered) {
+                      <span class="badge badge--success">✓ Pronađeno</span>
+                    } @else {
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="!canCheck()"
+                        [attr.aria-label]="'Ovde sam, mesto ' + (number + 1)"
+                        (click)="check(point.id)"
+                      >
+                        Ovde sam
+                      </button>
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+        } @else {
+          <ol class="rules">
+            <li>Stanite na početnu tačku izazova (do 50 m od nje).</li>
+            <li>
+              Aktivirajte izazov: dobijate fotografije {{ data.challenge.pointCount }} skrivenih
+              mesta i krug u kome se nalaze.
+            </li>
+            <li>Pronađite svako mesto i kliknite „Ovde sam” kada stojite na njemu.</li>
+          </ol>
+          @if (savedPosition() === null) {
+            <p class="meta">📍 Kliknite na mapu tamo gde se nalazite.</p>
+          }
+          <button
+            class="button button--primary"
+            type="button"
+            [disabled]="!canCheck()"
+            (click)="activate()"
+          >
+            Aktiviraj izazov
+          </button>
+        }
+      </div>
+    </section>
+
+    <aside class="split__map" aria-label="Mapa izazova">
+      <app-location-map
+        [locations]="locations()"
+        [fill]="true"
+        [area]="area()"
+        [position]="savedPosition()"
+        [selectable]="!busy() && !data.attempt?.completedAt"
+        (selectedChange)="setPosition($event)"
+      />
+    </aside>
+  </div>
+}

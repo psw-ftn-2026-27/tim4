@@ -1,0 +1,39 @@
+@if (showGiver()) {
+  <!-- Received cards look like the card itself: what it is worth and what the friend wrote. -->
+  <ul class="cards">
+    @for (card of cards(); track card.id) {
+      <li class="received" [class.received--used]="card.status !== 'Valid'">
+        <article class="gift">
+          <span class="gift__brand">◈ Explorer · poklon kartica</span>
+          <span class="gift__amount">{{ card.amount }} EC</span>
+          <p class="gift__message">„{{ card.message }}“</p>
+          <span class="gift__from"
+            >od {{ card.giverEmail ?? 'nepoznatog korisnika' }} · važi do
+            {{ formatDate(card.validUntil) }}</span
+          >
+        </article>
+        <div class="received__foot">
+          <span [class]="statusClass(card.status)">{{ statusLabel(card.status) }}</span>
+          @if (card.status === 'Valid') {
+            <span class="meta">Koristi se cela pri plaćanju korpe.</span>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+} @else {
+  <!-- Sent cards are a short list: to whom, what was written, and whether it was used. -->
+  <ul class="sent">
+    @for (card of cards(); track card.id) {
+      <li class="sent__row">
+        <span class="sent__icon" aria-hidden="true">🎁</span>
+        <span class="sent__body">
+          <strong>{{ card.recipientEmail ?? 'Nepoznat korisnik' }}</strong>
+          <span class="meta">„{{ card.message }}“ · {{ formatDate(card.createdAt) }}</span>
+        </span>
+        <span [class]="statusClass(card.status)">{{ statusLabel(card.status) }}</span>
+        <span class="sent__amount">{{ card.amount }} EC</span>
+      </li>
+    }
+  </ul>
+}

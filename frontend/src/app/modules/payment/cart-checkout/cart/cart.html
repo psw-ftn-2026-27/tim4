@@ -1,0 +1,68 @@
+<app-checkout-steps [step]="1" />
+
+<div class="page-header">
+  <h1>Korpa</h1>
+  @if (cart.hasValue() && cart.value().items.length > 0) {
+    <span class="meta">{{ cart.value().items.length }} u korpi</span>
+  }
+</div>
+
+@if (success(); as message) {
+  <p class="notice notice--success" role="status">{{ message }}</p>
+}
+
+@if (cart.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Korpa nije učitana.</strong>
+    <button class="button" type="button" (click)="reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!cart.hasValue()) {
+  <p class="state" role="status">Učitavanje korpe…</p>
+} @else if (cart.value(); as basket) {
+  @if (basket.items.length === 0) {
+    <div class="state empty">
+      <img src="/images/ilustracije/travel-destination.svg" alt="" />
+      <strong>Korpa je prazna</strong>
+      <span>Ture dodajete u korpu sa stranice ture.</span>
+      <a class="button button--primary" routerLink="/exploration">Pretraži ture</a>
+    </div>
+  } @else {
+    <div class="checkout-layout">
+      <app-cart-items
+        [items]="basket.items"
+        [removable]="true"
+        [pending]="pending()"
+        (removeItem)="remove($event)"
+      />
+
+      <aside class="card summary" aria-labelledby="cart-summary-title">
+        <h2 id="cart-summary-title">Pregled</h2>
+        <dl class="summary-lines">
+          <dt>Ture ({{ basket.items.length }})</dt>
+          <dd>{{ basket.total }} EC</dd>
+        </dl>
+        <p class="summary-total">
+          <span>Ukupno</span>
+          <strong>{{ basket.total }} EC</strong>
+        </p>
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending()"
+          (click)="checkout()"
+        >
+          {{ pending() ? 'Priprema…' : 'Nastavi na plaćanje' }}
+        </button>
+        @if (error(); as message) {
+          <p class="error" role="alert">⚠ {{ message }}</p>
+        }
+        @if (balance() !== null) {
+          <p class="meta">
+            U novčaniku imate <span class="badge badge--ec">{{ balance() }} EC</span>. Kupon i
+            poklon karticu dodajete u sledećem koraku.
+          </p>
+        }
+      </aside>
+    </div>
+  }
+}

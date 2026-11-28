@@ -1,41 +1,239 @@
-<div class="stack">
-  <h1>Tours</h1>
-
-  @if (auth.isLoggedIn()) {
-    <p class="links">
-      <a routerLink="/exploration/mine">My tours</a>
-      <a routerLink="/exploration/create">Create tour</a>
-    </p>
-  }
-
-  <div class="filters">
-    <div class="field">
-      <label for="name-filter">Search by name</label>
-      <input id="name-filter" type="search" [formField]="form.name" />
-    </div>
-
-    <div class="field">
-      <label for="difficulty-filter">Difficulty</label>
-      <select id="difficulty-filter" [formField]="form.difficulty">
-        <option value="">All</option>
-        <option value="Easy">Easy</option>
-        <option value="Moderate">Moderate</option>
-        <option value="Hard">Hard</option>
-      </select>
-    </div>
-  </div>
-
-  @if (tours.isLoading()) {
-    <p>Loading tours...</p>
-  } @else if (tours.error()) {
-    <p class="error">Could not load tours. Log in and try again.</p>
-  } @else if (visibleTours().length === 0) {
-    <p>No tours match the filter.</p>
-  } @else {
-    <div class="grid">
-      @for (tour of visibleTours(); track tour.id) {
-        <app-tour-card [tour]="tour" />
+<div class="split">
+  <section class="split__side" aria-labelledby="tours-title">
+    <div class="page-header">
+      <h1 id="tours-title">Ture</h1>
+      @if (tours.hasValue()) {
+        <span class="meta">{{ countText() }}</span>
       }
     </div>
-  }
+
+    <!-- The two text fields apply on Enter; the chips and the sort apply at once. -->
+    <form class="search" (submit)="applyText($event)">
+      <div class="search__text">
+        <div class="field">
+          <input
+            id="tour-name"
+            type="search"
+            aria-label="Naziv ture"
+            placeholder="Naziv ture"
+            [formField]="filters.name"
+          />
+        </div>
+        <div class="field">
+          <input
+            id="tour-tags"
+            type="search"
+            aria-label="Oznake, odvojene zarezima"
+            placeholder="Oznake, npr. istorija, priroda"
+            [formField]="filters.tags"
+          />
+        </div>
+        <button class="button" type="submit">Traži</button>
+      </div>
+
+      <div class="chips" role="group" aria-label="Filteri">
+        @if (savedPreference(); as preference) {
+          <button
+            class="chip"
+            type="button"
+            [class.chip--on]="usingPreference()"
+            [attr.aria-pressed]="usingPreference()"
+            [title]="preferenceText()"
+            (click)="togglePreference()"
+          >
+            ★ Prema mojim preferencama
+          </button>
+        }
+
+        @if (!usingPreference()) {
+          <details class="chip-menu">
+            <summary class="chip" [class.chip--on]="difficultyChip() !== 'Težina'">
+              {{ difficultyChip() }}
+            </summary>
+            <div class="chip-menu__panel">
+              <label class="choice"
+                ><input type="checkbox" [formField]="filters.easy" /> Lako</label
+              >
+              <label class="choice"
+                ><input type="checkbox" [formField]="filters.moderate" /> Srednje</label
+              >
+              <label class="choice"
+                ><input type="checkbox" [formField]="filters.hard" /> Teško</label
+              >
+            </div>
+          </details>
+
+          <details class="chip-menu">
+            <summary class="chip" [class.chip--on]="filters.transport().value() !== ''">
+              {{ transportChip() }}
+            </summary>
+            <div class="chip-menu__panel">
+              <div class="field">
+                <label for="tour-transport">Kako idete</label>
+                <select id="tour-transport" [formField]="filters.transport">
+                  <option value="">Svejedno</option>
+                  <option value="Walking">Peške</option>
+                  <option value="Bicycle">Biciklom</option>
+                  <option value="Car">Automobilom</option>
+                </select>
+              </div>
+            </div>
+          </details>
+        }
+
+        <details class="chip-menu">
+          <summary class="chip" [class.chip--on]="priceChip() !== 'Cena'">
+            {{ priceChip() }}
+          </summary>
+          <div class="chip-menu__panel">
+            <div class="field">
+              <label for="tour-price">Najviše (EC)</label>
+              <input id="tour-price" type="number" step="5" [formField]="filters.priceTo" />
+            </div>
+          </div>
+        </details>
+
+        <details class="chip-menu">
+          <summary class="chip" [class.chip--on]="lengthChip() !== 'Dužina'">
+            {{ lengthChip() }}
+          </summary>
+          <div class="chip-menu__panel">
+            <div class="field">
+              <label for="tour-length">Najviše (km)</label>
+              <input id="tour-length" type="number" step="0.5" [formField]="filters.lengthTo" />
+            </div>
+          </div>
+        </details>
+
+        @if (anyFilter()) {
+          <button class="chip chip--clear" type="button" (click)="clear()">Obriši filtere ✕</button>
+        }
+
+        <!-- No visible label: the options say what they sort by, and a label makes the row taller. -->
+        <div class="field sort">
+          <select id="tour-sort" aria-label="Redosled" [formField]="filters.sort">
+            <option value="">Najnovije prvo</option>
+            <option value="DifficultyAscending">Težina, od najlakše</option>
+            <option value="DifficultyDescending">Težina, od najteže</option>
+            <option value="PriceAscending">Cena, od najniže</option>
+            <option value="PriceDescending">Cena, od najviše</option>
+          </select>
+        </div>
+      </div>
+
+      @if (usingPreference()) {
+        <p class="notice notice--muted">
+          ★ Prikazane su ture prema vašim preferencama: {{ preferenceText() }}.
+          <a routerLink="/exploration/preferences">Izmeni preference</a>
+        </p>
+      }
+      @if (area() !== null) {
+        <p class="notice notice--muted">
+          Prikazane su samo ture u oblasti mape.
+          <button class="link-button" type="button" (click)="clearArea()">Prikaži sve</button>
+        </p>
+      }
+    </form>
+
+    <div class="split__list">
+      @if (tours.error()) {
+        <div class="state state--error" role="alert">
+          <strong>Ture nisu učitane.</strong>
+          <button class="button" type="button" (click)="tours.reload()">Pokušaj ponovo</button>
+        </div>
+      } @else if (!tours.hasValue()) {
+        <p class="state" role="status">Učitavanje tura…</p>
+      } @else if (items().length === 0) {
+        <div class="state">
+          <strong>Nijedna tura ne odgovara filterima.</strong>
+          @if (anyFilter()) {
+            <button class="button" type="button" (click)="clear()">Obriši filtere</button>
+          }
+        </div>
+      } @else {
+        <ul class="cards" [class.cards--loading]="tours.isLoading()">
+          @for (item of items(); track item.tour.id) {
+            <li (mouseenter)="hovered.set(item.tour.id)" (mouseleave)="hovered.set(null)">
+              <app-tour-card
+                [tour]="item.tour"
+                [price]="item.price"
+                [isInProgress]="item.isInProgress"
+                [isOwn]="isOwn(item)"
+                [active]="activeId() === item.tour.id"
+                [hasPin]="item.pinLocation !== null"
+                (showOnMap)="chosen.set(item.tour.id)"
+              />
+            </li>
+          }
+        </ul>
+
+        @if (pageCount() > 1) {
+          <nav class="pagination" aria-label="Strane">
+            <button class="button" type="button" [disabled]="page() === 1" (click)="changePage(-1)">
+              Prethodna
+            </button>
+            <span>Strana {{ page() }} od {{ pageCount() }}</span>
+            <button
+              class="button"
+              type="button"
+              [disabled]="page() === pageCount()"
+              (click)="changePage(1)"
+            >
+              Sledeća
+            </button>
+          </nav>
+        }
+      }
+    </div>
+  </section>
+
+  <aside class="split__map" aria-label="Mapa tura">
+    <app-location-map
+      [locations]="pins()"
+      [cluster]="true"
+      [fill]="true"
+      [fitKey]="fitKey()"
+      [activeIndex]="activeIndex()"
+      [focusIndex]="focusIndex()"
+      (locationHover)="hoverPin($event)"
+      (locationClick)="choosePin($event)"
+      (viewChange)="view.set($event)"
+    />
+
+    <!-- Appears once the tourist moves the map, like on booking sites. -->
+    @if (canSearchArea()) {
+      <button class="button map-area" type="button" (click)="searchArea()">
+        ⌖ Pretraži ovu oblast
+      </button>
+    }
+
+    <!-- The tour of the clicked pin, over the map, so the list does not have to be searched. -->
+    @if (chosenItem(); as item) {
+      <article class="pin-card">
+        <div class="pin-card__body">
+          <strong>{{ item.tour.name }}</strong>
+          <span class="pin-card__foot">
+            <span class="pin-card__price">
+              @if (item.isInProgress) {
+                ▶ U toku
+              } @else {
+                {{ priceText(item) }}
+              }
+            </span>
+            <a class="button button--primary" [routerLink]="['/exploration/tours', item.tour.id]"
+              >Pogledaj</a
+            >
+          </span>
+        </div>
+        <button
+          class="pin-card__close"
+          type="button"
+          aria-label="Zatvori"
+          (click)="chosen.set(null)"
+        >
+          ✕
+        </button>
+      </article>
+    }
+  </aside>
 </div>

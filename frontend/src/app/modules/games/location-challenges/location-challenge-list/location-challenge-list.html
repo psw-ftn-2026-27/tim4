@@ -1,0 +1,81 @@
+<app-admin-tabs
+  current="location"
+  actionLabel="Nov lokacijski izazov"
+  actionLink="/games/location-challenges/create"
+/>
+
+@if (challenges.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Izazovi nisu učitani.</strong>
+    <button class="button" type="button" (click)="challenges.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!challenges.hasValue()) {
+  <p class="state" role="status">Učitavanje izazova…</p>
+} @else if (challenges.value(); as result) {
+  @if (result.items.length === 0) {
+    <div class="state">
+      <strong>Još nema lokacijskih izazova.</strong>
+      <span
+        >Lokacijski izazov skriva mesta oko početne tačke; turista ih traži po fotografiji.</span
+      >
+    </div>
+  } @else {
+    <p class="meta">
+      Lokacijski izazov je vidljiv turistima čim se napravi; objava i povlačenje za ovu vrstu još ne
+      postoje.
+    </p>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Naziv</th>
+            <th scope="col" class="col-fit">Skrivenih mesta</th>
+            <th scope="col" class="col-fit">Nagrada</th>
+            <th scope="col" class="col-actions">Radnje</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (challenge of result.items; track challenge.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/games/location-challenges', challenge.id]">{{
+                  challenge.name
+                }}</a>
+              </td>
+              <td class="col-fit">{{ challenge.pointCount }}</td>
+              <td class="col-fit">
+                <span class="badge badge--xp">★ {{ challenge.xpReward }} XP</span>
+              </td>
+              <td class="col-actions">
+                <a class="button" [routerLink]="['/games/location-challenges', challenge.id]"
+                  >Pogledaj</a
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (pageCount() > 1) {
+      <nav class="pagination" aria-label="Strane lokacijskih izazova">
+        <button
+          class="button"
+          type="button"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+        >
+          Prethodna
+        </button>
+        <span>Strana {{ page() }} od {{ pageCount() }}</span>
+        <button
+          class="button"
+          type="button"
+          [disabled]="page() >= pageCount()"
+          (click)="page.set(page() + 1)"
+        >
+          Sledeća
+        </button>
+      </nav>
+    }
+  }
+}

@@ -8,17 +8,19 @@ namespace Identity.Infrastructure;
 
 internal sealed class IdentityModuleInitializer : IHostedService
 {
-    internal static readonly string[] Roles = ["administrator", "explorer"];
+    internal static readonly string[] Roles = [RoleNames.Administrator, RoleNames.Explorer];
 
     private const string DemoPassword = "Password1!";
 
+    // WellKnownUsers in Shared.Tests carries the IDs of admin1, explorer1 and explorer2, so
+    // that every module's test database knows the users its seeds refer to. Change both together.
     private static readonly (Guid Id, string Email, string Role)[] DemoUsers =
     [
-        (Guid.Parse("10000000-0000-0000-0000-000000000001"), "admin1@explorer.dev", "administrator"),
-        (Guid.Parse("10000000-0000-0000-0000-000000000002"), "admin2@explorer.dev", "administrator"),
-        (Guid.Parse("20000000-0000-0000-0000-000000000001"), "explorer1@explorer.dev", "explorer"),
-        (Guid.Parse("20000000-0000-0000-0000-000000000002"), "explorer2@explorer.dev", "explorer"),
-        (Guid.Parse("20000000-0000-0000-0000-000000000003"), "explorer3@explorer.dev", "explorer")
+        (Guid.Parse("10000000-0000-0000-0000-000000000001"), "admin1@explorer.dev", RoleNames.Administrator),
+        (Guid.Parse("10000000-0000-0000-0000-000000000002"), "admin2@explorer.dev", RoleNames.Administrator),
+        (Guid.Parse("20000000-0000-0000-0000-000000000001"), "explorer1@explorer.dev", RoleNames.Explorer),
+        (Guid.Parse("20000000-0000-0000-0000-000000000002"), "explorer2@explorer.dev", RoleNames.Explorer),
+        (Guid.Parse("20000000-0000-0000-0000-000000000003"), "explorer3@explorer.dev", RoleNames.Explorer)
     ];
 
     private readonly IServiceProvider _serviceProvider;

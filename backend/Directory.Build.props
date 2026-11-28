@@ -7,6 +7,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- AutoMapper is pinned to 16.1.1 (see backend/AGENTS.md); these advisories are accepted risk. -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-6vhm-j9h7-f9gh" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-gpwp-5797-mjff" />
+  </ItemGroup>
+
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
     <PackageReference Include="coverlet.collector">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

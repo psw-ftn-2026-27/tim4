@@ -1,0 +1,185 @@
+<div class="proto-switch" role="group" aria-label="Stanje ture u prototipu">
+  <span class="meta">Prototip, stanje ture:</span>
+  @for (option of relations; track option.value) {
+    <button
+      type="button"
+      class="proto-switch__option"
+      [class.proto-switch__option--on]="relation() === option.value"
+      (click)="setRelation(option.value)"
+    >
+      {{ option.label }}
+    </button>
+  }
+</div>
+
+<a class="back-link" routerLink="/design-preview/prototype/tourist/tours">← Ture</a>
+
+<div class="layout">
+  <article class="content">
+    <header class="head">
+      <h1>{{ tour().name }}</h1>
+      <p class="facts">
+        <span [class]="difficultyClasses[tour().difficulty]">{{
+          difficultyLabels[tour().difficulty]
+        }}</span>
+        @for (fact of facts(); track fact) {
+          <span>{{ fact }}</span>
+        }
+      </p>
+      <p class="tags">
+        @for (tag of tour().tags; track tag) {
+          <span class="tag">{{ tag }}</span>
+        }
+      </p>
+    </header>
+
+    <img class="hero" [src]="tour().image" alt="" />
+
+    <p class="description">{{ tour().description }}</p>
+
+    <section class="points" aria-labelledby="points-title">
+      <h2 id="points-title">Ključne tačke · {{ tour().keyPoints.length }}</h2>
+      <ol class="timeline">
+        @for (point of tour().keyPoints; track point.name; let index = $index) {
+          @if (sees() || point.isOpen) {
+            <li
+              class="point"
+              [class.point--active]="hovered() === '' + index"
+              (mouseenter)="hovered.set('' + index)"
+              (mouseleave)="hovered.set(null)"
+            >
+              <span class="point__number">{{ index + 1 }}</span>
+              <img class="point__image" [src]="point.image" alt="" />
+              <div>
+                <h3>{{ point.name }}</h3>
+                <p>{{ point.description }}</p>
+                @if (sees()) {
+                  <p class="meta">🔒 Tajna se otkriva kada stignete do tačke.</p>
+                }
+              </div>
+            </li>
+          } @else {
+            <li class="point point--locked">
+              <span class="point__number">{{ index + 1 }}</span>
+              <div class="point__image point__image--locked" aria-hidden="true">🔒</div>
+              <div>
+                <h3>Zaključana tačka</h3>
+                <p class="meta">Otključava se kupovinom ture.</p>
+              </div>
+            </li>
+          }
+        }
+      </ol>
+    </section>
+  </article>
+
+  <aside class="side">
+    <!-- The panel: one primary action for the current state, and why it is (not) possible. -->
+    <section class="card panel" aria-label="Kupovina i pokretanje">
+      @switch (relation()) {
+        @case ('none') {
+          <p class="panel__price">
+            @if (tour().price === 0) {
+              Besplatno
+            } @else {
+              {{ tour().price }} <small>EC</small>
+            }
+          </p>
+          <button class="button button--primary panel__main" type="button" (click)="addToCart()">
+            Dodaj u korpu
+          </button>
+          <p class="meta">
+            Posle kupovine otključavate još {{ lockedCount() }} tačke i njihove tajne. Turu
+            pokrećete kad stignete na početnu tačku.
+          </p>
+        }
+        @case ('inCart') {
+          @if (justAdded()) {
+            <p class="notice notice--success">✓ Tura je dodata u korpu.</p>
+          } @else {
+            <p class="notice notice--muted">Tura je već u vašoj korpi.</p>
+          }
+          <p class="panel__price">{{ tour().price }} <small>EC</small></p>
+          <a
+            class="button button--primary panel__main"
+            routerLink="/design-preview/prototype/tourist/cart"
+            >Idi na plaćanje</a
+          >
+          <button class="button" type="button" (click)="setRelation('none')">
+            Ukloni iz korpe
+          </button>
+        }
+        @case ('purchased') {
+          <p><span class="badge badge--success">✓ Kupljena</span></p>
+          <ol class="steps">
+            <li [class.steps__done]="position() !== null">
+              <strong>Postavite svoju poziciju</strong>
+              @if (position() === null) {
+                <span class="meta">Kliknite na mapu ispod, tamo gde se nalazite.</span>
+              } @else {
+                <span class="meta">✓ Postavljena. Novim klikom je pomerate.</span>
+              }
+            </li>
+            <li>
+              <strong>Pokrenite turu</strong>
+              <span class="meta">Tura vas vodi od tačke do tačke.</span>
+            </li>
+          </ol>
+          <button
+            class="button button--primary panel__main"
+            type="button"
+            [disabled]="position() === null"
+            (click)="setRelation('inProgress')"
+          >
+            Pokreni turu
+          </button>
+        }
+        @case ('inProgress') {
+          <p><span class="badge badge--published">▶ U toku</span></p>
+          <p class="progress">
+            <span class="progress__bar" aria-hidden="true"
+              ><span class="progress__fill" style="width: 33%"></span
+            ></span>
+            1 od {{ tour().keyPoints.length }} tačaka
+          </p>
+          <a
+            class="button button--primary panel__main"
+            routerLink="/design-preview/prototype/tourist/active-tour"
+            >Nastavi turu</a
+          >
+        }
+        @case ('author') {
+          <p>
+            <span class="badge badge--draft">✎ Vaša tura</span>
+            <span class="badge badge--published">● Objavljena</span>
+          </p>
+          <p class="panel__price">{{ tour().price }} <small>EC</small></p>
+          <a
+            class="button button--primary panel__main"
+            routerLink="/design-preview/prototype/tourist/studio"
+            >Uredi u studiju</a
+          >
+          <p class="meta">Ovako vašu turu vide turisti koji je nisu kupili.</p>
+        }
+      }
+    </section>
+
+    <div class="side__map" [class.side__map--pick]="relation() === 'purchased'">
+      <app-proto-map
+        [pins]="pins()"
+        [path]="path()"
+        [roadPath]="true"
+        [cluster]="false"
+        [fitKey]="relation()"
+        [activeId]="hovered()"
+        [position]="position()"
+        [selectable]="relation() === 'purchased'"
+        (pinHover)="hovered.set($event)"
+        (mapClick)="setPosition($event)"
+      />
+      @if (!sees()) {
+        <p class="side__map-note">Mapa prikazuje samo otvorene tačke.</p>
+      }
+    </div>
+  </aside>
+</div>

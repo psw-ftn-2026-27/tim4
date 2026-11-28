@@ -1,0 +1,150 @@
+<app-admin-tabs current="quiz" actionLabel="Nov kviz" actionLink="/games/quizzes/create" />
+
+<div class="chips" role="group" aria-label="Stanje kviza">
+  @for (item of filters(); track item.value) {
+    <button
+      class="chip"
+      type="button"
+      [class.chip--on]="filter() === item.value"
+      [attr.aria-pressed]="filter() === item.value"
+      (click)="filter.set(item.value)"
+    >
+      {{ item.label }} ({{ item.count }})
+    </button>
+  }
+</div>
+
+@if (notice(); as message) {
+  <p class="notice notice--success" role="status">✓ {{ message }}</p>
+}
+@if (error(); as message) {
+  <p class="error" role="alert">⚠ {{ message }}</p>
+}
+
+@if (challenges.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Kvizovi nisu učitani.</strong>
+    <button class="button" type="button" (click)="challenges.reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (!challenges.hasValue()) {
+  <p class="state" role="status">Učitavanje kvizova…</p>
+} @else if (visible().length === 0) {
+  <div class="state">
+    @if (filter() === 'all') {
+      <strong>Još nema kvizova.</strong>
+      <span>Kviz ima bar četiri pitanja i mesto na mapi gde se započinje.</span>
+    } @else {
+      Nema kvizova u ovom stanju.
+    }
+  </div>
+} @else {
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Naziv</th>
+          <th scope="col" class="col-fit">Stanje</th>
+          <th scope="col" class="col-fit">Nagrada</th>
+          <th scope="col" class="col-actions" colspan="3">Radnje</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (challenge of visible(); track challenge.id) {
+          <tr>
+            <td>
+              <a [routerLink]="['/games/quizzes', challenge.id]">{{ challenge.name }}</a>
+            </td>
+            <td class="col-fit">
+              <span [class]="statusLabels[challenge.status].badge">{{
+                statusLabels[challenge.status].label
+              }}</span>
+            </td>
+            <td class="col-fit">
+              <span class="badge badge--xp">★ {{ challenge.totalXp }} XP</span>
+            </td>
+            @if (deleting() === challenge.id) {
+              <td colspan="3">
+                <div class="confirm">
+                  <p>Obrisati kviz „{{ challenge.name }}”? Ovo ne može da se poništi.</p>
+                  <button
+                    class="button button--danger"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="remove(challenge.id)"
+                  >
+                    Obriši
+                  </button>
+                  <button class="button" type="button" (click)="deleting.set(null)">
+                    Odustani
+                  </button>
+                </div>
+              </td>
+            } @else {
+              <td class="col-actions">
+                <a class="button" [routerLink]="['/games/quizzes', challenge.id]">{{
+                  challenge.status === 'Draft' ? 'Izmeni' : 'Pogledaj'
+                }}</a>
+              </td>
+              <!-- The one next step of the lifecycle: Nacrt → Objavljen ⇄ Povučen → Arhiviran. -->
+              <td class="col-actions">
+                @switch (challenge.status) {
+                  @case ('Draft') {
+                    <button
+                      class="button button--primary"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="publish(challenge.id)"
+                    >
+                      Objavi
+                    </button>
+                  }
+                  @case ('Published') {
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="retire(challenge.id)"
+                    >
+                      Povuci
+                    </button>
+                  }
+                  @case ('Retired') {
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="publish(challenge.id)"
+                    >
+                      Objavi ponovo
+                    </button>
+                  }
+                }
+              </td>
+              <td class="col-actions">
+                @if (challenge.status === 'Retired') {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="archive(challenge.id)"
+                  >
+                    Arhiviraj
+                  </button>
+                } @else if (challenge.status === 'Draft' || challenge.status === 'Archived') {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="deleting.set(challenge.id)"
+                  >
+                    Obriši…
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,25 +1,44 @@
-<article class="card stack">
-  <h3>{{ tour().name }}</h3>
-
-  <p>{{ tour().description }}</p>
-
-  <p class="meta">Difficulty: {{ tour().difficulty }}</p>
-
-  @if (tour().tags.length > 0) {
-    <ul class="tags">
+<article class="tour" [class.tour--active]="active()">
+  <div class="tour__body">
+    <h2 class="tour__name">
+      <a [routerLink]="['/exploration/tours', tour().id]">{{ tour().name }}</a>
+    </h2>
+    <p class="tour__excerpt">{{ excerpt() }}</p>
+    <p class="tour__facts">
+      <span [class]="difficultyBadges[tour().difficulty]">{{
+        difficultyLabels[tour().difficulty]
+      }}</span>
+      <span>{{ length() }}</span>
+      @for (time of times(); track time.transport) {
+        <span>{{ time.text }}</span>
+      }
+    </p>
+    <p class="tour__tags">
+      @if (hasPin()) {
+        <button class="tour__map-link" type="button" (click)="showOnMap.emit()">⌖ Na mapi</button>
+      }
       @for (tag of tour().tags; track tag) {
-        <li>{{ tag }}</li>
+        <span class="tag">{{ tag }}</span>
       }
-    </ul>
-  }
+    </p>
+  </div>
 
-  @if (tour().transportTimes.length > 0) {
-    <ul class="times">
-      @for (time of tour().transportTimes; track time.transport) {
-        <li class="meta">{{ time.transport }}: {{ time.minutes }} min</li>
+  <div class="tour__side">
+    @if (isInProgress()) {
+      <span class="badge badge--published">▶ U toku</span>
+      <a class="button button--primary" routerLink="/exploration/active">Nastavi</a>
+    } @else if (isOwn()) {
+      <span class="badge badge--draft">✎ Vaša tura</span>
+      <a class="button" [routerLink]="['/exploration/tours', tour().id]">Pogledaj</a>
+    } @else {
+      @if (price() === null) {
+        <span class="meta">Cena nije određena</span>
+      } @else if (price() === 0) {
+        <span class="price price--free">Besplatno</span>
+      } @else {
+        <span class="price">{{ price() }} EC</span>
       }
-    </ul>
-  } @else {
-    <p class="meta">No transport times yet.</p>
-  }
+      <a class="button" [routerLink]="['/exploration/tours', tour().id]">Pogledaj</a>
+    }
+  </div>
 </article>

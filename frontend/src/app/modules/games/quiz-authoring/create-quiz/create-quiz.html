@@ -1,0 +1,18 @@
+<div class="page--narrow stack">
+  <a class="back-link" routerLink="/games/admin">← Izazovi</a>
+  <div class="page-header">
+    <h1>Nov kviz</h1>
+  </div>
+  <p class="meta">
+    Kviz ima bar četiri pitanja i mesto na mapi; turista ga započinje kada je unutar opsega.
+  </p>
+
+  <div class="card">
+    <app-quiz-form
+      [quizForm]="form"
+      [pending]="pending()"
+      [error]="error()"
+      (save)="save($event)"
+    />
+  </div>
+</div>

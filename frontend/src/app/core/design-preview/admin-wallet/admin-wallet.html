@@ -1,0 +1,101 @@
+<div class="stack">
+  <a class="back-link" routerLink="/design-preview">← Nazad na pregled</a>
+  <div class="page-header">
+    <h1>Novčanici korisnika</h1>
+  </div>
+
+  <div class="layout">
+    <section class="stack">
+      <h2>Korisnici</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Korisnik</th>
+              <th scope="col" class="col-fit">Stanje</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users; track user.username) {
+              <tr>
+                <td>{{ user.username }}</td>
+                <td class="col-fit">
+                  <span class="badge badge--ec">◎ {{ user.balance }} EC</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <form class="card stack">
+      <h2>Uplata</h2>
+      <div class="field">
+        <label for="top-up-user">Korisnik</label>
+        <select id="top-up-user">
+          @for (user of users; track user.username) {
+            <option>{{ user.username }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="top-up-amount">Iznos (EC)</label>
+        <input id="top-up-amount" type="number" min="1" value="50" />
+      </div>
+      <div class="form-actions">
+        <button class="button button--primary" type="button">Uplati</button>
+      </div>
+    </form>
+  </div>
+
+  <section class="stack">
+    <h2>Transakcije</h2>
+    <p class="meta">
+      Storno je ponuđen samo za uplatu mlađu od 24h čiji storno ne bi doveo do negativnog stanja.
+    </p>
+    <div class="table-wrap">
+      <table class="table table--cards">
+        <thead>
+          <tr>
+            <th scope="col">Korisnik</th>
+            <th scope="col">Vrsta</th>
+            <th scope="col" class="col-fit">Iznos</th>
+            <th scope="col" class="col-fit">Pre</th>
+            <th scope="col" class="col-fit">Status</th>
+            <th scope="col" class="col-actions">Radnje</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (transaction of transactions; track transaction.id) {
+            <tr [class.row--muted]="transaction.reversed">
+              <td data-label="Korisnik">{{ transaction.username }}</td>
+              <td data-label="Vrsta">{{ transaction.kind }}</td>
+              <td class="col-fit" data-label="Iznos">
+                {{ transaction.amount > 0 ? '+' : '' }}{{ transaction.amount }} EC
+              </td>
+              <td class="col-fit" data-label="Pre">{{ transaction.hoursAgo }} h</td>
+              <td class="col-fit" data-label="Status">
+                @if (transaction.reversed) {
+                  <span class="badge badge--muted">↶ Stornirano</span>
+                } @else {
+                  <span class="badge badge--success">✓ Izvršeno</span>
+                }
+              </td>
+              <td class="col-actions">
+                @if (canReverse(transaction)) {
+                  <button class="button" type="button">↶ Storniraj</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <nav class="pagination" aria-label="Strane">
+      <button class="button" type="button">Prethodna</button>
+      <span>Strana 2 od 3</span>
+      <button class="button" type="button">Sledeća</button>
+    </nav>
+  </section>
+</div>

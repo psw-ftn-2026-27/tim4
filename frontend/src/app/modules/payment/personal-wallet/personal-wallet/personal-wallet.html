@@ -1,0 +1,104 @@
+<div class="page-header">
+  <h1>Novčanik</h1>
+</div>
+
+@if (balance.error() || transactions.error()) {
+  <div class="state state--error" role="alert">
+    <strong>Novčanik nije učitan.</strong>
+    <button class="button" type="button" (click)="retry()">Pokušaj ponovo</button>
+  </div>
+} @else if (!balance.hasValue() || !transactions.hasValue()) {
+  <p class="state" role="status">Učitavanje novčanika…</p>
+} @else {
+  <div class="layout">
+    <aside class="side">
+      <section class="balance" aria-labelledby="balance-title">
+        <p id="balance-title" class="balance__label">Raspoloživo</p>
+        <p class="balance__amount">{{ balance.value().availableBalance }} <small>EC</small></p>
+        @if (balance.value().availableBalance > 0) {
+          <a class="button button--primary" routerLink="/exploration">Potroši na ture</a>
+        }
+      </section>
+
+      <a class="link-card tile" routerLink="/payment/gift-cards">
+        <span class="tile__icon" aria-hidden="true">🎁</span>
+        <span class="tile__body">
+          <strong>Poklon kartice</strong>
+          @if (validCards().length > 0) {
+            <span
+              >{{ validCards().length }} važeća · {{ cardsTotal() }} EC, koristi se pri
+              plaćanju</span
+            >
+          } @else {
+            <span>Poklonite EC prijatelju</span>
+          }
+        </span>
+      </a>
+
+      <!-- Testers ask this first: there is no way to buy EC, an administrator credits them. -->
+      <section class="how" aria-labelledby="how-title">
+        <h2 id="how-title">Kako dobiti EC?</h2>
+        <p>
+          EC (Explorer coin) na novčanik uplaćuje <strong>administrator</strong>. Kupovina EC
+          karticom ne postoji.
+        </p>
+        <p class="meta">
+          Poklon kartica koju dobijete ne ulazi u stanje: koristite je pri plaćanju korpe.
+        </p>
+      </section>
+    </aside>
+
+    <section class="history" aria-labelledby="history-title">
+      <div class="history__head">
+        <h2 id="history-title">Promene stanja</h2>
+        <div class="chips" role="group" aria-label="Vrsta promene">
+          @for (item of filters; track item.value) {
+            <button
+              class="chip"
+              type="button"
+              [class.chip--on]="filter() === item.value"
+              [attr.aria-pressed]="filter() === item.value"
+              (click)="filter.set(item.value)"
+            >
+              {{ item.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (transactions.value().totalCount === 0) {
+        <div class="state empty">
+          <img src="/images/ilustracije/my-current-location.svg" alt="" />
+          <strong>Novčanik je prazan</strong>
+          <span>
+            Ture se plaćaju u EC, a EC uplaćuje administrator. Dok čekate, pogledajte besplatne
+            ture.
+          </span>
+          <a class="button" routerLink="/exploration">Pretraži ture</a>
+        </div>
+      } @else if (shown().length === 0) {
+        <div class="state">Na ovoj strani nema takvih promena.</div>
+      } @else {
+        <app-wallet-transactions [transactions]="shown()" />
+        <p class="meta">Stornirana uplata ne ulazi u stanje.</p>
+      }
+
+      @if (pageCount() > 1) {
+        <nav class="pagination" aria-label="Strane promena">
+          <button class="button" type="button" [disabled]="page() === 1" (click)="changePage(-1)">
+            Prethodna
+          </button>
+          <span>Strana {{ page() }} od {{ pageCount() }}</span>
+          <button
+            class="button"
+            type="button"
+            [disabled]="page() >= pageCount()"
+            (click)="changePage(1)"
+          >
+            Sledeća
+          </button>
+        </nav>
+      }
+    </section>
+  </div>
+}

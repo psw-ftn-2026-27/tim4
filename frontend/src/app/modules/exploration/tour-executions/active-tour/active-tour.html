@@ -1,0 +1,181 @@
+@if (completedExecutionId() !== null) {
+  <!-- After the last key point the session is no longer in progress, so it is read by its ID. -->
+  <div class="stage stage--done">
+    @if (completedExecution.error()) {
+      <div class="state state--error" role="alert">
+        ⚠ Završena tura nije učitana.
+        <button class="button" type="button" (click)="completedExecution.reload()">
+          Pokušaj ponovo
+        </button>
+      </div>
+    } @else if (completedExecution.value(); as completed) {
+      <article class="reveal__card reveal__card--wide">
+        <span class="done-check" aria-hidden="true">✓</span>
+        <h1>Tura je završena!</h1>
+        <p>Prošli ste sve tačke ture „{{ completed.tourName }}“.</p>
+        <ol class="secret-list">
+          @for (keyPoint of completed.reachedKeyPoints; track keyPoint.id; let index = $index) {
+            <li>
+              <strong>{{ index + 1 }}. {{ keyPoint.name }}</strong>
+              @if (keyPoint.secret) {
+                <span>{{ keyPoint.secret }}</span>
+              }
+            </li>
+          }
+        </ol>
+        <div class="form-actions">
+          <a class="button button--primary" routerLink="/exploration">Pretraži ture</a>
+        </div>
+      </article>
+    } @else {
+      <div class="state" role="status">Učitavanje završene ture…</div>
+    }
+  </div>
+} @else if (activeTour.error() || position.error()) {
+  <div class="state state--error" role="alert">
+    ⚠ Aktivna tura nije učitana.
+    <button class="button" type="button" (click)="reload()">Pokušaj ponovo</button>
+  </div>
+} @else if (activeTour.status() === 'loading' || position.status() === 'loading') {
+  <!-- Only the first load replaces the page; a reload after a click keeps the map in place. -->
+  <div class="state" role="status">Učitavanje aktivne ture…</div>
+} @else if (activeTour.value(); as active) {
+  <div class="stage">
+    <app-location-map
+      [locations]="mapLocations()"
+      [fill]="true"
+      [fitInsetLeft]="nextCardWidth"
+      [selectable]="true"
+      [position]="savedPosition()"
+      [target]="nextKeyPoint()"
+      (selectedChange)="setPosition($event)"
+      (targetDistanceChange)="routeMeters.set($event)"
+    />
+
+    <!-- ===== Top left: where to go next ===== -->
+    <section class="next" aria-live="polite">
+      <p class="next__tour">
+        <span class="badge badge--published">▶ U toku</span>
+        <span>{{ active.tourName }}</span>
+      </p>
+      @if (nextKeyPoint(); as next) {
+        <p class="next__label">
+          Sledeća tačka · {{ active.reachedKeyPointCount + 1 }} od {{ active.keyPoints.length }}
+        </p>
+        <h1>{{ next.name }}</h1>
+        @if (savedPosition() !== null && distanceText(); as away) {
+          <p class="next__way">
+            <strong>{{ away }}</strong>
+            @if (minutes(); as min) {
+              <span>· oko {{ min }} min peške</span>
+            }
+          </p>
+        }
+      }
+      <p class="next__hint">
+        @if (savedPosition() === null) {
+          📍 Kliknite na mapu tamo gde se nalazite.
+        } @else {
+          📍 Poziciju pomerate klikom na mapu; tačka se otključava kada stignete do nje.
+        }
+      </p>
+      @if (positionError(); as message) {
+        <p class="error" role="alert">⚠ {{ message }}</p>
+      }
+      @if (checkError(); as message) {
+        <p class="error" role="alert">⚠ {{ message }}</p>
+      }
+      <span class="next__bar" aria-hidden="true"
+        ><span class="next__fill" [style.width]="progress()"></span
+      ></span>
+    </section>
+
+    <!-- ===== Top right: the tour's menu ===== -->
+    <div class="menu">
+      <button
+        class="menu__button"
+        type="button"
+        aria-label="Meni ture"
+        [attr.aria-expanded]="menuOpen()"
+        (click)="menuOpen.set(!menuOpen()); confirmingAbandon.set(false)"
+      >
+        ⋯
+      </button>
+      @if (menuOpen()) {
+        <div class="menu__panel">
+          <a [routerLink]="['/exploration/tours', active.tourId]">Opis ture</a>
+          @if (confirmingAbandon()) {
+            <div class="confirm">
+              <p>Napuštena tura ne može da se nastavi. Otkrivene tajne ostaju zapisane.</p>
+              <button
+                class="button button--danger"
+                type="button"
+                [disabled]="pending()"
+                (click)="abandon(active.tourId)"
+              >
+                Napusti turu
+              </button>
+              <button class="button" type="button" (click)="confirmingAbandon.set(false)">
+                Odustani
+              </button>
+            </div>
+          } @else {
+            <button class="menu__danger" type="button" (click)="confirmingAbandon.set(true)">
+              Napusti turu…
+            </button>
+          }
+          @if (abandonError(); as message) {
+            <p class="error" role="alert">⚠ {{ message }}</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ===== Bottom left: the secrets found so far ===== -->
+    <section class="drawer">
+      <button class="drawer__handle" type="button" (click)="secretsOpen.set(!secretsOpen())">
+        🔓 Otkrivene tajne ({{ active.reachedKeyPoints.length }})
+        <span aria-hidden="true">{{ secretsOpen() ? '▾' : '▴' }}</span>
+      </button>
+      @if (secretsOpen()) {
+        <ol class="secret-list drawer__list">
+          @for (keyPoint of active.reachedKeyPoints; track keyPoint.id; let index = $index) {
+            <li>
+              <strong>{{ index + 1 }}. {{ keyPoint.name }}</strong>
+              @if (keyPoint.secret) {
+                <span>{{ keyPoint.secret }}</span>
+              }
+            </li>
+          } @empty {
+            <li class="meta">Tajna se otkriva kada stignete do tačke.</li>
+          }
+        </ol>
+      }
+    </section>
+
+    <!-- ===== The moment of the tour: a reached point's secret over the map ===== -->
+    @if (reachedKeyPoint(); as reached) {
+      <div class="reveal" role="dialog" aria-labelledby="reveal-title">
+        <article class="reveal__card">
+          <p class="reveal__label">
+            ✓ Stigli ste · tačka {{ active.reachedKeyPointCount }} od
+            {{ active.keyPoints.length }}
+          </p>
+          <h2 id="reveal-title">{{ reached.name }}</h2>
+          @if (reached.secret) {
+            <p class="reveal__secret">„{{ reached.secret }}“</p>
+          }
+          <button class="button button--primary" type="button" (click)="closeReached()">
+            Nastavi do sledeće tačke
+          </button>
+        </article>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="state">
+    <strong>Nemate turu u toku.</strong>
+    <span>Kupljenu turu pokrećete sa njene stranice.</span>
+    <a class="button" routerLink="/exploration">Pretraži ture</a>
+  </div>
+}

@@ -1,0 +1,35 @@
+<section aria-labelledby="welcome-title">
+  <div class="welcome">
+    <span class="avatar" aria-hidden="true">{{ name().charAt(0).toUpperCase() }}</span>
+    <div>
+      <h1 id="welcome-title">Zdravo, {{ name() }}!</h1>
+      <p>Odakle nastavljate danas?</p>
+    </div>
+  </div>
+
+  <div class="goals goals--two">
+    <div class="goal goal--play">
+      <img class="goal__art" src="/images/ilustracije/winner.svg" alt="" />
+      <div class="goal__head">
+        <p class="goal__kicker">Izazovi</p>
+        <h2>Kvizovi i izazovi na mapi</h2>
+        <p>Napravite, objavite i povucite kvizove, društvene i lokacijske izazove.</p>
+      </div>
+      <div class="goal__links">
+        <a class="button button--primary" routerLink="/games/admin">Otvori izazove</a>
+      </div>
+    </div>
+
+    <div class="goal goal--explore">
+      <img class="goal__art" src="/images/ilustracije/my-current-location.svg" alt="" />
+      <div class="goal__head">
+        <p class="goal__kicker">Novčanici</p>
+        <h2>EC za turiste</h2>
+        <p>Novi turisti nemaju EC i ne mogu ništa da kupe dok im ga ne uplatite.</p>
+      </div>
+      <div class="goal__links">
+        <a class="button button--primary" routerLink="/payment/administration">Otvori novčanike</a>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,163 @@
+<div class="layout">
+  <section class="list">
+    <div class="page-header">
+      <h1>Izazovi</h1>
+      <details class="new-menu">
+        <summary class="button button--primary">Nov izazov ▾</summary>
+        <div class="new-menu__panel">
+          <button type="button">
+            <span class="kind kind--quiz">Kviz</span> pitanja na lokaciji
+          </button>
+          <button type="button">
+            <span class="kind kind--social">Društveni</span> grupa na mestu u isto vreme
+          </button>
+          <button type="button">
+            <span class="kind kind--location">Lokacijski</span> pronađi mesto sa fotografije
+          </button>
+        </div>
+      </details>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Vrsta izazova">
+      @for (item of tabs(); track item.kind) {
+        <button
+          class="tabs__tab"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="tab() === item.kind"
+          (click)="tab.set(item.kind)"
+        >
+          {{ item.label }} <span class="tabs__count">{{ item.count }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="status-filter" role="group" aria-label="Stanje">
+      <button
+        type="button"
+        class="chip"
+        [class.chip--on]="status() === null"
+        (click)="status.set(null)"
+      >
+        Sva stanja
+      </button>
+      @for (value of statuses; track value) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--on]="status() === value"
+          (click)="status.set(value)"
+        >
+          {{ statusLabels[value].label }}
+        </button>
+      }
+    </div>
+
+    @if (notice(); as message) {
+      <p class="notice notice--success" role="status">✓ {{ message }}</p>
+    }
+
+    @if (visible().length === 0) {
+      <div class="state">Nema izazova za izabrani filter.</div>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Naziv</th>
+            <th scope="col" class="col-fit">Vrsta</th>
+            <th scope="col" class="col-fit">Stanje</th>
+            <th scope="col" class="col-fit">Nagrada</th>
+            <th scope="col" class="col-actions">Radnje</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of visible(); track c.id) {
+            <tr
+              [class.row--active]="hovered() === c.id"
+              (mouseenter)="hovered.set(c.id)"
+              (mouseleave)="hovered.set(null)"
+            >
+              <td>
+                <button class="name" type="button">{{ c.name }}</button>
+                <span class="meta">{{ c.summary }}</span>
+              </td>
+              <td class="col-fit">
+                <span [class]="kindClass(c.kind)">{{ kindLabels[c.kind] }}</span>
+              </td>
+              <td class="col-fit">
+                @if (c.kind === 'location') {
+                  <span class="meta" title="Lokacijski izazovi još nemaju stanja na serveru"
+                    >—</span
+                  >
+                } @else {
+                  <span [class]="statusLabels[c.status].badge">{{
+                    statusLabels[c.status].label
+                  }}</span>
+                }
+              </td>
+              <td class="col-fit">
+                <span class="badge badge--xp">★ {{ c.xp }} XP</span>
+              </td>
+
+              @if (confirmingDelete() === c.id) {
+                <td class="col-actions confirm">
+                  <span>Obrisati trajno?</span>
+                  <button class="button button--danger" type="button" (click)="remove(c)">
+                    Obriši
+                  </button>
+                  <button class="button" type="button" (click)="confirmingDelete.set(null)">
+                    Odustani
+                  </button>
+                </td>
+              } @else {
+                <td class="col-actions">
+                  <div class="actions">
+                    @if (canEdit(c)) {
+                      <button class="button" type="button">Izmeni</button>
+                    } @else if (c.kind === 'location') {
+                      <button class="button" type="button">Pogledaj</button>
+                    }
+                    @for (transition of transitions(c); track transition.to) {
+                      <button class="button" type="button" (click)="apply(c, transition)">
+                        {{ transition.label }}
+                      </button>
+                    }
+                    @if (canDelete(c)) {
+                      <button
+                        class="button button--quiet"
+                        type="button"
+                        (click)="confirmingDelete.set(c.id)"
+                      >
+                        Obriši
+                      </button>
+                    }
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+      <p class="meta">
+        Životni ciklus: Nacrt → Objavljen ⇄ Povučen → Arhiviran. Menja se samo nacrt; briše se nacrt
+        ili arhiviran izazov.
+      </p>
+    }
+  </section>
+
+  <aside class="map-column" aria-label="Mapa izazova">
+    <app-proto-map
+      [pins]="pins()"
+      [activeId]="hovered()"
+      [fitKey]="tab() + status()"
+      (pinHover)="hovered.set($event)"
+      (pinClick)="hovered.set($event)"
+    />
+    <p class="legend">
+      <span class="kind kind--quiz">? Kviz</span>
+      <span class="kind kind--social">☺ Društveni</span>
+      <span class="kind kind--location">⌖ Lokacijski</span>
+      <span class="meta">sivo: nije objavljen</span>
+    </p>
+  </aside>
+</div>

@@ -1,8 +1,32 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Payment.Application;
+using Payment.Application.ProductOffering;
+using Payment.Application.ProductPricing;
+using Payment.Application.Products;
+using Payment.Contracts;
+using Payment.Infrastructure.Persistence.Products;
+using Payment.Application.PersonalWallet;
+using Payment.Application.WalletAdministration;
+using Payment.Application.Wallets;
 using Payment.Infrastructure.Persistence;
+using Payment.Infrastructure.Persistence.Wallets;
 using Shared.Infrastructure;
+using Payment.Application.Purchases;
+using Payment.Application.PurchaseAccess;
+using Payment.Application.CartCheckout;
+using Payment.Application.ShoppingCarts;
+using Payment.Domain.Purchases;
+using Payment.Infrastructure.Persistence.Purchases;
+using Payment.Infrastructure.Persistence.ShoppingCarts;
+using Payment.Application.Coupons;
+using Payment.Application.OwnerCoupons;
+using Payment.Domain.Coupons;
+using Payment.Infrastructure.Persistence.Coupons;
+using Payment.Application.GiftCards;
+using Payment.Application.PersonalGiftCards;
+using Payment.Domain.GiftCards;
+using Payment.Infrastructure.Persistence.GiftCards;
 
 namespace Payment.Infrastructure;
 
@@ -15,6 +39,34 @@ public static class PaymentModuleExtensions
         services.AddAutoMapper(mapper => mapper.AddProfile<PaymentMapperProfile>());
 
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<PaymentDbContext>());
+        services.AddScoped<IWalletRepository, WalletRepository>();
+        services.AddScoped<IWalletReadRepository, WalletReadRepository>();
+        services.AddScoped<PersonalWalletQueries>();
+        services.AddScoped<WalletAdministrationQueries>();
+        services.AddScoped<WalletAdministrationService>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductReadRepository, ProductReadRepository>();
+        services.AddScoped<ProductOfferingService>();
+        services.AddScoped<ProductPricingQueries>();
+        services.AddScoped<IPaymentApi, PaymentApi>();
+        services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
+        services.AddScoped<IShoppingCartReadRepository, ShoppingCartReadRepository>();
+        services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+        services.AddScoped<IPurchaseReadRepository, PurchaseReadRepository>();
+        services.AddScoped<Purchasing>();
+        services.AddScoped<CartCheckoutService>();
+        services.AddScoped<CartCheckoutQueries>();
+        services.AddScoped<PurchaseAccessQueries>();
+        services.AddScoped<ICouponRepository, CouponRepository>();
+        services.AddScoped<ICouponReadRepository, CouponReadRepository>();
+        services.AddScoped<CouponIssuing>();
+        services.AddScoped<OwnerCouponsService>();
+        services.AddScoped<OwnerCouponsQueries>();
+        services.AddScoped<IGiftCardRepository, GiftCardRepository>();
+        services.AddScoped<IGiftCardReadRepository, GiftCardReadRepository>();
+        services.AddScoped<GiftCardGiving>();
+        services.AddScoped<PersonalGiftCardsService>();
+        services.AddScoped<PersonalGiftCardsQueries>();
 
         return services;
     }

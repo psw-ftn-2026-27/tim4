@@ -17,6 +17,7 @@
     <Project Path="Modules/Games/Games.Tests/Games.Tests.csproj" />
   </Folder>
   <Folder Name="/Modules/Identity/">
+    <Project Path="Modules/Identity/Identity.Contracts/Identity.Contracts.csproj" />
     <Project Path="Modules/Identity/Identity.Tests/Identity.Tests.csproj" />
     <Project Path="Modules/Identity/Identity/Identity.csproj" />
   </Folder>
@@ -28,6 +29,14 @@
     <Project Path="Modules/Payment/Payment.Infrastructure/Payment.Infrastructure.csproj" />
     <Project Path="Modules/Payment/Payment.Tests/Payment.Tests.csproj" />
   </Folder>
+  <Folder Name="/Modules/Positions/">
+    <Project Path="Modules/Positions/Positions.Api/Positions.Api.csproj" />
+    <Project Path="Modules/Positions/Positions.Application/Positions.Application.csproj" />
+    <Project Path="Modules/Positions/Positions.Contracts/Positions.Contracts.csproj" />
+    <Project Path="Modules/Positions/Positions.Domain/Positions.Domain.csproj" />
+    <Project Path="Modules/Positions/Positions.Infrastructure/Positions.Infrastructure.csproj" />
+    <Project Path="Modules/Positions/Positions.Tests/Positions.Tests.csproj" />
+  </Folder>
   <Folder Name="/Modules/Social/">
     <Project Path="Modules/Social/Social.Api/Social.Api.csproj" />
     <Project Path="Modules/Social/Social.Application/Social.Application.csproj" />
@@ -38,7 +47,9 @@
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="Shared/Shared.Api/Shared.Api.csproj" />
+    <Project Path="Shared/Shared.Application/Shared.Application.csproj" />
     <Project Path="Shared/Shared.Domain/Shared.Domain.csproj" />
+    <Project Path="Shared/Shared.Domain.Tests/Shared.Domain.Tests.csproj" />
     <Project Path="Shared/Shared.Infrastructure/Shared.Infrastructure.csproj" />
     <Project Path="Shared/Shared.Tests/Shared.Tests.csproj" />
   </Folder>
