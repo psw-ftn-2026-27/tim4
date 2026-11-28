@@ -27,6 +27,9 @@
     @if (isInProgress()) {
       <span class="badge badge--published">▶ U toku</span>
       <a class="button button--primary" routerLink="/exploration/active">Nastavi</a>
+    } @else if (isPurchased()) {
+      <span class="badge badge--success">✓ Kupljena</span>
+      <a class="button" [routerLink]="['/exploration/tours', tour().id]">Pogledaj</a>
     } @else if (isOwn()) {
       <span class="badge badge--draft">✎ Vaša tura</span>
       <a class="button" [routerLink]="['/exploration/tours', tour().id]">Pogledaj</a>

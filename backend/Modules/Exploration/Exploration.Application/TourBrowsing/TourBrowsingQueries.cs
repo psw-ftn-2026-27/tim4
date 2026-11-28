@@ -27,6 +27,8 @@ public sealed class TourBrowsingQueries
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
         var inProgressTourId = await _executionReadRepository.GetInProgressTourIdAsync(viewerId);
+        // One call for the whole page, not one per tour.
+        var purchasedIds = (await _paymentApi.GetPurchasedEntityIdsAsync(viewerId)).ToHashSet();
 
         // Prices live in Payment, and key points are stored as JSON, so the database cannot filter or
         // sort by price or filter by the circle. Without such a criterion the database pages the tours
@@ -38,7 +40,7 @@ public sealed class TourBrowsingQueries
         {
             var tourPage = await _tourReadRepository.GetPublishedAsync(search, page, pageSize);
             var pageLocations = await _tourReadRepository.GetVisibleKeyPointLocationsAsync(tourPage.Items.Select(tour => tour.Id).ToList());
-            var pageItems = await WithPricesAndPinsAsync(tourPage.Items, pageLocations, inProgressTourId);
+            var pageItems = await WithPricesAndPinsAsync(tourPage.Items, pageLocations, inProgressTourId, purchasedIds);
             return new PageResult<PublishedTourDto>(pageItems, tourPage.TotalCount);
         }
 
@@ -49,7 +51,7 @@ public sealed class TourBrowsingQueries
         var toursInCircle = usesCircle
             ? WithinCircle(allTours, locations, new Location(search.Latitude!.Value, search.Longitude!.Value), search.RadiusInKm!.Value)
             : allTours;
-        var tours = await WithPricesAndPinsAsync(toursInCircle, locations, inProgressTourId);
+        var tours = await WithPricesAndPinsAsync(toursInCircle, locations, inProgressTourId, purchasedIds);
         var matching = SortByPrice(WithinPriceRange(tours, search.PriceFrom, search.PriceTo), search.Sort);
         var items = matching
             .Skip((page - 1) * pageSize)
@@ -61,12 +63,12 @@ public sealed class TourBrowsingQueries
     // The pin is the first key point open without purchase, so the map never reveals a location
     // the visitor has yet to buy.
     private async Task<List<PublishedTourDto>> WithPricesAndPinsAsync(List<TourDto> tours,
-        Dictionary<Guid, List<LocationDto>> locations, Guid? inProgressTourId)
+        Dictionary<Guid, List<LocationDto>> locations, Guid? inProgressTourId, HashSet<Guid> purchasedIds)
     {
         var prices = await _paymentApi.GetPricesByEntityIdsAsync(tours.Select(tour => tour.Id).ToList());
         return tours
             .Select(tour => new PublishedTourDto(tour, prices[tour.Id], locations[tour.Id].FirstOrDefault(),
-                tour.Id == inProgressTourId))
+                tour.Id == inProgressTourId, purchasedIds.Contains(tour.Id)))
             .ToList();
     }
 
@@ -139,7 +141,13 @@ public sealed class TourBrowsingQueries
         var tour = await _tourReadRepository.GetDetailsAsync(tourId, includeArchived: isPurchased)
             ?? throw new NotFoundException($"Tour {tourId} does not exist.");
         var inProgressTourId = await _executionReadRepository.GetInProgressTourIdAsync(viewerId);
-        tour = tour with { IsPurchased = isPurchased, IsInProgress = tour.Id == inProgressTourId };
+        var prices = await _paymentApi.GetPricesByEntityIdsAsync([tourId]);
+        tour = tour with
+        {
+            Price = prices[tourId],
+            IsPurchased = isPurchased,
+            IsInProgress = tour.Id == inProgressTourId,
+        };
 
         // The author sees the whole tour, secrets included.
         if (tour.AuthorId == viewerId)

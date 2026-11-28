@@ -306,6 +306,9 @@ export class TourList {
     if (item.isInProgress) {
       return '▶ U toku';
     }
+    if (item.isPurchased) {
+      return '✓ Kupljena';
+    }
     if (this.isOwn(item)) {
       return '✎ Vaša';
     }

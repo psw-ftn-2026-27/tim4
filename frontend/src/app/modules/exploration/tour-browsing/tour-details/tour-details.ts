@@ -67,6 +67,15 @@ export class TourDetails {
     return tour.isPurchased || tour.authorId === this.auth.user()?.id;
   });
 
+  // Shown to a visitor who has not bought the tour and to its author, never to a buyer.
+  protected readonly priceText = computed(() => {
+    const price = this.tour.value()?.price ?? null;
+    if (price === null) {
+      return 'Cena još nije određena';
+    }
+    return price === 0 ? 'Besplatno' : `${price} EC`;
+  });
+
   protected readonly pending = signal(false);
   protected readonly added = signal(false);
   protected readonly error = signal<string | null>(null);
