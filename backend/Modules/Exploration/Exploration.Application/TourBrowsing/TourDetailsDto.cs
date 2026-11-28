@@ -13,5 +13,7 @@ public sealed record TourDetailsDto(
     double LengthInKm,
     List<TransportTimeDto> TransportTimes,
     List<TourKeyPointDto> KeyPoints,
+    // Null when the tour has no price in Payment yet; zero means the tour is free.
+    long? Price,
     bool IsPurchased,
     bool IsInProgress);

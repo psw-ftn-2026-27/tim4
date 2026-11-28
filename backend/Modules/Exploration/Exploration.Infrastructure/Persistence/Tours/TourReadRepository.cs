@@ -124,8 +124,9 @@ internal sealed class TourReadRepository : ITourReadRepository
                         keyPoint.Location.Longitude,
                         keyPoint.IsVisibleWithoutPurchase))
                     .ToList(),
-                // Purchases live in Payment and sessions in their own aggregate, so the queries
-                // class fills these in.
+                // Prices and purchases live in Payment and sessions in their own aggregate, so the
+                // queries class fills these in.
+                null,
                 false,
                 false))
             .SingleOrDefaultAsync();

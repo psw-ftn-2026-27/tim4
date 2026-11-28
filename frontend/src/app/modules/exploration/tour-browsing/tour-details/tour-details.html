@@ -77,6 +77,7 @@
           >
         } @else if (isAuthor()) {
           <p><span class="badge badge--draft">✎ Vaša tura</span></p>
+          <p class="panel__price">{{ priceText() }}</p>
           <p class="meta">Ovako vašu turu vide turisti; kupci vide i sve ključne tačke.</p>
           <a class="button button--primary panel__main" routerLink="/exploration/mine">Moje ture</a>
         } @else if (tour.isPurchased && isExplorer()) {
@@ -122,6 +123,7 @@
             <p class="notice notice--success">✓ Tura je dodata u korpu.</p>
             <a class="button button--primary panel__main" routerLink="/payment/cart">Idi u korpu</a>
           } @else {
+            <p class="panel__price">{{ priceText() }}</p>
             <button
               class="button button--primary panel__main"
               type="button"

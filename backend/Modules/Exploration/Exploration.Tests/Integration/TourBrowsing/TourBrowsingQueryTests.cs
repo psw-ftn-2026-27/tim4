@@ -376,6 +376,29 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Published_list_marks_only_the_tours_the_tourist_bought()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<PublishedTourDto>>("/api/exploration/tours/published?pageSize=100", JsonOptions);
+
+        tours!.Items.Where(tour => tour.IsPurchased).Select(tour => tour.Tour.Id).Should().BeEquivalentTo(
+            [TourSeed.PublishedVineyardsByBicycleEasy.Id, TourSeed.PublishedFortressWithHiddenFirstKeyPoint.Id]);
+        tours.Items.Should().Contain(tour => tour.Tour.Id == TourSeed.PublishedMonasteries.Id && !tour.IsPurchased);
+    }
+
+    [Fact]
+    public async Task Visitor_sees_the_price_of_the_tour()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var tour = TourSeed.PublishedVineyards;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.Price.Should().Be(TourProductSeed.VineyardsFor30.Price);
+    }
+
+    [Fact]
     public async Task Tourist_is_told_the_tour_is_in_progress()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");

@@ -24,7 +24,8 @@ export const transportLabels: Record<TransportMode, string> = {
 };
 
 // One tour in the list beside the map: what it is on the left, and on the right what it is to
-// this tourist, a price, the tour in progress or their own tour, with the one action that fits.
+// this tourist, the tour in progress, a bought tour, their own tour or a price, with the one
+// action that fits.
 @Component({
   imports: [RouterLink],
   selector: 'app-tour-card',
@@ -36,6 +37,7 @@ export class TourCard {
   // Null when the tour has no price yet; zero when it is free.
   readonly price = input.required<number | null>();
   readonly isInProgress = input(false);
+  readonly isPurchased = input(false);
   readonly isOwn = input(false);
   // Highlighted while its pin is under the mouse or chosen on the map.
   readonly active = input(false);

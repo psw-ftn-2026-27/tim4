@@ -158,6 +158,7 @@
                 [tour]="item.tour"
                 [price]="item.price"
                 [isInProgress]="item.isInProgress"
+                [isPurchased]="item.isPurchased"
                 [isOwn]="isOwn(item)"
                 [active]="activeId() === item.tour.id"
                 [hasPin]="item.pinLocation !== null"
@@ -216,6 +217,8 @@
             <span class="pin-card__price">
               @if (item.isInProgress) {
                 ▶ U toku
+              } @else if (item.isPurchased) {
+                ✓ Kupljena
               } @else {
                 {{ priceText(item) }}
               }
